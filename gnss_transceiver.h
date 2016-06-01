@@ -2,7 +2,7 @@
 #define GNSS_TRANSCEIVER_H
 
 
-/* A tranceiver for GNSS positional data
+/* A transceiver for GNSS positional data
 
    Reads data from a GNSS receiver and transmits the data to a remote UDP
    endpoint. Can also act as the remote endpoint and/or log the GNSS data.
