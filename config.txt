@@ -1,0 +1,16 @@
+# Device
+device_id=1
+
+# GNSS
+gnss_port=/dev/ttyACM0
+
+# Transmitter
+trans_ip=192.168.178.34
+trans_port=30001
+
+# Receiver
+recv_ip=192.168.178.34
+recv_port=30001
+
+# Logging
+log_recv=true

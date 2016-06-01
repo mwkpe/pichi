@@ -1,0 +1,138 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0302 
+header_name {.h} 
+code_name {.cpp}
+decl {\#include "gnss_transceiver.h"} {private global
+} 
+
+decl {namespace gnss { class Transceiver; }} {public global
+} 
+
+class Ui {open
+} {
+  Function {Ui(gnss::Transceiver* t)} {open
+  } {
+    code {transceiver_ = t;} {}
+    code {last_count_ = 0;} {}
+    Fl_Window main_window {
+      label PiPoint open
+      private xywh {117 194 500 300} type Double visible
+    } {
+      Fl_Group {} {open
+        xywh {0 0 500 38}
+      } {
+        Fl_Light_Button button_start {
+          label Start
+          callback {button_start_clicked()}
+          private xywh {122 6 60 26} selection_color 62
+        }
+        Fl_Choice choice_mode {
+          private xywh {6 6 110 26} down_box BORDER_BOX labeltype NO_LABEL
+        } {
+          MenuItem {} {
+            label Transmit
+            xywh {0 0 34 20}
+          }
+          MenuItem {} {
+            label Receive
+            xywh {0 0 34 20}
+          }
+          MenuItem {} {
+            label Log
+            xywh {0 0 34 20}
+          }
+        }
+        Fl_Output text_rate {
+          label {Rate (Hz)}
+          xywh {254 6 60 26} box FLAT_BOX textfont 13
+        }
+        Fl_Output text_total {
+          label Total
+          xywh {358 6 136 24} box FLAT_BOX textfont 13
+        }
+      }
+      Fl_Tabs {} {
+        xywh {6 38 488 224}
+      } {
+        Fl_Group {} {
+          label Device selected
+          xywh {6 60 488 202}
+        } {
+          Fl_Input text_device_id {
+            label {Device ID}
+            private xywh {12 66 160 24} align 8
+          }
+        }
+        Fl_Group {} {
+          label GNSS
+          xywh {6 60 488 202} hide
+        } {
+          Fl_Input text_gnss_port {
+            label {Port (Device sending NMEA sentences)}
+            private xywh {12 66 160 24} align 8
+          }
+        }
+        Fl_Group {} {
+          label Transmit
+          xywh {6 60 488 202} hide
+        } {
+          Fl_Input text_trans_ip {
+            label {IP (Target device)}
+            private xywh {12 66 160 24} align 8
+          }
+          Fl_Input text_trans_port {
+            label Port
+            private xywh {12 96 160 24} align 8
+          }
+        }
+        Fl_Group {} {
+          label Receive
+          xywh {6 60 488 202} hide
+        } {
+          Fl_Input text_recv_ip {
+            label {IP (This device)}
+            private xywh {12 66 160 24} align 8
+          }
+          Fl_Input text_recv_port {
+            label Port
+            private xywh {12 96 160 24} align 8
+          }
+        }
+        Fl_Group {} {
+          label Log
+          xywh {6 60 488 202} hide
+        } {}
+      }
+      Fl_Group {} {
+        xywh {6 262 488 38}
+      } {
+        Fl_Button button_apply {
+          label Apply
+          callback {button_apply_clicked()}
+          xywh {6 268 70 26}
+        }
+      }
+    }
+    code {load_settings();} {}
+  }
+  Function {show(int argc, char** argv)} {return_type void
+  } {
+    code {main_window->show(argc, argv);} {}
+  }
+  Function {update_status_callback(void* p)} {open return_type {static void}
+  } {}
+  Function {update_status()} {open return_type void
+  } {}
+  Function {apply_settings()} {private return_type void
+  } {}
+  Function {load_settings()} {private return_type void
+  } {}
+  Function {button_start_clicked()} {private return_type void
+  } {}
+  Function {button_apply_clicked()} {private return_type void
+  } {}
+  decl {gnss::Transceiver* transceiver_;} {private local
+  }
+  decl {unsigned long long last_count_;} {private local
+  }
+} 
