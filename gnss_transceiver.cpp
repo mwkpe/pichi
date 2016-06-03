@@ -120,7 +120,7 @@ void gnss::Transceiver::start_gnss_receiver(const std::string& logfilename)
   reset();
   active_.store(true);
   
-  std::thread t{&gnss::Transceiver::receive_gnss_packets, this, std::ref(logfilename)};
+  std::thread t{&gnss::Transceiver::receive_gnss_packets, this, logfilename};
   t.detach();
 }
 
@@ -130,7 +130,7 @@ void gnss::Transceiver::start_nmea_logger(const std::string& logfilename)
   reset();
   active_.store(true);
 
-  std::thread consumer{&gnss::Transceiver::log_nmea_sentences, this, std::ref(logfilename)};
+  std::thread consumer{&gnss::Transceiver::log_nmea_sentences, this, logfilename};
   consumer.detach();
 
   std::thread provider{&gnss::Transceiver::read_nmea_sentences, this};
@@ -143,7 +143,7 @@ void gnss::Transceiver::start_gnss_logger(const std::string& logfilename)
   reset();
   active_.store(true);
 
-  std::thread consumer{&gnss::Transceiver::log_gnss_data, this, std::ref(logfilename)};
+  std::thread consumer{&gnss::Transceiver::log_gnss_data, this, logfilename};
   consumer.detach();
 
   std::thread provider{&gnss::Transceiver::read_nmea_sentences, this};
@@ -255,18 +255,20 @@ void gnss::Transceiver::receive_gnss_packets(const std::string& logfilename)
       uint64_t receive_time = current_time();
       auto* header = reinterpret_cast<PacketHeader*>(recv_buffer.data());
       switch (static_cast<PacketType>(header->data_type)) {
-        case PacketType::GxRMC: {
-          if (received_bytes >= sizeof(PacketHeader) + sizeof(nmea::rmc_data) &&
-              header->data_length == sizeof(nmea::rmc_data)) {
-            auto* data = reinterpret_cast<nmea::rmc_data*>(recv_buffer.data() +
-                                                           sizeof(PacketHeader));
+        case PacketType::GxRmc: {
+          if (received_bytes >= sizeof(PacketHeader) + sizeof(nmea::RmcData) &&
+              header->data_length == sizeof(nmea::RmcData)) {
+            auto* data = reinterpret_cast<nmea::RmcData*>(recv_buffer.data() +
+                                                          sizeof(PacketHeader));
             activity_counter_.store(++packet_counter);
-            if (logfile.is_open())
+            if (logfile.is_open()) {
               write_gnss_recv(logfile, header, data, receive_time);
+            }
           }
         }
         break;
-        default:;
+        default:
+        break;
       }
     }
   }
@@ -295,10 +297,10 @@ void gnss::Transceiver::transmit_gnss_packets()
 
   char send_buffer[sizeof(PacketHeader) + sizeof(nmea::rmc_data)] = {0};
   auto* header = reinterpret_cast<PacketHeader*>(send_buffer);
-  header->data_type = static_cast<uint16_t>(PacketType::GxRMC);
-  header->data_length = sizeof(nmea::rmc_data);
+  header->data_type = static_cast<uint16_t>(PacketType::GxRmc);
+  header->data_length = sizeof(nmea::RmcData);
   header->device_id = conf_.device_id;
-  auto* data = reinterpret_cast<nmea::rmc_data*>(send_buffer + sizeof(PacketHeader));
+  auto* data = reinterpret_cast<nmea::RmcData*>(send_buffer + sizeof(PacketHeader));
 
   while (active_.load()) {
     std::unique_lock<std::mutex> lk{data_mutex_};
@@ -330,6 +332,7 @@ void gnss::Transceiver::transmit_gnss_packets()
 }
 
 
+// Logs NMEA sentences received from a GNSS receiver
 void gnss::Transceiver::log_nmea_sentences(const std::string& logfilename)
 {
   std::ofstream logfile{logfilename};
@@ -362,6 +365,7 @@ void gnss::Transceiver::log_nmea_sentences(const std::string& logfilename)
 }
 
 
+// Logs data received from a GNSS receiver (parsed NMEA sentences)
 void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
 {
   std::ofstream logfile{logfilename};
@@ -370,7 +374,6 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
     active_.store(false);
   }
 
-  nmea::rmc_data data;
   uint64_t data_counter = 0;
 
   while (active_.load()) {
@@ -387,10 +390,31 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
         std::string s;
         std::tie(recv_st, recv_time, s) = std::move(sentences.front());
         sentences.pop();
-        uint8_t crc;
-        if (nmea::parse(s, &data, &crc) && nmea::comp_checksum(s, crc)) {
-          write_gnss_read(logfile, &data, recv_time, current_systime() - recv_st);
-          activity_counter_.store(++data_counter);
+        switch (nmea::sentence_type(s)) {
+          case nmea::SentenceType::Rmc: {
+            bool success = false;
+            nmea::RmcData data;
+            uint8_t crc;
+            std::tie(success, data, crc) = nmea::parse<nmea::RmcData>(s);
+            if (success && nmea::comp_checksum(s, crc)) {
+              write_gnss_read(logfile, &data, recv_time, current_systime() - recv_st);
+              activity_counter_.store(++data_counter);
+            }
+          }
+          break;
+          case nmea::SentenceType::Gga: {
+            bool success = false;
+            nmea::GgaData data;
+            uint8_t crc;
+            std::tie(success, data, crc) = nmea::parse<nmea::GgaData>(s);
+            if (success && nmea::comp_checksum(s, crc)) {
+              write_gnss_read(logfile, &data, recv_time, current_systime() - recv_st);
+              activity_counter_.store(++data_counter);
+            }
+          }
+          break;
+          default:
+          break;
         }
       }
     }
@@ -420,56 +444,48 @@ uint32_t gnss::Transceiver::current_ticks() const
 }
 
 
-void gnss::Transceiver::write_gnss_read(std::ofstream& fs,
-                                        const nmea::rmc_data* data,
-                                        uint64_t receive_time,
-                                        uint64_t system_delay) const
+void gnss::Transceiver::write_gnss_data(std::ofstream& fs, const nmea::RmcData* data) const
 {
-  fs << receive_time << ","
-     << system_delay << ",";
-
-  write_gnss_data(fs, data);
-
-  fs << "\n";
-}
-
-
-void gnss::Transceiver::write_gnss_recv(std::ofstream& fs,
-                                        const PacketHeader* header,
-                                        const nmea::rmc_data* data,
-                                        uint64_t receive_time) const
-{
-  fs << receive_time << ","
-     << header->transmit_time << ","
-     << header->transmit_system_delay << ","
-     << header->device_id << ","
-     << header->transmit_counter << ",";
-
-  write_gnss_data(fs, data);
-
-  fs << "\n";
-}
-
-
-void gnss::Transceiver::write_gnss_data(std::ofstream& fs,
-                                        const nmea::rmc_data* data) const
-{
-  fs << data->talker_id << ","
-     << static_cast<int>(data->utc_time_hour) << ","
-     << static_cast<int>(data->utc_time_minute) << ","
-     << data->utc_time_second << ","
-     << data->degrees_lat << ","
-     << data->minutes_lat << ","
-     << data->direction_lat << ","
-     << data->degrees_long << ","
-     << data->minutes_long << ","
-     << data->direction_long << ","
-     << data->speed_over_ground << ","
-     << data->track_angle << ","
-     << static_cast<int>(data->date_day) << ","
-     << static_cast<int>(data->date_month) << ","
-     << static_cast<int>(data->date_year) << ","
-     << data->magnetic_variation << ","
-     << data->direction_mv << ","
+  fs << "RMC" << ','
+     << data->talker_id << ','
+     << static_cast<int>(data->utc_time_hour) << ','
+     << static_cast<int>(data->utc_time_minute) << ','
+     << data->utc_time_second << ','
+     << data->degrees_lat << ','
+     << data->minutes_lat << ','
+     << data->direction_lat << ','
+     << data->degrees_long << ','
+     << data->minutes_long << ','
+     << data->direction_long << ','
+     << data->speed_over_ground << ','
+     << data->track_angle << ','
+     << static_cast<int>(data->date_day) << ','
+     << static_cast<int>(data->date_month) << ','
+     << static_cast<int>(data->date_year) << ','
+     << data->magnetic_variation << ','
+     << data->direction_mv << ','
      << data->mode_indicator;
+}
+
+
+void gnss::Transceiver::write_gnss_data(std::ofstream& fs, const nmea::GgaData* data) const
+{
+  fs << "GGA" << ','
+     << data->talker_id << ','
+     << static_cast<int>(data->utc_time_hour) << ','
+     << static_cast<int>(data->utc_time_minute) << ','
+     << data->utc_time_second << ','
+     << data->degrees_lat << ','
+     << data->minutes_lat << ','
+     << data->direction_lat << ','
+     << data->degrees_long << ','
+     << data->minutes_long << ','
+     << data->direction_long << ','
+     << static_cast<int>(data->fix_flag) << ','
+     << static_cast<int>(data->satellites_used) << ','
+     << data->hor_dilution_of_precision << ','
+     << data->altitude << ','
+     << data->geoidal_separation << ','
+     << data->age_of_dgps_data << ','
+     << data->reference_station_id;
 }

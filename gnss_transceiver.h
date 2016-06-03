@@ -15,6 +15,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <fstream>
 
 #include <asio.hpp>
 
@@ -22,17 +23,20 @@
 
 
 namespace nmea {
-  struct rmc_data;
-  struct gga_data;
-  struct gsv_data;
+  struct RmcData;
+  struct GgaData;
+  struct GsvData;
 }
 
 
-namespace gnss
-{
+namespace gnss {
 
 
-enum class PacketType : std::uint16_t { GxRMC = 0x10 };
+enum class PacketType : uint16_t {
+  GxRmc = 0x10,
+  GxGga,
+  GxGsv
+};
 
 struct PacketHeader
 {
@@ -107,11 +111,12 @@ private:
   uint32_t current_ticks() const;  // CPU ticks
 
   // Logging
-  void write_gnss_read(std::ofstream& fs, const nmea::rmc_data* data,
-                       uint64_t receive_time, uint64_t system_delay) const;
-  void write_gnss_recv(std::ofstream& fs, const PacketHeader* header,
-                       const nmea::rmc_data* data, uint64_t receive_time) const;
-  void write_gnss_data(std::ofstream& fs, const nmea::rmc_data* data) const;
+  template<typename T> void write_gnss_read(std::ofstream& fs, const T* data,
+      uint64_t receive_time, uint64_t system_delay) const;
+  template<typename T> void write_gnss_recv(std::ofstream& fs, const PacketHeader* header,
+      const T* data, uint64_t receive_time) const;
+  void write_gnss_data(std::ofstream& fs, const nmea::RmcData* data) const;
+  void write_gnss_data(std::ofstream& fs, const nmea::GgaData* data) const;
 
   Configuration conf_{};
   Timer timer;
@@ -129,6 +134,40 @@ private:
   // A counter for transmitted, received or logged packets
   std::atomic<uint64_t> activity_counter_{0};
 };
+
+
+template<typename T> void gnss::Transceiver::write_gnss_read(
+    std::ofstream& fs,
+    const T* data,
+    uint64_t receive_time,
+    uint64_t system_delay) const
+{
+  fs << receive_time << ','
+     << system_delay << ',';
+
+  write_gnss_data(fs, data);
+
+  fs << '\n';
+}
+
+
+template<typename T> void gnss::Transceiver::write_gnss_recv(
+    std::ofstream& fs,
+    const PacketHeader* header,
+    const T* data,
+    uint64_t receive_time) const
+{
+  fs << header->data_type << ','
+     << receive_time << ','
+     << header->transmit_time << ','
+     << header->transmit_system_delay << ','
+     << header->device_id << ','
+     << header->transmit_counter << ',';
+
+  write_gnss_data(fs, data);
+
+  fs << '\n';
+}
 
 
 }  // gnss
