@@ -10,14 +10,16 @@ Compilation requires GCC 4.9 (or later with updating the makefile), boost, FLTK 
 Install Asio: `sudo apt-get install libasio-dev`<br>
 Install FLTK: `sudo apt-get install libfltk1.3-dev`<br>
 
-The Raspberry Pi 2 and 3 should work out of the box. When using a Raspberry Pi 1 you must change a function argument in the [timer.cpp](/timer.cpp#L18) from ```ST_BASE_RPI_3``` to ```ST_BASE_RPI_1``` or the system timer will read at the wrong address.
+The Raspberry Pi 2 and 3 should work out of the box. When using a Raspberry Pi 1 you must change a function argument in the [timer.cpp](/timer.cpp#L18) from `ST_BASE_RPI_2_AND_3` to `ST_BASE_RPI_1` or the system timer will read at the wrong address.
 
-Build the program with ```make``` and build the nmea parser test with ```make test```.
+Build the program with `make` and build the nmea parser test with `make test`.
 
 Running the program
 ---
-Simply start the programm with ```sudo ./pipoint```. The program needs root for accessing the MHz [system timer](/timer.cpp) but works without it; All relating values (e.g. system delay) will then be zero.
+Start the program with `sudo ./pipoint`. Sudo is necessary for accessing to the memory location of the the Raspberry Pi's 1MHz [system timer](/timer.cpp). The program works without sudo but all values relying to the system timer (e.g. system delay) will then be zero.
 
-Acknowledgements / Licenses
+The test of the NMEA parser can be run with `./nmea_parser_test`.
+
+Acknowledgements
 ---
 PiPoint is using [FLTK](http://www.fltk.org) for the GUI and [doctest](https://github.com/onqtam/doctest) for testing.
