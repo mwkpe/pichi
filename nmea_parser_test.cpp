@@ -8,7 +8,7 @@ using namespace nmea;
 
 
 TEST_CASE("GxRMC parser") {
-  rmc_data data;
+  RmcData data;
   uint8_t crc;
 
   // From NL-8002U NAVILOCK Multi GNSS Receiver ublox 8
@@ -31,7 +31,7 @@ TEST_CASE("GxRMC parser") {
 
 
 TEST_CASE("GxGGA parser") {
-  gga_data data;
+  GgaData data;
   uint8_t crc;
 
   // From NL-8002U NAVILOCK Multi GNSS Receiver ublox 8
@@ -46,7 +46,7 @@ TEST_CASE("GxGGA parser") {
 
 
 TEST_CASE("GxGSV parser") {
-  gsv_data data;
+  GsvData data;
   uint8_t crc;
 
   // From NL-8002U NAVILOCK Multi GNSS Receiver ublox 8

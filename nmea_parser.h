@@ -16,13 +16,19 @@
 
 #include <cstdint>
 #include <string>
+#include <tuple>
 
 
 namespace nmea {
 
 
+// Sentence type deduction
+enum class SentenceType { Unknown, Rmc, Gga, Gsv };
+SentenceType sentence_type(const std::string& sentence);
+
+
 // Recommended minimum specific GPS/Transit data
-struct rmc_data
+struct RmcData
 {
   char talker_id;
   uint8_t utc_time_hour;
@@ -45,11 +51,11 @@ struct rmc_data
   char mode_indicator;
 };
 
-bool parse(const std::string& sentence, rmc_data* data, uint8_t* checksum);
+bool parse(const std::string& sentence, RmcData* data, uint8_t* checksum);
 
 
 // Global positioning system fix data
-struct gga_data
+struct GgaData
 {
   char talker_id;
   uint8_t utc_time_hour;
@@ -70,11 +76,11 @@ struct gga_data
   uint16_t reference_station_id;
 };
 
-bool parse(const std::string& sentence, gga_data* data, uint8_t* checksum);
+bool parse(const std::string& sentence, GgaData* data, uint8_t* checksum);
 
 
 // GPS Satellites in view
-struct satellite
+struct Satellite
 {
   bool has_data;
   uint16_t satellite_prn_number;
@@ -83,22 +89,30 @@ struct satellite
   uint8_t snr;
 };
 
-struct gsv_data
+struct GsvData
 {
   char talker_id;
   uint8_t total_messages;
   uint8_t message_number;
   uint8_t satellites_in_view;
-  satellite first;
-  satellite second;
-  satellite third;
-  satellite fourth;
+  Satellite first;
+  Satellite second;
+  Satellite third;
+  Satellite fourth;
 };
 
-bool parse(const std::string& sentence, gsv_data* data, uint8_t* checksum);
+bool parse(const std::string& sentence, GsvData* data, uint8_t* checksum);
 
 
-// Checksum calculation
+// Additional functions
+template<typename T> std::tuple<bool, T, uint8_t> parse(const std::string& sentence)
+{
+  T data;
+  uint8_t checksum;
+  bool success = parse(sentence, &data, &checksum);
+  return std::make_tuple(success, data, checksum);
+}
+
 uint8_t calc_checksum(const std::string& s, bool* ok = nullptr);
 
 inline bool comp_checksum(const std::string& s, uint8_t checksum)

@@ -7,8 +7,36 @@
 #include <boost/spirit/include/qi.hpp>
 
 
+// Sentence type deduction
+nmea::SentenceType nmea::sentence_type(const std::string& sentence)
+{
+  namespace qi = boost::spirit::qi;
+  namespace ascii = boost::spirit::ascii;
+
+  using qi::phrase_parse;
+  using qi::lit;
+  using qi::omit;
+  using ascii::space;
+  using ascii::char_;
+
+  std::string message_id{};
+
+  // $aaXXX,... (XXX = Message ID)
+  // $GPRMC,...
+
+  phrase_parse(std::begin(sentence), std::end(sentence),
+    lit("$G") >> omit[char_] >> +char_('A', 'Z') >> ',', space, message_id);
+
+  if (message_id == "RMC") { return SentenceType::Rmc; }
+  if (message_id == "GGA") { return SentenceType::Gga; }
+  if (message_id == "GSV") { return SentenceType::Gsv; }
+
+  return SentenceType::Unknown;
+}
+
+
 // Recommended minimum specific GPS/Transit data
-bool nmea::parse(const std::string& sentence, rmc_data* data, uint8_t* checksum)
+bool nmea::parse(const std::string& sentence, RmcData* data, uint8_t* checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -104,7 +132,7 @@ bool nmea::parse(const std::string& sentence, rmc_data* data, uint8_t* checksum)
 
 
 // Global positioning system fix data
-bool nmea::parse(const std::string& sentence, gga_data* data, uint8_t* checksum)
+bool nmea::parse(const std::string& sentence, GgaData* data, uint8_t* checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -190,7 +218,7 @@ bool nmea::parse(const std::string& sentence, gga_data* data, uint8_t* checksum)
 
 
 // GPS Satellites in view
-bool nmea::parse(const std::string& sentence, gsv_data* data, uint8_t* checksum)
+bool nmea::parse(const std::string& sentence, GsvData* data, uint8_t* checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -291,12 +319,12 @@ uint8_t nmea::calc_checksum(const std::string& s, bool* ok)
   auto last = std::find_if(rev_iter(std::end(s)), rev_iter(std::begin(s)),
                            [](char c){ return c == '*'; }).base();
 
-  // Points to the character after * due to reversal, step one back
-  if (last != std::begin(s))
-    std::advance(last, -1);
   // Points to $, step one forward
   if (first != std::end(s))
     std::advance(first, 1);
+  // Points to the character after the * due to reversal, step one back
+  if (last != std::begin(s))
+    std::advance(last, -1);
 
   if (std::distance(first, last) > 0) {
     if (ok)
