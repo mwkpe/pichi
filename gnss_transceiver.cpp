@@ -295,7 +295,7 @@ void gnss::Transceiver::transmit_gnss_packets()
     return;
   }
 
-  char send_buffer[sizeof(PacketHeader) + sizeof(nmea::rmc_data)] = {0};
+  char send_buffer[sizeof(PacketHeader) + sizeof(nmea::RmcData)] = {0};
   auto* header = reinterpret_cast<PacketHeader*>(send_buffer);
   header->data_type = static_cast<uint16_t>(PacketType::GxRmc);
   header->data_length = sizeof(nmea::RmcData);
