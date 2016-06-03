@@ -245,7 +245,7 @@ bool nmea::parse(const std::string& sentence, GsvData* data, uint8_t* checksum)
     uchar_ >> ',' >>          // Total number of messages
     uchar_ >> ',' >>          // Message number
     uchar_ >> ',' >>          // Total number of satellites in view
-    -ushort_ % ',' >>         // PRN, elevation, azimuth and SNR for 2nd, 3rd and 4th satellite
+    -ushort_ % ',' >>         // PRN, elevation, azimuth and SNR for up to 4 satellites
     '*' >> hex,               // Checksum indicator and checksum
     space,
     data->talker_id,
@@ -263,34 +263,34 @@ bool nmea::parse(const std::string& sentence, GsvData* data, uint8_t* checksum)
     data->fourth.has_data = false;
 
     auto get_value = [&sat_data](int i) -> uint16_t {
-      return sat_data[i] ? *sat_data[i] : 0xFFFF;
+      return sat_data[i] ? *sat_data[i] : 0;
     };
 
     switch (sat_data.size()) {
       case 16:
         data->fourth.has_data = true;
-        data->fourth.satellite_prn_number = get_value(15);
-        data->fourth.elevation = static_cast<uint8_t>(get_value(14));
-        data->fourth.azimuth = get_value(13);
-        data->fourth.snr = static_cast<uint8_t>(get_value(12));
+        data->fourth.satellite_prn_number = get_value(12);
+        data->fourth.elevation = static_cast<uint8_t>(get_value(13));
+        data->fourth.azimuth = get_value(14);
+        data->fourth.snr = static_cast<uint8_t>(get_value(15));
       case 12:
         data->third.has_data = true;
-        data->third.satellite_prn_number = get_value(11);
-        data->third.elevation = static_cast<uint8_t>(get_value(10));
-        data->third.azimuth = get_value(9);
-        data->third.snr = static_cast<uint8_t>(get_value(8));
+        data->third.satellite_prn_number = get_value(8);
+        data->third.elevation = static_cast<uint8_t>(get_value(9));
+        data->third.azimuth = get_value(10);
+        data->third.snr = static_cast<uint8_t>(get_value(11));
       case 8:
         data->second.has_data = true;
-        data->second.satellite_prn_number = get_value(7);
-        data->second.elevation = static_cast<uint8_t>(get_value(6));
-        data->second.azimuth = get_value(5);
-        data->second.snr = static_cast<uint8_t>(get_value(4));
+        data->second.satellite_prn_number = get_value(4);
+        data->second.elevation = static_cast<uint8_t>(get_value(5));
+        data->second.azimuth = get_value(6);
+        data->second.snr = static_cast<uint8_t>(get_value(7));
       case 4:
         data->first.has_data = true;
-        data->first.satellite_prn_number = get_value(3);
-        data->first.elevation = static_cast<uint8_t>(get_value(2));
-        data->first.azimuth = get_value(1);
-        data->first.snr = static_cast<uint8_t>(get_value(0));
+        data->first.satellite_prn_number = get_value(0);
+        data->first.elevation = static_cast<uint8_t>(get_value(1));
+        data->first.azimuth = get_value(2);
+        data->first.snr = static_cast<uint8_t>(get_value(3));
       break;
       default: success = false; break;
     }

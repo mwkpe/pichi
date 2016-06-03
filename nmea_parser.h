@@ -7,7 +7,7 @@
    Important: This parser is not based on the official NMEA 0183 interface
               standard specification (sold by the NME Association). It makes
               no claims of being correct or complete. Not all sentence versions
-              may work.
+              may work. Missing values are simply set to zero.
 
    Usage: Sentences must begin with an $ and should end with *hh, though any
           additional characters (e.g. <CR><LF>) are ignored in all functions.
