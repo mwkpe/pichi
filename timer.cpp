@@ -15,7 +15,7 @@ bool Timer::st_init()
     return false;
   }
 
-  auto* m = ::mmap(nullptr, 4096, PROT_READ, MAP_SHARED, fd, ST_BASE_RPI_3);
+  auto* m = ::mmap(nullptr, 4096, PROT_READ, MAP_SHARED, fd, ST_BASE_RPI_2_AND_3);
   if (m == MAP_FAILED) {
     std::cerr << "System timer init error: Can't map memory." << std::endl;
     return false;
