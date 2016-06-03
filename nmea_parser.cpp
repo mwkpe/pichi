@@ -54,7 +54,6 @@ bool nmea::parse(const std::string& sentence, RmcData* data, uint8_t* checksum)
   using ascii::char_;
 
   // Custom parser
-  auto optional_float = float_ | attr(0.0f);
   auto uint8_2d = uint_parser<uint8_t, 10, 2, 2>{};
   auto int16_2d = int_parser<int16_t, 10, 2, 2>{};
   auto int16_3d = int_parser<int16_t, 10, 3, 3>{};
@@ -85,12 +84,12 @@ bool nmea::parse(const std::string& sentence, RmcData* data, uint8_t* checksum)
   &&
 
   phrase_parse(it, std::end(sentence),
-    int16_2d >> float_ >>         // Latitude (llll.l-l)
-    ',' >> char_("NS") >> ',' >>  // Direction (a)
-    int16_3d >> float_ >>         // Longitude (yyyyy.y-y)
-    ',' >> char_("EW") >> ',' >>  // Direction (a)
-    optional_float >> ',' >>      // Speed over ground (x.x)
-    optional_float >> ',',        // Course over ground (x.x)
+    int16_2d >> float_ >>            // Latitude (llll.l-l)
+    ',' >> char_("NS") >> ',' >>     // Direction (a)
+    int16_3d >> float_ >>            // Longitude (yyyyy.y-y)
+    ',' >> char_("EW") >> ',' >>     // Direction (a)
+    (float_ | attr(0.0f)) >> ',' >>  // Speed over ground (x.x)
+    (float_ | attr(0.0f)) >> ',',    // Course over ground (x.x)
     space,
     data->degrees_lat,
     data->minutes_lat,
@@ -106,7 +105,7 @@ bool nmea::parse(const std::string& sentence, RmcData* data, uint8_t* checksum)
 
   phrase_parse(it, std::end(sentence),
     uint8_2d >> uint8_2d >> uint8_2d >> ',' >>  // Date (ddmmyy)
-    optional_float >> ',' >>                    // Magnetic variation (x.x)
+    (float_ | attr(0.0f)) >> ',' >>             // Magnetic variation (x.x)
     (char_("EW") | attr('0')) >>                // Direction (a)
     -(',' >> char_("ADENSFR")) >>               // Mode indicator (a)
     '*' >> hex,                                 // Checksum indicator and checksum
@@ -151,8 +150,6 @@ bool nmea::parse(const std::string& sentence, GgaData* data, uint8_t* checksum)
 
   // Custom parser
   auto uchar_ = uint_parser<uint8_t>{};
-  auto optional_float = float_ | attr(0.0f);
-  auto optional_ushort = ushort_ | attr(0);
   auto uint8_2d = uint_parser<uint8_t, 10, 2, 2>{};
   auto int16_2d = int_parser<int16_t, 10, 2, 2>{};
   auto int16_3d = int_parser<int16_t, 10, 3, 3>{};
@@ -198,12 +195,12 @@ bool nmea::parse(const std::string& sentence, GgaData* data, uint8_t* checksum)
   &&
 
   phrase_parse(it, std::end(sentence),
-    float_ >> ',' >>                // Horizontal dilution of precision (x.x)
-    float_ >> ',' >> 'M' >> ',' >>  // Altitude (x.x,M)
-    float_ >> ',' >> 'M' >> ',' >>  // Geoidal separation (x.x,M)
-    optional_float >> ',' >>        // Age of differential GNSS data
-    optional_ushort >>              // Differential reference station ID
-    '*' >> hex,                     // Checksum indicator and checksum
+    float_ >> ',' >>                 // Horizontal dilution of precision (x.x)
+    float_ >> ',' >> 'M' >> ',' >>   // Altitude (x.x,M)
+    float_ >> ',' >> 'M' >> ',' >>   // Geoidal separation (x.x,M)
+    (float_ | attr(0.0f)) >> ',' >>  // Age of differential GNSS data
+    (ushort_ | attr(0)) >>           // Differential reference station ID
+    '*' >> hex,                      // Checksum indicator and checksum
     space,
     data->hor_dilution_of_precision,
     data->altitude,
@@ -231,6 +228,7 @@ bool nmea::parse(const std::string& sentence, GsvData* data, uint8_t* checksum)
   using ascii::space;
   using ascii::char_;
 
+  // Custom parser
   auto uchar_ = uint_parser<uint8_t>{};
 
   // Temporary variables
