@@ -10,9 +10,9 @@ test: nmea_parser.o nmea_parser_test.cpp
 	$(CXX) nmea_parser.o nmea_parser_test.cpp -o nmea_parser_test
 
 
-pipoint: main.o ui.o ui_impl.o gnss_transceiver.o nmea_parser.o timer.o
+pipoint: main.o ui.o ui_impl.o gnss_transceiver.o nmea_parser.o timer.o configuration.o
 	$(CXX) $(CXXFLAGSFLTK) main.o ui.o ui_impl.o gnss_transceiver.o \
-nmea_parser.o timer.o -o pipoint $(LINKFLTK)
+nmea_parser.o timer.o configuration.o -o pipoint $(LINKFLTK)
 	strip pipoint
 
 main.o: main.cpp gnss_transceiver.h ui.h
@@ -21,10 +21,10 @@ main.o: main.cpp gnss_transceiver.h ui.h
 ui.o: ui.cpp
 	$(CXX) -c $(CXXFLAGSFLTK) ui.cpp
 
-ui_impl.o: ui_impl.cpp
+ui_impl.o: ui_impl.cpp gnss_transceiver.h configuration.h
 	$(CXX) -c $(CXXFLAGSFLTK) ui_impl.cpp
 
-gnss_transceiver.o: gnss_transceiver.cpp gnss_transceiver.h timer.h
+gnss_transceiver.o: gnss_transceiver.cpp gnss_transceiver.h nmea_parser.h timer.h configuration.h
 	$(CXX) -c gnss_transceiver.cpp
 
 nmea_parser.o: nmea_parser.cpp nmea_parser.h
@@ -32,6 +32,9 @@ nmea_parser.o: nmea_parser.cpp nmea_parser.h
 
 timer.o: timer.cpp timer.h
 	$(CXX) -c timer.cpp
+
+configuration.o: configuration.cpp configuration.h
+	$(CXX) -c configuration.cpp
 
 
 clean:
