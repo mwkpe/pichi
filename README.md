@@ -21,7 +21,7 @@ Note: For whatever reason installing FLTK doesn't seem to grab all the required 
 /usr/bin/ld: cannot find -lfontconfig
 /usr/bin/ld: cannot find -lXinerama
 ```
-Fix this by installing `libxft-dev`, `libfontconfig1-dev` and `libxinerama-dev`.
+This can be fixed by manually installing `libxft-dev`, `libfontconfig1-dev` and `libxinerama-dev`.
 
 Running the program
 ---
