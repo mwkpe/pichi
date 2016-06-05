@@ -51,16 +51,33 @@ Ui::Ui(gnss::Transceiver* t) {
     } // Fl_Group* o
     { Fl_Tabs* o = new Fl_Tabs(6, 38, 488, 224);
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Device");
+        o->hide();
         { text_device_id = new Fl_Input(12, 66, 160, 24, "Device ID");
           text_device_id->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_device_id
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "GNSS");
-        o->hide();
         { text_gnss_port = new Fl_Input(12, 66, 160, 24, "Port (Device sending NMEA sentences)");
           text_gnss_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port
+        { Fl_Box* o = new Fl_Box(12, 112, 474, 98, "NMEA sentence filter");
+          o->box(FL_DOWN_BOX);
+          o->align(Fl_Align(FL_ALIGN_TOP_LEFT));
+        } // Fl_Box* o
+        { check_rmc = new Fl_Check_Button(18, 120, 460, 16, "RMC (Recommended minimum data)");
+          check_rmc->down_box(FL_DOWN_BOX);
+          check_rmc->value(1);
+        } // Fl_Check_Button* check_rmc
+        { check_gga = new Fl_Check_Button(18, 142, 460, 16, "GGA (Global positioning system fix data)");
+          check_gga->down_box(FL_DOWN_BOX);
+        } // Fl_Check_Button* check_gga
+        { check_gsv = new Fl_Check_Button(18, 164, 460, 16, "GSV (Satellites in view)");
+          check_gsv->down_box(FL_DOWN_BOX);
+        } // Fl_Check_Button* check_gsv
+        { check_other = new Fl_Check_Button(18, 186, 460, 16, "Other (When logging sentences)");
+          check_other->down_box(FL_DOWN_BOX);
+        } // Fl_Check_Button* check_other
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Transmit");

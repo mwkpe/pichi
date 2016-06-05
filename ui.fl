@@ -18,7 +18,7 @@ class Ui {open
       label PiPoint open
       private xywh {117 194 500 300} type Double visible
     } {
-      Fl_Group {} {open
+      Fl_Group {} {
         xywh {0 0 500 38}
       } {
         Fl_Light_Button button_start {
@@ -51,12 +51,12 @@ class Ui {open
           xywh {358 6 136 24} box FLAT_BOX textfont 13
         }
       }
-      Fl_Tabs {} {
+      Fl_Tabs {} {open
         xywh {6 38 488 224}
       } {
         Fl_Group {} {
-          label Device selected
-          xywh {6 60 488 202}
+          label Device
+          xywh {6 60 488 202} hide
         } {
           Fl_Input text_device_id {
             label {Device ID}
@@ -64,12 +64,32 @@ class Ui {open
           }
         }
         Fl_Group {} {
-          label GNSS
-          xywh {6 60 488 202} hide
+          label GNSS open
+          xywh {6 60 488 202}
         } {
           Fl_Input text_gnss_port {
             label {Port (Device sending NMEA sentences)}
             private xywh {12 66 160 24} align 8
+          }
+          Fl_Box {} {
+            label {NMEA sentence filter}
+            xywh {12 112 474 98} box DOWN_BOX align 5
+          }
+          Fl_Check_Button check_rmc {
+            label {RMC (Recommended minimum data)} selected
+            xywh {18 120 460 16} down_box DOWN_BOX value 1
+          }
+          Fl_Check_Button check_gga {
+            label {GGA (Global positioning system fix data)}
+            xywh {18 142 460 16} down_box DOWN_BOX
+          }
+          Fl_Check_Button check_gsv {
+            label {GSV (Satellites in view)}
+            xywh {18 164 460 16} down_box DOWN_BOX
+          }
+          Fl_Check_Button check_other {
+            label {Other (When logging sentences)}
+            xywh {18 186 460 16} down_box DOWN_BOX
           }
         }
         Fl_Group {} {

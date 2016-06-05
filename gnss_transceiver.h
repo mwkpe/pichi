@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <string>
 #include <queue>
+#include <unordered_map>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
@@ -19,14 +20,9 @@
 
 #include <asio.hpp>
 
+#include "configuration.h"
 #include "timer.h"
-
-
-namespace nmea {
-  struct RmcData;
-  struct GgaData;
-  struct GsvData;
-}
+#include "nmea_parser.h"
 
 
 namespace gnss {
@@ -46,30 +42,6 @@ struct PacketHeader
   uint64_t transmit_time;
   uint32_t transmit_system_delay;
   uint16_t device_id;
-};
-
-
-class Configuration
-{
-public:
-  Configuration() = default;
-  explicit Configuration(const std::string& filename);
-  void save_to_file() const;
-
-  uint16_t device_id{1};
-
-  std::string trans_ip{"192.168.0.1"};
-  uint16_t trans_port{30001};
-
-  std::string recv_ip{"192.168.0.2"};
-  uint16_t recv_port{30001};
-
-  std::string gnss_port{"/dev/ttyS0"};
-
-  bool log_recv{true};
-
-private:
-  std::string filename_{};
 };
 
 
@@ -105,19 +77,24 @@ private:
   void log_nmea_sentences(const std::string& logfilename);
   void log_gnss_data(const std::string& logfilename);
 
+  // Helper
+  std::vector<std::tuple<nmea::SentenceType, std::string>>
+  filter(std::vector<std::string>&& sentences);
+
   // Timing
   uint64_t current_time() const;  // Synchronized reference time
   uint64_t current_systime() const;  // Microsecond system timer
   uint32_t current_ticks() const;  // CPU ticks
 
   // Logging
-  template<typename T> void write_gnss_read(std::ofstream& fs, const T* data,
-      uint64_t receive_time, uint64_t system_delay) const;
-  template<typename T> void write_gnss_recv(std::ofstream& fs, const PacketHeader* header,
-      const T* data, uint64_t receive_time) const;
+  template<typename T> void write_gnss_read(std::ofstream& fs,
+      const T* data, uint64_t receive_time, uint64_t system_delay) const;
+  template<typename T> void write_gnss_recv(std::ofstream& fs,
+      const PacketHeader* header, const T* data, uint64_t receive_time) const;
   void write_gnss_data(std::ofstream& fs, const nmea::RmcData* data) const;
   void write_gnss_data(std::ofstream& fs, const nmea::GgaData* data) const;
 
+  // Member
   Configuration conf_{};
   Timer timer;
 
@@ -129,7 +106,8 @@ private:
   std::mutex data_mutex_;
 
   // Data
-  std::queue<std::tuple<uint64_t, uint64_t, std::string>> nmea_sentences_;
+  using sentence_tuple = std::tuple<uint64_t, uint64_t, nmea::SentenceType, std::string>;
+  std::queue<sentence_tuple> nmea_sentences_;
 
   // A counter for transmitted, received or logged packets
   std::atomic<uint64_t> activity_counter_{0};
@@ -157,12 +135,15 @@ template<typename T> void gnss::Transceiver::write_gnss_recv(
     const T* data,
     uint64_t receive_time) const
 {
+  auto transmit_delay = receive_time - header->transmit_time;
+  
   fs << header->data_type << ','
      << receive_time << ','
      << header->transmit_time << ','
+     << transmit_delay << ','
      << header->transmit_system_delay << ','
-     << header->device_id << ','
-     << header->transmit_counter << ',';
+     << header->transmit_counter << ','
+     << header->device_id << ',';
 
   write_gnss_data(fs, data);
 

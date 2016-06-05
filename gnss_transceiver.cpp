@@ -7,75 +7,12 @@
 #include <fstream>
 #include <vector>
 #include <deque>
-#include <regex>
 #include <chrono>
 #include <thread>
 
 #include <asio.hpp>
 
 #include "nmea_parser.h"
-
-
-gnss::Configuration::Configuration(const std::string& filename) : filename_(filename)
-{
-  std::ifstream fs{filename};
-  std::string cfg;
-
-  if (fs.is_open()) {
-    std::stringstream ss;
-    ss << fs.rdbuf();
-    cfg = ss.str();
-    fs.close();
-  }
-
-  if (!cfg.empty()) {
-    auto read_cfg = [&cfg](const std::regex& rx) -> std::string {
-      std::smatch match;
-      std::regex_search(cfg, match, rx);
-      if (match.size() == 2)
-        return match[1].str();
-      return std::string();
-    };
-
-    try {
-      device_id = std::stoul(read_cfg(std::regex{R"(device_id=([0-9]+))"}));
-      gnss_port = read_cfg(std::regex{R"(gnss_port=([a-zA-Z0-9-_\/]+))"});
-      trans_ip = read_cfg(std::regex{R"(trans_ip=([0-9a-fA-F\.\:]+))"});
-      trans_port = std::stoul(read_cfg(std::regex{R"(trans_port=([0-9]+))"}));
-      recv_ip = read_cfg(std::regex{R"(recv_ip=([0-9a-fA-F\.\:]+))"});
-      recv_port = std::stoul(read_cfg(std::regex{R"(recv_port=([0-9]+))"}));
-      log_recv = read_cfg(std::regex{R"(log_recv=(true|false))"}) == "true";
-    }
-    catch (const std::invalid_argument& e) {
-      std::cerr << "Error loading config: " << e.what() << "\nUsing default values." << std::endl;
-      *this = Configuration{};
-    }
-    catch (const std::out_of_range& e) {
-      std::cerr << "Error loading config: " << e.what() << "\nUsing default values." << std::endl;
-      *this = Configuration{};
-    }
-  }
-}
-
-
-void gnss::Configuration::save_to_file() const
-{
-  std::ofstream fs{filename_};
-  if (fs.is_open()) {
-    fs << "# Device\n"
-       << "device_id=" << device_id << '\n'
-       << "\n# GNSS\n"
-       << "gnss_port=" << gnss_port << '\n'
-       << "\n# Transmitter\n"
-       << "trans_ip=" << trans_ip << '\n'
-       << "trans_port=" << trans_port << '\n'
-       << "\n# Receiver\n"
-       << "recv_ip=" << recv_ip << '\n'
-       << "recv_port=" << recv_port << '\n'
-       << "\n# Logging\n"
-       << "log_recv=" << std::boolalpha << log_recv;
-  }
-}
 
 
 gnss::Transceiver::Transceiver(Configuration&& conf) : conf_(std::move(conf))
@@ -204,9 +141,10 @@ void gnss::Transceiver::read_nmea_sentences()
 
       // Push data and notifiy other threads
       if (!sentences.empty()) {
+        auto filtered_sentences = filter(std::move(sentences));
         std::lock_guard<std::mutex> lk(data_mutex_);
-        for (auto& s : sentences) {
-          nmea_sentences_.emplace(recv_st, recv_time, s);
+        for (auto& t : filtered_sentences) {
+          nmea_sentences_.emplace(recv_st, recv_time, std::get<0>(t), std::move(std::get<1>(t)));
         }
         data_cond_.notify_one();
       }
@@ -312,11 +250,13 @@ void gnss::Transceiver::transmit_gnss_packets()
       lk.unlock();
       while (!sentences.empty()) {
         int64_t recv_st;
+        nmea::SentenceType type;
         std::string s;
-        std::tie(recv_st, std::ignore, s) = std::move(sentences.front());
+        std::tie(recv_st, std::ignore, type, s) = std::move(sentences.front());
         sentences.pop();
         uint8_t crc;
-        if (nmea::parse(s, data, &crc) && nmea::comp_checksum(s, crc)) {
+        if (type == nmea::SentenceType::Rmc &&
+            nmea::parse(s, data, &crc) && nmea::comp_checksum(s, crc)) {
           header->transmit_counter++;
           header->transmit_time = current_time();
           header->transmit_system_delay = static_cast<uint32_t>(current_systime() - recv_st);
@@ -352,10 +292,9 @@ void gnss::Transceiver::log_nmea_sentences(const std::string& logfilename)
       std::swap(nmea_sentences_, sentences);
       lk.unlock();
       while (!sentences.empty()) {
-        std::string s;
-        std::tie(std::ignore, std::ignore, s) = std::move(sentences.front());
+        auto t = std::move(sentences.front());
         sentences.pop();
-        logfile << s << '\n';
+        logfile << std::get<3>(t) << '\n';
         activity_counter_.store(++sentence_counter);
       }
     }
@@ -387,10 +326,11 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
       while (!sentences.empty()) {
         uint64_t recv_time;
         uint64_t recv_st;
+        nmea::SentenceType type;
         std::string s;
-        std::tie(recv_st, recv_time, s) = std::move(sentences.front());
+        std::tie(recv_st, recv_time, type, s) = std::move(sentences.front());
         sentences.pop();
-        switch (nmea::sentence_type(s)) {
+        switch (type) {
           case nmea::SentenceType::Rmc: {
             bool success = false;
             nmea::RmcData data;
@@ -421,6 +361,24 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
   }
 
   activity_counter_.store(0);
+}
+
+
+std::vector<std::tuple<nmea::SentenceType, std::string>>
+gnss::Transceiver::filter(std::vector<std::string>&& sentences)
+{
+  std::vector<std::tuple<nmea::SentenceType, std::string>> filtered_sentences;
+
+  for (auto& s : sentences) {
+    auto type = nmea::sentence_type(s);
+    if ((type == nmea::SentenceType::Rmc && conf_.use_msg_rmc) ||
+        (type == nmea::SentenceType::Gga && conf_.use_msg_gga) ||
+        (type == nmea::SentenceType::Gsv && conf_.use_msg_gsv) ||
+        (type == nmea::SentenceType::Unknown && conf_.use_msg_other))
+      filtered_sentences.emplace_back(type, std::move(s));
+  }
+
+  return filtered_sentences;
 }
 
 

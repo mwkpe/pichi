@@ -11,6 +11,8 @@ namespace gnss { class Transceiver; };
 #include <FL/Fl_Output.H>
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Button.H>
 
 class Ui {
@@ -29,6 +31,12 @@ public:
 private:
   Fl_Input *text_device_id;
   Fl_Input *text_gnss_port;
+public:
+  Fl_Check_Button *check_rmc;
+  Fl_Check_Button *check_gga;
+  Fl_Check_Button *check_gsv;
+  Fl_Check_Button *check_other;
+private:
   Fl_Input *text_trans_ip;
   Fl_Input *text_trans_port;
   Fl_Input *text_recv_ip;

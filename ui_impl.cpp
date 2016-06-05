@@ -7,16 +7,21 @@
 
 #include <FL/Fl.H>
 
+#include "configuration.h"
 #include "gnss_transceiver.h"
 #include "ui.h"
 
 
 void Ui::apply_settings()
 {
-  gnss::Configuration conf{transceiver_->config()};
+  Configuration conf{transceiver_->config()};
   try {
     conf.device_id = std::stoul(text_device_id->value());
     conf.gnss_port = text_gnss_port->value();
+    conf.use_msg_rmc = check_rmc->value();
+    conf.use_msg_gga = check_gga->value();
+    conf.use_msg_gsv = check_gsv->value();
+    conf.use_msg_other = check_other->value();
     conf.trans_ip = text_trans_ip->value();
     conf.trans_port = std::stoul(text_trans_port->value());
     conf.recv_ip = text_recv_ip->value();
@@ -39,6 +44,10 @@ void Ui::load_settings()
   auto& conf = transceiver_->config();
   text_device_id->value(std::to_string(conf.device_id).c_str());
   text_gnss_port->value(conf.gnss_port.c_str());
+  check_rmc->value(conf.use_msg_rmc);
+  check_gga->value(conf.use_msg_gga);
+  check_gsv->value(conf.use_msg_gsv);
+  check_other->value(conf.use_msg_other);
   text_trans_ip->value(conf.trans_ip.c_str());
   text_trans_port->value(std::to_string(conf.trans_port).c_str());
   text_recv_ip->value(conf.recv_ip.c_str());
