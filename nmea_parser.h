@@ -7,7 +7,7 @@
    Important: This parser is not based on the official NMEA 0183 interface
               standard specification (sold by the NME Association). It makes
               no claims of being correct or complete. Not all sentence versions
-              may work. Missing values are simply set to zero.
+              may work. Missing parts are simply set to 0 or '0'.
 
    Usage: Sentences must begin with an $ and should end with *hh, though any
           additional characters (e.g. <CR><LF>) are ignored in all functions.
@@ -27,7 +27,7 @@ enum class SentenceType { Unknown, Rmc, Gga, Gsv };
 SentenceType sentence_type(const std::string& sentence);
 
 
-// Recommended minimum specific GPS/Transit data
+// Recommended minimum data
 struct RmcData
 {
   char talker_id;
@@ -79,7 +79,7 @@ struct GgaData
 bool parse(const std::string& sentence, GgaData* data, uint8_t* checksum);
 
 
-// GPS Satellites in view
+// Satellites in view
 struct Satellite
 {
   bool has_data;
