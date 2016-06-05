@@ -1,7 +1,13 @@
 # PiPoint
 A GNSS location transceiver for the Raspberry Pi
 
-A small program for reading NMEA sentences from a GNSS receiver. The data can be logged, or transmitted and received via UDP, basically turning the Rasperry Pi into an GPS tag.
+A small program for reading NMEA sentences from a GNSS receiver. The data can be logged, or transmitted and received via UDP, basically turning the Rasperry Pi into a GPS tag.
+
+Requirements
+---
+A Raspberry Pi or similar device – except for the [system timer](/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 GNSS Receiver (u-blox-8).
+
+Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences.
 
 Development setup
 ---
@@ -25,7 +31,7 @@ This can be fixed by manually installing `libxft-dev`, `libfontconfig1-dev` and 
 
 Running the program
 ---
-Start the program with `sudo ./pipoint`. Sudo is necessary for accessing to the memory location of the the Raspberry Pi's 1MHz [system timer](/timer.cpp). The program works without sudo but all values relying to the system timer (e.g. system delay) will then be zero.
+Start the program with `sudo ./pipoint`. Using sudo is necessary for accessing to the memory location of the the Raspberry Pi's 1MHz [system timer](/timer.cpp). The program works without sudo but all values relying to the system timer (e.g. system delay) will then be zero.
 
 The test of the NMEA parser can be run with `./nmea_parser_test`.
 
