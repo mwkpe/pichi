@@ -9,6 +9,8 @@
 #include <deque>
 #include <chrono>
 #include <thread>
+#include <algorithm>
+#include <cstdlib>
 
 #include <asio.hpp>
 
@@ -126,6 +128,9 @@ void gnss::Transceiver::read_nmea_sentences()
     auto recv_time = current_time();
 
     if (recv_bytes > 0) {
+      // Prevent crash due to spirit isascii assert when garbage was received
+      replace_nonascii(gsl::as_span(recv_buffer), '0');
+
       // Look for sentences in the buffer
       std::vector<std::string> sentences;
       auto pos = std::begin(recv_buffer);
@@ -141,7 +146,7 @@ void gnss::Transceiver::read_nmea_sentences()
 
       // Push data and notifiy other threads
       if (!sentences.empty()) {
-        auto filtered_sentences = filter(std::move(sentences));
+        auto filtered_sentences = filter(std::move(sentences), conf_);
         std::lock_guard<std::mutex> lk(data_mutex_);
         for (auto& t : filtered_sentences) {
           nmea_sentences_.emplace(recv_st, recv_time, std::get<0>(t), std::move(std::get<1>(t)));
@@ -364,24 +369,6 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
 }
 
 
-std::vector<std::tuple<nmea::SentenceType, std::string>>
-gnss::Transceiver::filter(std::vector<std::string>&& sentences)
-{
-  std::vector<std::tuple<nmea::SentenceType, std::string>> filtered_sentences;
-
-  for (auto& s : sentences) {
-    auto type = nmea::sentence_type(s);
-    if ((type == nmea::SentenceType::Rmc && conf_.use_msg_rmc) ||
-        (type == nmea::SentenceType::Gga && conf_.use_msg_gga) ||
-        (type == nmea::SentenceType::Gsv && conf_.use_msg_gsv) ||
-        (type == nmea::SentenceType::Unknown && conf_.use_msg_other))
-      filtered_sentences.emplace_back(type, std::move(s));
-  }
-
-  return filtered_sentences;
-}
-
-
 uint64_t gnss::Transceiver::current_time() const
 {
   // TODO: Needs to be synchronized time with receiver device / GPS
@@ -446,4 +433,35 @@ void gnss::Transceiver::write_gnss_data(std::ofstream& fs, const nmea::GgaData* 
      << data->geoidal_separation << ','
      << data->age_of_dgps_data << ','
      << data->reference_station_id;
+}
+
+
+std::vector<std::tuple<nmea::SentenceType, std::string>>
+gnss::filter(std::vector<std::string>&& sentences, const Configuration& conf)
+{
+  std::vector<std::tuple<nmea::SentenceType, std::string>> filtered_sentences;
+
+  for (auto& s : sentences) {
+    auto type = nmea::sentence_type(s);
+    if ((type == nmea::SentenceType::Rmc && conf.use_msg_rmc) ||
+        (type == nmea::SentenceType::Gga && conf.use_msg_gga) ||
+        (type == nmea::SentenceType::Gsv && conf.use_msg_gsv) ||
+        (type == nmea::SentenceType::Unknown && conf.use_msg_other))
+      filtered_sentences.emplace_back(type, std::move(s));
+  }
+
+  return filtered_sentences;
+}
+
+
+void gnss::replace_nonascii(gsl::span<char> s, char c)
+{
+  // ARM char is unsigned by default
+  #ifdef __arm__
+    std::replace_if(std::begin(s), std::end(s),
+        std::bind(std::greater<char>(), std::placeholders::_1, 127), c);
+  #else
+    std::replace_if(std::begin(s), std::end(s),
+        std::bind(std::less<char>(), std::placeholders::_1, 0), c);
+  #endif
 }

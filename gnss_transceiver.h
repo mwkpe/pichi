@@ -18,6 +18,8 @@
 #include <condition_variable>
 #include <fstream>
 
+#include "gsl-lite.h"
+
 #include <asio.hpp>
 
 #include "configuration.h"
@@ -77,10 +79,6 @@ private:
   void log_nmea_sentences(const std::string& logfilename);
   void log_gnss_data(const std::string& logfilename);
 
-  // Helper
-  std::vector<std::tuple<nmea::SentenceType, std::string>>
-  filter(std::vector<std::string>&& sentences);
-
   // Timing
   uint64_t current_time() const;  // Synchronized reference time
   uint64_t current_systime() const;  // Microsecond system timer
@@ -135,7 +133,8 @@ template<typename T> void gnss::Transceiver::write_gnss_recv(
     const T* data,
     uint64_t receive_time) const
 {
-  auto transmit_delay = receive_time - header->transmit_time;
+  // Negative delay instead of an overflow when receive < transmit
+  int64_t transmit_delay = receive_time - header->transmit_time;
   
   fs << header->data_type << ','
      << receive_time << ','
@@ -149,6 +148,12 @@ template<typename T> void gnss::Transceiver::write_gnss_recv(
 
   fs << '\n';
 }
+
+
+// Helper
+std::vector<std::tuple<nmea::SentenceType, std::string>>
+    filter(std::vector<std::string>&& sentences, const Configuration& conf);
+void replace_nonascii(gsl::span<char> s, char c);
 
 
 }  // gnss
