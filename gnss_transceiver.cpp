@@ -190,6 +190,7 @@ void gnss::Transceiver::receive_gnss_packets(const std::string& logfilename)
   }
 
   uint64_t packet_counter = 0;
+
   while (active_.load()) {
     std::array<char, 512> recv_buffer{};
     // Blocks until receive or error
@@ -197,22 +198,39 @@ void gnss::Transceiver::receive_gnss_packets(const std::string& logfilename)
     if (received_bytes > sizeof(PacketHeader)) {
       uint64_t receive_time = current_time();
       auto* header = reinterpret_cast<PacketHeader*>(recv_buffer.data());
+      
       switch (static_cast<PacketType>(header->data_type)) {
         case PacketType::GxRmc: {
           if (received_bytes >= sizeof(PacketHeader) + sizeof(nmea::RmcData) &&
               header->data_length == sizeof(nmea::RmcData)) {
             auto* data = reinterpret_cast<nmea::RmcData*>(recv_buffer.data() +
                                                           sizeof(PacketHeader));
-            activity_counter_.store(++packet_counter);
             if (logfile.is_open()) {
               write_gnss_recv(logfile, header, data, receive_time);
             }
+            packet_counter++;
           }
         }
         break;
+
+        case PacketType::GxGga: {
+          if (received_bytes >= sizeof(PacketHeader) + sizeof(nmea::GgaData) &&
+              header->data_length == sizeof(nmea::GgaData)) {
+            auto* data = reinterpret_cast<nmea::GgaData*>(recv_buffer.data() +
+                                                          sizeof(PacketHeader));
+            if (logfile.is_open()) {
+              write_gnss_recv(logfile, header, data, receive_time);
+            }
+            packet_counter++;
+          }
+        }
+        break;
+
         default:
         break;
       }
+
+      activity_counter_.store(packet_counter);
     }
   }
 
@@ -238,12 +256,21 @@ void gnss::Transceiver::transmit_gnss_packets()
     return;
   }
 
-  char send_buffer[sizeof(PacketHeader) + sizeof(nmea::RmcData)] = {0};
-  auto* header = reinterpret_cast<PacketHeader*>(send_buffer);
-  header->data_type = static_cast<uint16_t>(PacketType::GxRmc);
-  header->data_length = sizeof(nmea::RmcData);
-  header->device_id = conf_.device_id;
-  auto* data = reinterpret_cast<nmea::RmcData*>(send_buffer + sizeof(PacketHeader));
+  uint64_t packet_counter = 0;
+
+  char rmc_buffer[sizeof(PacketHeader) + sizeof(nmea::RmcData)] = {0};
+  auto* rmc_header = reinterpret_cast<PacketHeader*>(rmc_buffer);
+  rmc_header->data_type = static_cast<uint16_t>(PacketType::GxRmc);
+  rmc_header->data_length = sizeof(nmea::RmcData);
+  rmc_header->device_id = conf_.device_id;
+  auto* rmc_data = reinterpret_cast<nmea::RmcData*>(rmc_buffer + sizeof(PacketHeader));
+
+  char gga_buffer[sizeof(PacketHeader) + sizeof(nmea::GgaData)] = {0};
+  auto* gga_header = reinterpret_cast<PacketHeader*>(gga_buffer);
+  gga_header->data_type = static_cast<uint16_t>(PacketType::GxGga);
+  gga_header->data_length = sizeof(nmea::GgaData);
+  gga_header->device_id = conf_.device_id;
+  auto* gga_data = reinterpret_cast<nmea::GgaData*>(gga_buffer + sizeof(PacketHeader));
 
   while (active_.load()) {
     std::unique_lock<std::mutex> lk{data_mutex_};
@@ -260,15 +287,35 @@ void gnss::Transceiver::transmit_gnss_packets()
         std::tie(recv_st, std::ignore, type, s) = std::move(sentences.front());
         sentences.pop();
         uint8_t crc;
-        if (type == nmea::SentenceType::Rmc &&
-            nmea::parse(s, data, &crc) && nmea::comp_checksum(s, crc)) {
-          header->transmit_counter++;
-          header->transmit_time = current_time();
-          header->transmit_system_delay = static_cast<uint32_t>(current_systime() - recv_st);
-          socket.send_to(asio::buffer(send_buffer), receiver_ep);
-          activity_counter_.store(header->transmit_counter);
+        switch (type) {
+          case nmea::SentenceType::Rmc: {
+            if (nmea::parse(s, rmc_data, &crc) && nmea::comp_checksum(s, crc)) {
+              rmc_header->transmit_counter++;
+              rmc_header->transmit_time = current_time();
+              rmc_header->transmit_system_delay = static_cast<uint32_t>(current_systime() - recv_st);
+              socket.send_to(asio::buffer(rmc_buffer), receiver_ep);
+              packet_counter++;
+            }
+          }
+          break;
+
+          case nmea::SentenceType::Gga: {
+            if (nmea::parse(s, gga_data, &crc) && nmea::comp_checksum(s, crc)) {
+              gga_header->transmit_counter++;
+              gga_header->transmit_time = current_time();
+              gga_header->transmit_system_delay = static_cast<uint32_t>(current_systime() - recv_st);
+              socket.send_to(asio::buffer(gga_buffer), receiver_ep);
+              packet_counter++;
+            }
+          }
+          break;
+
+          default:
+          break;
         }
       }
+
+      activity_counter_.store(packet_counter);
     }
   }
 
