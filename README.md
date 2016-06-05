@@ -1,7 +1,7 @@
 # PiPoint
 A GNSS location transceiver for the Raspberry Pi
 
-A small program for reading NMEA sentences from a GNSS receiver. The data can be logged or transmitted and received via UDP.
+A small program for reading NMEA sentences from a GNSS receiver. The data can be logged, or transmitted and received via UDP, basically turning the Rasperry Pi into an GPS tag.
 
 Development setup
 ---
@@ -31,4 +31,4 @@ The test of the NMEA parser can be run with `./nmea_parser_test`.
 
 Acknowledgements
 ---
-PiPoint is using [FLTK](http://www.fltk.org) for the GUI and [doctest](https://github.com/onqtam/doctest) for testing.
+PiPoint is using [FLTK](http://www.fltk.org) for the GUI, [doctest](https://github.com/onqtam/doctest) for testing, and [GSL Lite](https://github.com/martinmoene/gsl-lite).
