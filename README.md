@@ -1,4 +1,9 @@
 # PiPoint
+[![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
+[![Standard](https://img.shields.io/badge/C%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![GUI](https://img.shields.io/badge/GUI-FLTK-blue.svg)](http://www.fltk.org/)
+[![System](https://img.shields.io/badge/System-Raspberry%20Pi-red.svg)](https://www.raspberrypi.org/)
+
 A GNSS location transceiver for the Raspberry Pi
 
 A small program for reading NMEA sentences from a GNSS receiver. The data can be logged, or transmitted and received via UDP, basically turning the Rasperry Pi into a GPS tag.
