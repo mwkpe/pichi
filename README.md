@@ -1,16 +1,19 @@
 # PiPoint
+[![Status](https://img.shields.io/badge/Status-WIP-yellow.svg)](https://www.raspberrypi.org/)
+[![System](https://img.shields.io/badge/System-Raspberry%20Pi-bc1142.svg)](https://www.raspberrypi.org/)
 [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
 [![Standard](https://img.shields.io/badge/C%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![I/O](https://img.shields.io/badge/I%2FO-Asio-blue.svg)](http://think-async.com/)
 [![GUI](https://img.shields.io/badge/GUI-FLTK-blue.svg)](http://www.fltk.org/)
-[![System](https://img.shields.io/badge/System-Raspberry%20Pi-red.svg)](https://www.raspberrypi.org/)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
-A GNSS location transceiver for the Raspberry Pi
+A GNSS location logger / transceiver for the Raspberry Pi
 
 A small program for reading NMEA sentences from a GNSS receiver. The data can be logged, or transmitted and received via UDP, basically turning the Rasperry Pi into a GPS tag.
 
 Requirements
 ---
-A Raspberry Pi or similar device – except for the [system timer](/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 GNSS Receiver (u-blox-8).
+A Raspberry Pi or similar device – except for the [system timer](/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
 
 Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences.
 
