@@ -390,7 +390,7 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
             std::tie(success, data, crc) = nmea::parse<nmea::RmcData>(s);
             if (success && nmea::comp_checksum(s, crc)) {
               write_gnss_read(logfile, &data, recv_time, current_systime() - recv_st);
-              activity_counter_.store(++data_counter);
+              data_counter++;
             }
           }
           break;
@@ -401,7 +401,7 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
             std::tie(success, data, crc) = nmea::parse<nmea::GgaData>(s);
             if (success && nmea::comp_checksum(s, crc)) {
               write_gnss_read(logfile, &data, recv_time, current_systime() - recv_st);
-              activity_counter_.store(++data_counter);
+              data_counter++;
             }
           }
           break;
@@ -409,6 +409,8 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
           break;
         }
       }
+
+      activity_counter_.store(data_counter);
     }
   }
 
