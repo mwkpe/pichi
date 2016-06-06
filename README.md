@@ -37,4 +37,4 @@ The test of the NMEA parser can be run with `./nmea_parser_test`.
 
 Acknowledgements
 ---
-PiPoint is using [FLTK](http://www.fltk.org) for the GUI, [doctest](https://github.com/onqtam/doctest) for testing, and [GSL Lite](https://github.com/martinmoene/gsl-lite).
+PiPoint is using [FLTK](http://www.fltk.org) for the GUI, [Asio](http://think-async.com/) for network and serial I/O, [doctest](https://github.com/onqtam/doctest) for testing, and [GSL Lite](https://github.com/martinmoene/gsl-lite).
