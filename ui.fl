@@ -16,7 +16,7 @@ class Ui {open
     code {last_count_ = 0;} {}
     Fl_Window main_window {
       label PiPoint open
-      private xywh {117 194 500 300} type Double visible
+      private xywh {65 514 500 300} type Double visible
     } {
       Fl_Group {} {
         xywh {0 0 500 38}
@@ -56,7 +56,7 @@ class Ui {open
       } {
         Fl_Group {} {
           label Device
-          xywh {6 60 488 202} hide
+          xywh {6 60 488 202}
         } {
           Fl_Input text_device_id {
             label {Device ID}
@@ -64,8 +64,22 @@ class Ui {open
           }
         }
         Fl_Group {} {
-          label GNSS open
-          xywh {6 60 488 202}
+          label Time open
+          xywh {6 60 488 202} hide
+        } {
+          Fl_Button button_sync_time {
+            label {Sync Time}
+            callback {button_sync_time_clicked()}
+            private xywh {12 66 90 26}
+          }
+          Fl_Box {} {
+            label {Synchronize time via NTP}
+            xywh {106 66 382 26} align 20
+          }
+        }
+        Fl_Group {} {
+          label GNSS
+          xywh {6 60 488 202} hide
         } {
           Fl_Input text_gnss_port {
             label {Port (Device sending NMEA sentences)}
@@ -76,7 +90,7 @@ class Ui {open
             xywh {12 112 474 98} box DOWN_BOX align 5
           }
           Fl_Check_Button check_rmc {
-            label {RMC (Recommended minimum data)} selected
+            label {RMC (Recommended minimum data)}
             xywh {18 120 460 16} down_box DOWN_BOX value 1
           }
           Fl_Check_Button check_gga {
@@ -123,7 +137,7 @@ class Ui {open
           xywh {6 60 488 202} hide
         } {}
       }
-      Fl_Group {} {
+      Fl_Group {} {open
         xywh {6 262 488 38}
       } {
         Fl_Button button_apply {
@@ -150,6 +164,8 @@ class Ui {open
   Function {button_start_clicked()} {private return_type void
   } {}
   Function {button_apply_clicked()} {private return_type void
+  } {}
+  Function {button_sync_time_clicked()} {open selected private return_type void
   } {}
   decl {gnss::Transceiver* transceiver_;} {private local
   }

@@ -11,9 +11,9 @@ namespace gnss { class Transceiver; };
 #include <FL/Fl_Output.H>
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Input.H>
+#include <FL/Fl_Button.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Check_Button.H>
-#include <FL/Fl_Button.H>
 
 class Ui {
 public:
@@ -30,6 +30,9 @@ public:
   Fl_Output *text_total;
 private:
   Fl_Input *text_device_id;
+  Fl_Button *button_sync_time;
+  inline void cb_button_sync_time_i(Fl_Button*, void*);
+  static void cb_button_sync_time(Fl_Button*, void*);
   Fl_Input *text_gnss_port;
 public:
   Fl_Check_Button *check_rmc;
@@ -55,6 +58,7 @@ private:
   void load_settings();
   void button_start_clicked();
   void button_apply_clicked();
+  void button_sync_time_clicked();
   gnss::Transceiver* transceiver_; 
   unsigned long long last_count_; 
 };

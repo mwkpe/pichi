@@ -93,6 +93,15 @@ void Ui::button_apply_clicked()
 }
 
 
+void Ui::button_sync_time_clicked()
+{
+  // Rough time sync via NTP
+  std::cout << "Syncing time, please wait..." << std::endl;
+  std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
+  t.detach();
+}
+
+
 void Ui::update_status_callback(void* p)
 {
   auto* ui = reinterpret_cast<Ui*>(p);

@@ -17,6 +17,13 @@ Fl_Menu_Item Ui::menu_choice_mode[] = {
  {0,0,0,0,0,0,0,0,0}
 };
 
+void Ui::cb_button_sync_time_i(Fl_Button*, void*) {
+  button_sync_time_clicked();
+}
+void Ui::cb_button_sync_time(Fl_Button* o, void* v) {
+  ((Ui*)(o->parent()->parent()->parent()->user_data()))->cb_button_sync_time_i(o,v);
+}
+
 void Ui::cb_button_apply_i(Fl_Button*, void*) {
   button_apply_clicked();
 }
@@ -51,13 +58,23 @@ Ui::Ui(gnss::Transceiver* t) {
     } // Fl_Group* o
     { Fl_Tabs* o = new Fl_Tabs(6, 38, 488, 224);
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Device");
-        o->hide();
         { text_device_id = new Fl_Input(12, 66, 160, 24, "Device ID");
           text_device_id->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_device_id
         o->end();
       } // Fl_Group* o
+      { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Time");
+        o->hide();
+        { button_sync_time = new Fl_Button(12, 66, 90, 26, "Sync Time");
+          button_sync_time->callback((Fl_Callback*)cb_button_sync_time);
+        } // Fl_Button* button_sync_time
+        { Fl_Box* o = new Fl_Box(106, 66, 382, 26, "Synchronize time via NTP");
+          o->align(Fl_Align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE));
+        } // Fl_Box* o
+        o->end();
+      } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "GNSS");
+        o->hide();
         { text_gnss_port = new Fl_Input(12, 66, 160, 24, "Port (Device sending NMEA sentences)");
           text_gnss_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port
