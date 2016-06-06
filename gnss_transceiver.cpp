@@ -10,14 +10,15 @@
 #include <chrono>
 #include <thread>
 #include <algorithm>
-#include <cstdlib>
+#include <exception>
 
 #include <asio.hpp>
 
 #include "nmea_parser.h"
 
 
-gnss::Transceiver::Transceiver(Configuration&& conf) : conf_(std::move(conf))
+gnss::Transceiver::Transceiver(Configuration&& conf)
+  : conf_{std::move(conf)}, serial_{serial_service_}, socket_{udp_service_}
 {
   if (!timer.st_init())
     std::cerr << "Data relating to the microsecond system timer will be 0." << std::endl;
@@ -29,6 +30,8 @@ gnss::Transceiver::~Transceiver()
   if (is_active())
     stop();
   conf_.save_to_file();
+
+  // Give detached threads some time to properly finish
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
@@ -93,70 +96,29 @@ void gnss::Transceiver::start_gnss_logger(const std::string& logfilename)
 void gnss::Transceiver::stop()
 {
   active_.store(false);
+
+  // Cancel async handlers
+  if (serial_.is_open())
+    serial_.cancel();
+  if (socket_.is_open())
+    socket_.cancel();
+
+  // Stop detached threads
   data_cond_.notify_all();
 }
 
 
 void gnss::Transceiver::read_nmea_sentences()
 {
-  using asio::ip::udp;
-  asio::io_service io_service;
-  asio::serial_port serial{io_service};
-  asio::error_code ec;
-  serial.open(conf_.gnss_port, ec);
-  if (ec) {
-    std::cerr << "Could not open port: " << conf_.gnss_port 
-              << '\n' << ec.message() << std::endl;
-    active_.store(false);
-  }
-  else {
-    using spbase = asio::serial_port_base;
-    serial.set_option(spbase::baud_rate(115200));
-    serial.set_option(spbase::character_size(8));
-    serial.set_option(spbase::stop_bits(asio::serial_port_base::stop_bits::one));
-    serial.set_option(spbase::parity(asio::serial_port_base::parity::none));
-    serial.set_option(spbase::flow_control(asio::serial_port_base::flow_control::none));
-  }
-
-  while (active_.load()) {
-    // Read characters into buffer
-    std::array<char, 1536> recv_buffer{};
-
-    // Blocks until read or error
-    auto recv_bytes = serial.read_some(asio::buffer(recv_buffer));
-    auto recv_st = current_systime();
-    auto recv_time = current_time();
-
-    if (recv_bytes > 0) {
-      // Prevent crash due to spirit isascii assert when garbage was received
-      replace_nonascii(gsl::as_span(recv_buffer), '0');
-
-      // Look for sentences in the buffer
-      std::vector<std::string> sentences;
-      auto pos = std::begin(recv_buffer);
-      auto last = std::begin(recv_buffer);
-      while (pos != std::end(recv_buffer)) {
-        pos = std::find_if(pos, std::end(recv_buffer), [](char c) { return c == '\r'; });
-        if (pos != std::end(recv_buffer)) {
-          sentences.push_back({last, pos});
-          std::advance(pos, 2);  // Skip carriage return and newline
-          last = pos;
-        }
-      }
-
-      // Push data and notifiy other threads
-      if (!sentences.empty()) {
-        auto filtered_sentences = filter(std::move(sentences), conf_);
-        std::lock_guard<std::mutex> lk(data_mutex_);
-        for (auto& t : filtered_sentences) {
-          nmea_sentences_.emplace(recv_st, recv_time, std::get<0>(t), std::move(std::get<1>(t)));
-        }
-        data_cond_.notify_one();
-      }
+  if (open_serial()) {
+    if (serial_service_.stopped()) {
+      serial_service_.reset();
     }
-  }
 
-  serial.close();
+    // The service needs something to do or it may return immediately
+    read_serial();  // Start an async read
+    serial_service_.run();  // Start processing
+  }
 }
 
 
@@ -415,6 +377,93 @@ void gnss::Transceiver::log_gnss_data(const std::string& logfilename)
   }
 
   activity_counter_.store(0);
+}
+
+
+bool gnss::Transceiver::open_serial()
+{
+  try {
+    asio::error_code ec;
+    serial_.open(conf_.gnss_port, ec);
+    if (ec) {
+      std::cerr << "Could not open port " << conf_.gnss_port 
+                << '\n' << ec.message() << std::endl;
+      return false;
+    }
+    else {
+      using spb = asio::serial_port_base;
+      serial_.set_option(spb::baud_rate(115200));
+      serial_.set_option(spb::character_size(8));
+      serial_.set_option(spb::stop_bits(asio::serial_port_base::stop_bits::one));
+      serial_.set_option(spb::parity(asio::serial_port_base::parity::none));
+      serial_.set_option(spb::flow_control(asio::serial_port_base::flow_control::none));
+      std::cout << "Opened port " << conf_.gnss_port << std::endl;
+    }
+  }
+  catch (std::exception& e) {
+    std::cerr << "Could not open port " << conf_.gnss_port 
+              << '\n' << e.what() << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+
+void gnss::Transceiver::read_serial()
+{
+  serial_.async_read_some(asio::buffer(serial_buffer_),
+  [this](const asio::error_code& error, std::size_t bytes_transferred)
+  {
+    auto recv_st = current_systime();
+    auto recv_time = current_time();
+
+    if (!error && bytes_transferred > 0) {
+      // Prevent crash due to spirit isascii assert when garbage was received
+      replace_nonascii(gsl::as_span(serial_buffer_).first(bytes_transferred), '0');
+
+      // Look for sentences in the buffer
+      // Note: Using read_some returned a block of sentences, whereas async_read_some seems
+      //       to call this handler for each sentence separately, so this may not be necessary
+      //       anymore but is kept for now to make sure no sentences go missing.
+      std::vector<std::string> sentences;
+      auto pos = std::begin(serial_buffer_);
+      auto last = std::begin(serial_buffer_);
+      std::advance(last, bytes_transferred);
+      auto sentence_start = pos;
+      while (pos != last) {
+        pos = std::find_if(pos, last, [](char c) { return c == '\r'; });
+        if (pos != last) {
+          sentences.push_back({sentence_start, pos});
+          std::advance(pos, 1);  // Skip carriage return
+          if (pos != last)
+            std::advance(pos, 1);  // Skip newline
+          sentence_start = pos;
+        }
+      }
+
+      // Push data and notifiy other threads
+      if (!sentences.empty()) {
+        auto filtered_sentences = filter(std::move(sentences), conf_);
+        std::lock_guard<std::mutex> lk(data_mutex_);
+        for (auto& t : filtered_sentences) {
+          nmea_sentences_.emplace(recv_st, recv_time,
+                                  std::get<0>(t), std::move(std::get<1>(t)));
+        }
+        data_cond_.notify_one();
+      }
+    }
+    else if (error == asio::error::operation_aborted) {
+      if (serial_.is_open()) {
+        serial_.close();
+        std::cerr << "Port " << conf_.gnss_port << " closed" << std::endl;
+      }
+      // Let all already queued handlers finish, the io_service will stop automatically
+    }
+    
+    if (!error)
+      read_serial();  // Start next async read and prevent the io_service from stopping
+  });
 }
 
 

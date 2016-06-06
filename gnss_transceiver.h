@@ -10,6 +10,7 @@
 
 
 #include <cstdint>
+#include <array>
 #include <string>
 #include <queue>
 #include <unordered_map>
@@ -47,12 +48,14 @@ struct PacketHeader
 };
 
 
-class Transceiver
+class Transceiver final
 {
 public:
-  Transceiver() = default;
   explicit Transceiver(Configuration&& conf);
   ~Transceiver();
+
+  Transceiver(const Transceiver&) = delete;             // Copy
+  Transceiver& operator=(const Transceiver&) = delete;  // Assignment
 
   void start_gnss_transmitter();
   void start_gnss_receiver(const std::string& logfilename);
@@ -61,10 +64,10 @@ public:
 
   void stop();
 
-  bool is_active() { return active_.load(); }
-  uint64_t activity_count() { return activity_counter_.load(); }
+  bool is_active() const { return active_.load(); }
+  uint64_t activity_count() const { return activity_counter_.load(); }
 
-  const Configuration& config() { return conf_; }
+  const Configuration& config() const { return conf_; }
   void set_config(const Configuration& conf) { conf_ = conf; }
 
 private:
@@ -78,6 +81,10 @@ private:
   void transmit_gnss_packets();
   void log_nmea_sentences(const std::string& logfilename);
   void log_gnss_data(const std::string& logfilename);
+
+  // Serial port
+  bool open_serial();
+  void read_serial();
 
   // Timing
   uint64_t current_time() const;  // Synchronized reference time
@@ -95,6 +102,15 @@ private:
   // Member
   Configuration conf_{};
   Timer timer;
+
+  // Serial port
+  asio::io_service serial_service_;
+  asio::serial_port serial_;
+  std::array<char, 1536> serial_buffer_;
+
+  // UDP socket
+  asio::io_service udp_service_;
+  asio::ip::udp::socket socket_;
 
   // Thread management
   std::atomic<bool> active_{false};
