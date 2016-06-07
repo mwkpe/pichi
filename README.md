@@ -1,5 +1,5 @@
 # PiPoint
-[![Status](https://img.shields.io/badge/Status-WIP-yellow.svg)](https://www.raspberrypi.org/)
+[![Status](https://img.shields.io/badge/Status-WIP-yellow.svg)](http://www.merriam-webster.com/dictionary/work%20in%20progress)
 [![System](https://img.shields.io/badge/System-Raspberry%20Pi-bc1142.svg)](https://www.raspberrypi.org/)
 [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
 [![Standard](https://img.shields.io/badge/C%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
