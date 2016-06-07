@@ -95,10 +95,14 @@ void Ui::button_apply_clicked()
 
 void Ui::button_sync_time_clicked()
 {
-  // Rough time sync via NTP
-  std::cout << "Syncing time, please wait..." << std::endl;
-  std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
-  t.detach();
+  // This is just for convenience and not intented as a proper time sync method
+  if (!transceiver_->is_active()) {
+    // Rough time sync via NTP
+    std::cout << "Syncing time, please wait..." << std::endl;
+    std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
+    t.detach();
+  }
+  else std::cerr << "Can't sync time while transceiver is running!" << std::endl;
 }
 
 
