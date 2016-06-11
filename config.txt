@@ -3,6 +3,7 @@ device_id=1
 
 # GNSS
 gnss_port=/dev/ttyACM0
+gnss_port_rate=115200
 use_msg_rmc=true
 use_msg_gga=false
 use_msg_gsv=false
