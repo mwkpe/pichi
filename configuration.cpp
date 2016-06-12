@@ -32,6 +32,7 @@ Configuration::Configuration(const std::string& filename) : filename_(filename)
     try {
       device_id = std::stoul(read_cfg(std::regex{R"(device_id=([0-9]+))"}));
       gnss_port = read_cfg(std::regex{R"(gnss_port=([a-zA-Z0-9-_\/]+))"});
+      gnss_port_rate = std::stoul(read_cfg(std::regex{R"(gnss_port_rate=([0-9]+))"}));
       use_msg_rmc = read_cfg(std::regex{R"(use_msg_rmc=(true|false))"}) == "true";
       use_msg_gga = read_cfg(std::regex{R"(use_msg_gga=(true|false))"}) == "true";
       use_msg_gsv = read_cfg(std::regex{R"(use_msg_gsv=(true|false))"}) == "true";
@@ -43,11 +44,13 @@ Configuration::Configuration(const std::string& filename) : filename_(filename)
       log_recv = read_cfg(std::regex{R"(log_recv=(true|false))"}) == "true";
     }
     catch (const std::invalid_argument& e) {
-      std::cerr << "Error loading config: " << e.what() << "\nUsing default values." << std::endl;
+      std::cerr << "Error loading config: " << e.what()
+                << "\nUsing default values." << std::endl;
       *this = Configuration{};
     }
     catch (const std::out_of_range& e) {
-      std::cerr << "Error loading config: " << e.what() << "\nUsing default values." << std::endl;
+      std::cerr << "Error loading config: " << e.what()
+                << "\nUsing default values." << std::endl;
       *this = Configuration{};
     }
   }
@@ -63,6 +66,7 @@ void Configuration::save_to_file() const
        << "device_id=" << device_id << '\n'
        << "\n# GNSS\n"
        << "gnss_port=" << gnss_port << '\n'
+       << "gnss_port_rate=" << gnss_port_rate << '\n'
        << "use_msg_rmc=" << use_msg_rmc << '\n'
        << "use_msg_gga=" << use_msg_gga << '\n'
        << "use_msg_gsv=" << use_msg_gsv << '\n'

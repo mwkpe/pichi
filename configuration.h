@@ -16,6 +16,7 @@ public:
   uint16_t device_id{1};
 
   std::string gnss_port{"/dev/ttyS0"};
+  uint32_t gnss_port_rate = 115200;
   bool use_msg_rmc{true};
   bool use_msg_gga{false};
   bool use_msg_gsv{false};
