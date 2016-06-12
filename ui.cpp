@@ -31,8 +31,8 @@ void Ui::cb_button_apply(Fl_Button* o, void* v) {
   ((Ui*)(o->parent()->parent()->user_data()))->cb_button_apply_i(o,v);
 }
 
-Ui::Ui(gnss::Transceiver* t) {
-  transceiver_ = t;
+Ui::Ui(PiPoint* p) {
+  pipoint_ = p;
   last_count_ = 0;
   { main_window = new Fl_Double_Window(500, 300, "PiPoint");
     main_window->user_data((void*)(this));

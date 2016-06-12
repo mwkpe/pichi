@@ -3,7 +3,7 @@
 #ifndef ui_h
 #define ui_h
 #include <FL/Fl.H>
-namespace gnss { class Transceiver; }; 
+class PiPoint;
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Light_Button.H>
@@ -17,7 +17,7 @@ namespace gnss { class Transceiver; };
 
 class Ui {
 public:
-  Ui(gnss::Transceiver* t);
+  Ui(PiPoint* p);
 private:
   Fl_Double_Window *main_window;
   Fl_Light_Button *button_start;
@@ -59,7 +59,7 @@ private:
   void button_start_clicked();
   void button_apply_clicked();
   void button_sync_time_clicked();
-  gnss::Transceiver* transceiver_; 
+  PiPoint* pipoint_; 
   unsigned long long last_count_; 
 };
 #endif

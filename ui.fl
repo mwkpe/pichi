@@ -5,14 +5,14 @@ code_name {.cpp}
 decl {\#include "gnss_transceiver.h"} {private global
 } 
 
-decl {namespace gnss { class Transceiver; }} {public global
+decl {class PiPoint;} {selected public global
 } 
 
 class Ui {open
 } {
-  Function {Ui(gnss::Transceiver* t)} {open
+  Function {Ui(PiPoint* p)} {open
   } {
-    code {transceiver_ = t;} {}
+    code {pipoint_ = p;} {}
     code {last_count_ = 0;} {}
     Fl_Window main_window {
       label PiPoint open
@@ -165,9 +165,9 @@ class Ui {open
   } {}
   Function {button_apply_clicked()} {private return_type void
   } {}
-  Function {button_sync_time_clicked()} {open selected private return_type void
+  Function {button_sync_time_clicked()} {open private return_type void
   } {}
-  decl {gnss::Transceiver* transceiver_;} {private local
+  decl {PiPoint* pipoint_;} {private local
   }
   decl {unsigned long long last_count_;} {private local
   }

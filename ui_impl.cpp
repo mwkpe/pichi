@@ -8,13 +8,13 @@
 #include <FL/Fl.H>
 
 #include "configuration.h"
-#include "gnss_transceiver.h"
+#include "pipoint.h"
 #include "ui.h"
 
 
 void Ui::apply_settings()
 {
-  Configuration conf{transceiver_->config()};
+  Configuration conf{pipoint_->config()};
   try {
     conf.device_id = std::stoul(text_device_id->value());
     conf.gnss_port = text_gnss_port->value();
@@ -26,7 +26,7 @@ void Ui::apply_settings()
     conf.trans_port = std::stoul(text_trans_port->value());
     conf.recv_ip = text_recv_ip->value();
     conf.recv_port = std::stoul(text_recv_port->value());
-    transceiver_->set_config(conf);
+    pipoint_->set_config(conf);
   }
   catch (const std::invalid_argument& e) {
     std::cerr << "Error applying settings: " << e.what()
@@ -41,7 +41,7 @@ void Ui::apply_settings()
 
 void Ui::load_settings()
 {
-  auto& conf = transceiver_->config();
+  auto& conf = pipoint_->config();
   text_device_id->value(std::to_string(conf.device_id).c_str());
   text_gnss_port->value(conf.gnss_port.c_str());
   check_rmc->value(conf.use_msg_rmc);
@@ -59,7 +59,7 @@ void Ui::button_start_clicked()
 {
   if (button_start->value()) {
     // Make sure transceiver isn't running
-    if (transceiver_->is_active()) {
+    if (pipoint_->is_active()) {
       std::cerr << "Transceiver already running!" << std::endl;
       button_start->value(1);
     }
@@ -70,9 +70,9 @@ void Ui::button_start_clicked()
         filename = std::string("logs/log_") + std::to_string(t.count()) + ".csv";
       }
       switch (choice_mode->value()) {
-        case 0: transceiver_->start_gnss_transmitter(); break;
-        case 1: transceiver_->start_gnss_receiver(filename); break;
-        case 2: transceiver_->start_gnss_logger(filename); break;
+        case 0: pipoint_->start_gnss_transmitter(); break;
+        case 1: pipoint_->start_gnss_receiver(); break;
+        case 2: pipoint_->start_gnss_logger(); break;
       }
       button_start->label("Stop");
       last_count_ = 0;
@@ -80,7 +80,7 @@ void Ui::button_start_clicked()
     }
   }
   else {
-    transceiver_->stop();
+    pipoint_->stop();
     button_start->label("Start");
     Fl::remove_timeout(&Ui::update_status_callback, this);
   }
@@ -96,7 +96,7 @@ void Ui::button_apply_clicked()
 void Ui::button_sync_time_clicked()
 {
   // This is just for convenience and not intented as a proper time sync method
-  if (!transceiver_->is_active()) {
+  if (!pipoint_->is_active()) {
     // Rough time sync via NTP
     std::cout << "Syncing time, please wait..." << std::endl;
     std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
@@ -117,7 +117,7 @@ void Ui::update_status_callback(void* p)
 void Ui::update_status()
 {
   // Rate (intented to be in hz) only works when UI is updated each second
-  auto count = transceiver_->activity_count();
+  auto count = pipoint_->activity_count();
   auto rate = count - last_count_;
   last_count_ = count;
 
