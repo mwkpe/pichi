@@ -36,7 +36,9 @@ nmea::SentenceType nmea::sentence_type(const std::string& sentence)
 
 
 // Recommended minimum specific GPS/Transit data
-bool nmea::parse(const std::string& sentence, RmcData* data, uint8_t* checksum)
+bool nmea::parse(const std::string& sentence,
+                 gsl::not_null<RmcData*> data,
+                 gsl::not_null<uint8_t*> checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -131,7 +133,9 @@ bool nmea::parse(const std::string& sentence, RmcData* data, uint8_t* checksum)
 
 
 // Global positioning system fix data
-bool nmea::parse(const std::string& sentence, GgaData* data, uint8_t* checksum)
+bool nmea::parse(const std::string& sentence,
+                 gsl::not_null<GgaData*> data,
+                 gsl::not_null<uint8_t*> checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -215,7 +219,9 @@ bool nmea::parse(const std::string& sentence, GgaData* data, uint8_t* checksum)
 
 
 // GPS Satellites in view
-bool nmea::parse(const std::string& sentence, GsvData* data, uint8_t* checksum)
+bool nmea::parse(const std::string& sentence,
+                 gsl::not_null<GsvData*> data,
+                 gsl::not_null<uint8_t*> checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;

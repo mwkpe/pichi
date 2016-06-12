@@ -18,6 +18,8 @@
 #include <string>
 #include <tuple>
 
+#include "gsl-lite.h"
+
 
 namespace nmea {
 
@@ -51,7 +53,9 @@ struct RmcData
   char mode_indicator;
 };
 
-bool parse(const std::string& sentence, RmcData* data, uint8_t* checksum);
+bool parse(const std::string& sentence,
+           gsl::not_null<RmcData*> data,
+           gsl::not_null<uint8_t*> checksum);
 
 
 // Global positioning system fix data
@@ -76,7 +80,9 @@ struct GgaData
   uint16_t reference_station_id;
 };
 
-bool parse(const std::string& sentence, GgaData* data, uint8_t* checksum);
+bool parse(const std::string& sentence,
+           gsl::not_null<GgaData*> data,
+           gsl::not_null<uint8_t*> checksum);
 
 
 // Satellites in view
@@ -101,7 +107,9 @@ struct GsvData
   Satellite fourth;
 };
 
-bool parse(const std::string& sentence, GsvData* data, uint8_t* checksum);
+bool parse(const std::string& sentence,
+           gsl::not_null<GsvData*> data,
+           gsl::not_null<uint8_t*> checksum);
 
 
 // Additional functions
