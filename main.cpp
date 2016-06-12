@@ -1,15 +1,14 @@
 #include <FL/Fl.H>
 
-#include "gnss_transceiver.h"
+#include "pipoint.h"
 #include "ui.h"
 
 
 int main(int argc, char* argv[])
 {
-  using namespace gnss;
-  Transceiver transceiver{Configuration("config.txt")};
+  PiPoint pipoint{Configuration("config.txt")};
 
-  Ui ui(&transceiver);
+  Ui ui(&pipoint);
   ui.show(argc, argv);
 
   return Fl::run();
