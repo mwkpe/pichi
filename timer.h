@@ -16,8 +16,11 @@ public:
   Timer() : st_time(&st_dummy) {}
 
   // 64-bit system timer (requires sudo)
-  bool st_init();
-  uint64_t st_now() const { return *st_time; }
+  bool systime_init();
+
+  uint64_t current_time() const;
+  uint64_t current_systime() const { return *st_time; }
+  uint32_t current_ticks() const;
 
 private:
   // 64-bit system timer
