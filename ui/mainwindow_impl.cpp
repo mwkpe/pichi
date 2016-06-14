@@ -61,7 +61,7 @@ void MainWindow::button_start_clicked()
   if (button_start->value()) {
     // Make sure transceiver isn't running
     if (pichi_->is_active()) {
-      std::cerr << "Transceiver already running!" << std::endl;
+      std::cerr << "Already running!" << std::endl;
       button_start->value(1);
     }
     else {
@@ -103,7 +103,7 @@ void MainWindow::button_sync_time_clicked()
     std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
     t.detach();
   }
-  else std::cerr << "Can't sync time while transceiver is running!" << std::endl;
+  else std::cerr << "Can't sync time while running!" << std::endl;
 }
 
 
