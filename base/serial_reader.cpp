@@ -22,8 +22,8 @@ void serial::Reader::stop()
 void serial::Reader::start_(const std::string& port, uint32_t rate)
 {
   if (!is_running()) {
-    OpenPort osp(serial_port_, port, rate);
-    if (serial_port_.is_open()) {
+    OpenPort open_port(serial_port_, port, rate);
+    if (open_port.is_open()) {
       // A stopped io_service must be reset or run() would return immediately
       if (io_service_.stopped()) {
         io_service_.reset();
@@ -48,13 +48,13 @@ void serial::Reader::start_async_read()
       }
 
       if (!error)
-        start_async_read();  // Prevent io_service from stopping
+        start_async_read();  // Start next and prevent io_service from stopping
   });
 }
 
 
 serial::OpenPort::OpenPort(asio::serial_port& sp,
-                          const std::string& port, uint32_t rate)
+                           const std::string& port, uint32_t rate)
   : serial_port_(sp)
 {
   try {
