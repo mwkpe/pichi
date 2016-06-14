@@ -4,11 +4,13 @@
 #include <iostream>
 #include <thread>
 
+#include "base/udp_transmitter.h"
+
 
 Pichi::Pichi(Configuration&& conf)
   : conf_{std::move(conf)},
     nmea_reader_{conf_, timer_, nmea_data_ready_, nmea_data_mutex_, nmea_data_},
-    gnss_transceiver_{conf_, timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
+    gnss_receiver_{conf_, timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
 {
   if (!timer_.systime_init())
     std::cerr << "Values relying on the 1MHz system timer will be zero" << std::endl;
@@ -29,7 +31,7 @@ Pichi::~Pichi()
 bool Pichi::set_config(const Configuration& conf)
 {
   if (is_active()) {
-    std::cerr << "Can't set configuration while transceiver is running!" << std::endl;
+    std::cerr << "Can't set configuration while running!" << std::endl;
     return false;
   }
 
@@ -58,8 +60,8 @@ void Pichi::stop()
   if (nmea_reader_.is_running())
     nmea_reader_.stop();
 
-  if (gnss_transceiver_.is_running())
-    gnss_transceiver_.stop();
+  if (gnss_receiver_.is_running())
+    gnss_receiver_.stop();
 
   // Disable detached threads
   active_.store(false);
@@ -76,13 +78,13 @@ void Pichi::start_gnss_transmitter()
     reset();
     active_.store(true);
 
-    std::thread consumer{&gnss::Transceiver::start_transmitter, &gnss_transceiver_};
+    std::thread consumer{&Pichi::transmit_gnss_data, this};
     consumer.detach();
 
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
     provider.detach();
   }
-  else std::cerr << "Transceiver is already running!" << std::endl;
+  else std::cerr << "Already running!" << std::endl;
 }
 
 
@@ -95,10 +97,10 @@ void Pichi::start_gnss_receiver()
     std::thread consumer{&Pichi::log_gnss_data, this};
     consumer.detach();
 
-    std::thread provider{&gnss::Transceiver::start_receiver, &gnss_transceiver_};
+    std::thread provider{&gnss::Receiver::start, &gnss_receiver_};
     provider.detach();
   }
-  else std::cerr << "Transceiver is already running!" << std::endl;
+  else std::cerr << "Already running!" << std::endl;
 }
 
 
@@ -114,7 +116,27 @@ void Pichi::start_gnss_logger()
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
     provider.detach();
   }
-  else std::cerr << "Transceiver is already running!" << std::endl;
+  else std::cerr << "Already running!" << std::endl;
+}
+
+
+void Pichi::transmit_gnss_data()
+{
+  udp::Transmitter transmitter{};
+  if (transmitter.open(conf_.trans_ip, conf_.trans_port)) {
+    while (is_active()) {
+      std::unique_lock<std::mutex> lk{nmea_data_mutex_};
+      nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+          [this] { return !nmea_data_.empty() || !active_.load(); });
+      if (!nmea_data_.empty()) {
+        decltype(nmea_data_) data;
+        std::swap(nmea_data_, data);
+        lk.unlock();
+        //transmitter.send();
+        activity_counter_.fetch_add(data.size());
+      }
+    }
+  }
 }
 
 

@@ -16,7 +16,7 @@
 #include "timer.h"
 #include "nmea_parser.h"
 #include "nmea_reader.h"
-#include "gnss_transceiver.h"
+#include "gnss_receiver.h"
 
 
 class Pichi final
@@ -41,6 +41,8 @@ public:
 
 private:
   void reset();
+
+  void transmit_gnss_data();
   void log_gnss_data();
   void log_nmea_data();
 
@@ -56,11 +58,11 @@ private:
   std::deque<nmea::NmeaData> nmea_data_;
   nmea::Reader nmea_reader_;
 
-  // UDP transceiver
+  // UDP receiver
   std::condition_variable gnss_data_ready_;
   std::mutex gnss_data_mutex_;
   std::deque<gnss::GnssData> gnss_data_;
-  gnss::Transceiver gnss_transceiver_;
+  gnss::Receiver gnss_receiver_;
 };
 
 
