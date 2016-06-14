@@ -5,13 +5,13 @@
 #include <exception>
 
 
-SerialReader::~SerialReader()
+serial::Reader::~Reader()
 {
   stop();
 }
 
 
-void SerialReader::stop()
+void serial::Reader::stop()
 {
   // Cancel async handlers
   if (is_running())
@@ -19,16 +19,16 @@ void SerialReader::stop()
 }
 
 
-void SerialReader::start_(const std::string& port, uint32_t rate)
+void serial::Reader::start_(const std::string& port, uint32_t rate)
 {
   if (!is_running()) {
-    OpenSerialPort osp(serial_port_, port, rate);
+    OpenPort osp(serial_port_, port, rate);
     if (serial_port_.is_open()) {
       // A stopped io_service must be reset or run() would return immediately
       if (io_service_.stopped()) {
         io_service_.reset();
       }
-      start_async_read();  // The io_service needs work or may return
+      start_async_read();  // The io_service needs work queued
       io_service_.run();  // Blocks until all work is done
     }
   }
@@ -36,14 +36,14 @@ void SerialReader::start_(const std::string& port, uint32_t rate)
 }
 
 
-void SerialReader::start_async_read()
-// Starts async reads of serial port until SerialReader::stop() is called
+void serial::Reader::start_async_read()
+// Starts async reads of serial port until Reader::stop() is called
 {
   serial_port_.async_read_some(asio::buffer(buffer_),
     [this](const asio::error_code& error, std::size_t n)
     {
       if (!error && n > 0) {
-        // Pass a view on the read data to the user-defined handler
+        // Pass a view on the read data to the user
         handle_read(gsl::as_span(buffer_).first(n));
       }
 
@@ -53,8 +53,8 @@ void SerialReader::start_async_read()
 }
 
 
-OpenSerialPort::OpenSerialPort(asio::serial_port& sp,
-                               const std::string& port, uint32_t rate)
+serial::OpenPort::OpenPort(asio::serial_port& sp,
+                          const std::string& port, uint32_t rate)
   : serial_port_(sp)
 {
   try {
@@ -74,7 +74,7 @@ OpenSerialPort::OpenSerialPort(asio::serial_port& sp,
 }
 
 
-void OpenSerialPort::close_port()
+void serial::OpenPort::close_port()
 {
   if (is_open()) {
     serial_port_.close();

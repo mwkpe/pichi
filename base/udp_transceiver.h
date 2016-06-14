@@ -6,20 +6,20 @@
 #include <array>
 #include <string>
 
-#include "gsl-lite.h"
+#include "../ext/gsl-lite.h"
 #include <asio.hpp>
 
 
-namespace udpt {
+namespace udp {
 
 
-class UdpTransceiver
+class Transceiver
 {
 public:
-  UdpTransceiver() : socket_(io_service_) {}
-  virtual ~UdpTransceiver();
-  UdpTransceiver(const UdpTransceiver&) = delete;
-  UdpTransceiver& operator=(const UdpTransceiver&) = delete;
+  Transceiver() : socket_(io_service_) {}
+  virtual ~Transceiver();
+  Transceiver(const Transceiver&) = delete;
+  Transceiver& operator=(const Transceiver&) = delete;
 
   void start_transmitter_(const std::string& ip, uint16_t port);
   void start_receiver_(const std::string& ip, uint16_t port);
@@ -43,11 +43,11 @@ auto resolve(asio::io_service& io_service, const std::string& ip, uint16_t port)
 bool bind_socket(asio::ip::udp::socket& socket, const asio::ip::udp::endpoint& ep);
 
 
-class OpenUdpSocket
+class OpenSocket
 {
   public:
-    OpenUdpSocket(asio::ip::udp::socket& s);
-    ~OpenUdpSocket() { close_socket(); }
+    OpenSocket(asio::ip::udp::socket& s);
+    ~OpenSocket() { close_socket(); }
     void close_socket();
     bool is_open() const { return socket_.is_open(); }
 
@@ -56,7 +56,7 @@ class OpenUdpSocket
 };
 
 
-}  // namespace udpt
+}  // namespace udp
 
 
 #endif  // UDP_TRANSCEIVER_H

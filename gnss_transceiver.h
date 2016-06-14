@@ -10,13 +10,13 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "gsl-lite.h"
+#include "ext/gsl-lite.h"
 
+#include "base/udp_transceiver.h"
 #include "configuration.h"
 #include "timer.h"
 #include "nmea_parser.h"
 #include "nmea_reader.h"
-#include "udp_transceiver.h"
 #include "gnss_packet.h"
 
 
@@ -35,7 +35,7 @@ struct GnssData
 };
 
 
-class Transceiver final : public udpt::UdpTransceiver
+class Transceiver final : public udp::Transceiver
 {
 public:
   explicit Transceiver(const Configuration& conf,

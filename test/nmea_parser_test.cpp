@@ -1,7 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
+#include "../ext/doctest.h"
 
-#include "nmea_parser.h"
+
+#include "../nmea_parser.h"
 
 
 using namespace nmea;

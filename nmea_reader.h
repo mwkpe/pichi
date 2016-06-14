@@ -10,9 +10,9 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "gsl-lite.h"
+#include "ext/gsl-lite.h"
 
-#include "serial_reader.h"
+#include "base/serial_reader.h"
 #include "configuration.h"
 #include "timer.h"
 #include "nmea_parser.h"
@@ -33,7 +33,7 @@ struct NmeaData
 };
 
 
-class Reader final : public SerialReader
+class Reader final : public serial::Reader
 {
 public:
   Reader(const Configuration& conf,

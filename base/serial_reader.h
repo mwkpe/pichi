@@ -6,17 +6,20 @@
 #include <array>
 #include <string>
 
-#include "gsl-lite.h"
+#include "../ext/gsl-lite.h"
 #include <asio.hpp>
 
 
-class SerialReader
+namespace serial {
+
+
+class Reader
 {
 public:
-  SerialReader() : serial_port_(io_service_) {}
-  virtual ~SerialReader();
-  SerialReader(const SerialReader&) = delete;
-  SerialReader& operator=(const SerialReader&) = delete;
+  Reader() : serial_port_(io_service_) {}
+  virtual ~Reader();
+  Reader(const Reader&) = delete;
+  Reader& operator=(const Reader&) = delete;
 
   void start_(const std::string& port, uint32_t rate);
   void stop();
@@ -32,17 +35,20 @@ protected:
 };
 
 
-class OpenSerialPort
+class OpenPort
 {
   public:
-    OpenSerialPort(asio::serial_port& sp, const std::string& port, uint32_t rate);
-    ~OpenSerialPort() { close_port(); }
+    OpenPort(asio::serial_port& sp, const std::string& port, uint32_t rate);
+    ~OpenPort() { close_port(); }
     void close_port();
     bool is_open() const { return serial_port_.is_open(); }
 
   private:
     asio::serial_port& serial_port_;
 };
+
+
+}  // namespace serial
 
 
 #endif  // SERIAL_READER_H

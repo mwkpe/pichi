@@ -5,13 +5,13 @@
 #include <exception>
 
 
-udpt::UdpTransceiver::~UdpTransceiver()
+udp::Transceiver::~Transceiver()
 {
   stop();
 }
 
 
-void udpt::UdpTransceiver::stop()
+void udp::Transceiver::stop()
 {
   // Cancel async handlers
   if (is_running())
@@ -19,10 +19,10 @@ void udpt::UdpTransceiver::stop()
 }
 
 
-void udpt::UdpTransceiver::start_transmitter_(const std::string& ip, uint16_t port)
+void udp::Transceiver::start_transmitter_(const std::string& ip, uint16_t port)
 {
   if (!is_running()) {
-    OpenUdpSocket open_socket(socket_);
+    OpenSocket open_socket(socket_);
     if (open_socket.is_open()) {
       auto remote_ep = resolve(io_service_, ip.c_str(), port);
       if (remote_ep != decltype(remote_ep){}) {
@@ -34,18 +34,18 @@ void udpt::UdpTransceiver::start_transmitter_(const std::string& ip, uint16_t po
 }
 
 
-void udpt::UdpTransceiver::start_receiver_(const std::string& ip, uint16_t port)
+void udp::Transceiver::start_receiver_(const std::string& ip, uint16_t port)
 {
   if (!is_running()) {
-    OpenUdpSocket open_socket(socket_);
+    OpenSocket open_socket(socket_);
     if (open_socket.is_open()) {
       auto local_ep = resolve(io_service_, ip.c_str(), port);
       if (bind_socket(socket_, local_ep)) {
         if (io_service_.stopped()) {
           io_service_.reset();
         }
-        start_async_receive();  // Service needs work queued or may return
-        io_service_.run();
+        start_async_receive();  // The io_service needs work queued
+        io_service_.run(); // Blocks until all work is done
       }
     }
   }
@@ -53,8 +53,8 @@ void udpt::UdpTransceiver::start_receiver_(const std::string& ip, uint16_t port)
 }
 
 
-void udpt::UdpTransceiver::start_async_receive()
-// Starts async receives until UdpTransceiver::stop() is called
+void udp::Transceiver::start_async_receive()
+// Starts async receives until Transceiver::stop() is called
 {
   socket_.async_receive(asio::buffer(buffer_),
     [this](const asio::error_code& error, std::size_t n)
@@ -64,12 +64,12 @@ void udpt::UdpTransceiver::start_async_receive()
       }
 
       if (!error)
-        start_async_receive();  // Prevent service from stopping
+        start_async_receive();  // Prevent io_service from stopping
     });
 }
 
 
-auto udpt::resolve(asio::io_service& ios, const std::string& ip, uint16_t port)
+auto udp::resolve(asio::io_service& ios, const std::string& ip, uint16_t port)
   -> asio::ip::udp::endpoint
 {
   using asio::ip::udp;
@@ -90,7 +90,7 @@ auto udpt::resolve(asio::io_service& ios, const std::string& ip, uint16_t port)
 }
 
 
-bool udpt::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& ep)
+bool udp::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& ep)
 {
   try {
     s.bind(ep);
@@ -106,7 +106,7 @@ bool udpt::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& 
 }
 
 
-udpt::OpenUdpSocket::OpenUdpSocket(asio::ip::udp::socket& s)
+udp::OpenSocket::OpenSocket(asio::ip::udp::socket& s)
   : socket_(s)
 {
   try {
@@ -119,7 +119,7 @@ udpt::OpenUdpSocket::OpenUdpSocket(asio::ip::udp::socket& s)
 }
 
 
-void udpt::OpenUdpSocket::close_socket()
+void udp::OpenSocket::close_socket()
 {
   try {
     if (is_open()) {

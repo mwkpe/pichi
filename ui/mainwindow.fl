@@ -2,20 +2,19 @@
 version 1.0302 
 header_name {.h} 
 code_name {.cpp}
-decl {\#include "gnss_transceiver.h"} {private global
+decl {\#include "../pichi.h"} {selected private global
 } 
 
-decl {class PiPoint;} {selected public global
+decl {class Pichi;} {public global
 } 
 
-class Ui {open
+class MainWindow {open
 } {
-  Function {Ui(PiPoint* p)} {open
-  } {
-    code {pipoint_ = p;} {}
+  Function {MainWindow(Pichi* p)} {} {
+    code {pichi_ = p;} {}
     code {last_count_ = 0;} {}
     Fl_Window main_window {
-      label PiPoint open
+      label Pichi
       private xywh {65 514 500 300} type Double visible
     } {
       Fl_Group {} {
@@ -64,7 +63,7 @@ class Ui {open
           }
         }
         Fl_Group {} {
-          label Time open
+          label Time
           xywh {6 60 488 202} hide
         } {
           Fl_Button button_sync_time {
@@ -167,7 +166,7 @@ class Ui {open
   } {}
   Function {button_sync_time_clicked()} {open private return_type void
   } {}
-  decl {PiPoint* pipoint_;} {private local
+  decl {Pichi* pichi_;} {private local
   }
   decl {unsigned long long last_count_;} {private local
   }

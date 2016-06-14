@@ -1,5 +1,5 @@
-#ifndef PIPOINT_H
-#define PIPOINT_H
+#ifndef PICHI_H
+#define PICHI_H
 
 
 #include <cstdint>
@@ -10,7 +10,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "gsl-lite.h"
+#include "ext/gsl-lite.h"
 
 #include "configuration.h"
 #include "timer.h"
@@ -19,13 +19,13 @@
 #include "gnss_transceiver.h"
 
 
-class PiPoint final
+class Pichi final
 {
 public:
-  explicit PiPoint(Configuration&& conf);
-  ~PiPoint();
-  PiPoint(const PiPoint&) = delete;
-  PiPoint& operator=(const PiPoint&) = delete;
+  explicit Pichi(Configuration&& conf);
+  ~Pichi();
+  Pichi(const Pichi&) = delete;
+  Pichi& operator=(const Pichi&) = delete;
 
   const Configuration& config() const { return conf_; }
   bool set_config(const Configuration& conf);
@@ -64,4 +64,4 @@ private:
 };
 
 
-#endif  // PIPOINT_H
+#endif  // PICHI_H

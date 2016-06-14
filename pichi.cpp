@@ -1,11 +1,11 @@
-#include "pipoint.h"
+#include "pichi.h"
 
 
 #include <iostream>
 #include <thread>
 
 
-PiPoint::PiPoint(Configuration&& conf)
+Pichi::Pichi(Configuration&& conf)
   : conf_{std::move(conf)},
     nmea_reader_{conf_, timer_, nmea_data_ready_, nmea_data_mutex_, nmea_data_},
     gnss_transceiver_{conf_, timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
@@ -15,7 +15,7 @@ PiPoint::PiPoint(Configuration&& conf)
 }
 
 
-PiPoint::~PiPoint()
+Pichi::~Pichi()
 {
   if (is_active())
     stop();
@@ -26,7 +26,7 @@ PiPoint::~PiPoint()
 }
 
 
-bool PiPoint::set_config(const Configuration& conf)
+bool Pichi::set_config(const Configuration& conf)
 {
   if (is_active()) {
     std::cerr << "Can't set configuration while transceiver is running!" << std::endl;
@@ -39,7 +39,7 @@ bool PiPoint::set_config(const Configuration& conf)
 }
 
 
-void PiPoint::reset()
+void Pichi::reset()
 {
   activity_counter_.store(0);
   {
@@ -53,7 +53,7 @@ void PiPoint::reset()
 }
 
 
-void PiPoint::stop()
+void Pichi::stop()
 {
   if (nmea_reader_.is_running())
     nmea_reader_.stop();
@@ -70,7 +70,7 @@ void PiPoint::stop()
 }
 
 
-void PiPoint::start_gnss_transmitter()
+void Pichi::start_gnss_transmitter()
 {
   if (!is_active()) {
     reset();
@@ -86,13 +86,13 @@ void PiPoint::start_gnss_transmitter()
 }
 
 
-void PiPoint::start_gnss_receiver()
+void Pichi::start_gnss_receiver()
 {
   if (!is_active()) {
     reset();
     active_.store(true);
 
-    std::thread consumer{&PiPoint::log_gnss_data, this};
+    std::thread consumer{&Pichi::log_gnss_data, this};
     consumer.detach();
 
     std::thread provider{&gnss::Transceiver::start_receiver, &gnss_transceiver_};
@@ -102,13 +102,13 @@ void PiPoint::start_gnss_receiver()
 }
 
 
-void PiPoint::start_gnss_logger()
+void Pichi::start_gnss_logger()
 {
   if (!is_active()) {
     reset();
     active_.store(true);
 
-    std::thread consumer{&PiPoint::log_nmea_data, this};
+    std::thread consumer{&Pichi::log_nmea_data, this};
     consumer.detach();
 
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
@@ -118,7 +118,7 @@ void PiPoint::start_gnss_logger()
 }
 
 
-void PiPoint::log_gnss_data()
+void Pichi::log_gnss_data()
 {
   while (is_active()) {
     std::unique_lock<std::mutex> lk{gnss_data_mutex_};
@@ -134,7 +134,7 @@ void PiPoint::log_gnss_data()
 }
 
 
-void PiPoint::log_nmea_data()
+void Pichi::log_nmea_data()
 {
   while (is_active()) {
     std::unique_lock<std::mutex> lk{nmea_data_mutex_};
