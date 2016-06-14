@@ -12,7 +12,7 @@
 
 #include "ext/gsl-lite.h"
 
-#include "base/serial_reader.h"
+#include "base/serial_async_reader.h"
 #include "configuration.h"
 #include "timer.h"
 #include "nmea_parser.h"
@@ -33,7 +33,7 @@ struct NmeaData
 };
 
 
-class Reader final : public serial::Reader
+class Reader final : public serial::AsyncReader
 {
 public:
   Reader(const Configuration& conf,

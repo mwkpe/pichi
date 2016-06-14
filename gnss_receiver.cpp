@@ -1,14 +1,14 @@
-#include "gnss_transceiver.h"
+#include "gnss_receiver.h"
 
 
 #include <vector>
 
 
-gnss::Transceiver::Transceiver(const Configuration& conf,
-                               const Timer& timer,
-                               std::condition_variable& data_ready,
-                               std::mutex& data_mutex,
-                               std::deque<GnssData>& data)
+gnss::Receiver::Receiver(const Configuration& conf,
+                         const Timer& timer,
+                         std::condition_variable& data_ready,
+                         std::mutex& data_mutex,
+                         std::deque<GnssData>& data)
   : conf_{conf},
     timer_{timer},
     gnss_data_ready_{data_ready},
@@ -18,30 +18,24 @@ gnss::Transceiver::Transceiver(const Configuration& conf,
 }
 
 
-gnss::Transceiver::~Transceiver()
+gnss::Receiver::~Receiver()
 {
 }
 
 
-void gnss::Transceiver::start_transmitter()
+void gnss::Receiver::start()
 {
-  start_transmitter_(conf_.trans_ip, conf_.trans_port);
+  start_(conf_.recv_ip, conf_.recv_port);
 }
 
 
-void gnss::Transceiver::start_receiver()
-{
-  start_receiver_(conf_.recv_ip, conf_.recv_port);
-}
-
-
-void gnss::Transceiver::reset()
+void gnss::Receiver::reset()
 {
   activity_counter_.store(0);
 }
 
 
-void gnss::Transceiver::handle_receive(gsl::span<uint8_t> buffer)
+void gnss::Receiver::handle_receive(gsl::span<uint8_t> buffer)
 {
   uint64_t systime = timer_.current_systime();
   uint64_t time = timer_.current_time();

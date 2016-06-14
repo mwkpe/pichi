@@ -1,5 +1,5 @@
-#ifndef GNSS_TRANSCEIVER_H
-#define GNSS_TRANSCEIVER_H
+#ifndef GNSS_RECEIVER_H
+#define GNSS_RECEIVER_H
 
 
 #include <cstdint>
@@ -12,7 +12,7 @@
 
 #include "ext/gsl-lite.h"
 
-#include "base/udp_transceiver.h"
+#include "base/udp_async_receiver.h"
 #include "configuration.h"
 #include "timer.h"
 #include "nmea_parser.h"
@@ -35,37 +35,33 @@ struct GnssData
 };
 
 
-class Transceiver final : public udp::Transceiver
+class Receiver final : public udp::AsyncReceiver
 {
 public:
-  explicit Transceiver(const Configuration& conf,
-                       const Timer& timer,
-                       std::condition_variable& data_ready,
-                       std::mutex& data_mutex,
-                       std::deque<GnssData>& data);
-  ~Transceiver();
-  Transceiver(const Transceiver&) = delete;
-  Transceiver& operator=(const Transceiver&) = delete;
+  explicit Receiver(const Configuration& conf,
+                    const Timer& timer,
+                    std::condition_variable& data_ready,
+                    std::mutex& data_mutex,
+                    std::deque<GnssData>& data);
+  ~Receiver();
+  Receiver(const Receiver&) = delete;
+  Receiver& operator=(const Receiver&) = delete;
 
-  void start_transmitter();
-  void start_receiver();
+  void start();
   uint64_t activity_count() const { return activity_counter_.load(); }
 
 private:
   void handle_receive(gsl::span<uint8_t> buffer) override;
-
   void reset();
-  void log_gnss_data();
 
   // Member
-  std::atomic<bool> active_{false};
   const Configuration& conf_;
   const Timer& timer_;
   std::condition_variable& gnss_data_ready_;
   std::mutex& gnss_data_mutex_;
   std::deque<GnssData>& gnss_data_;
 
-  // A counter for transmitted, received or logged packets
+  // A counter for received packets
   std::atomic<uint64_t> activity_counter_{0};
 };
 
@@ -73,4 +69,4 @@ private:
 }  // namespace gnss
 
 
-#endif  // GNSS_TRANSCEIVER_H
+#endif  // GNSS_RECEIVER_H
