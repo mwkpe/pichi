@@ -24,12 +24,12 @@ bool udp::Transmitter::open(const std::string& ip, uint16_t port)
   if (!is_open()) {
     OpenSocket open_socket(socket_);
     if (open_socket.is_open()) {
-      auto remote_ep = resolve(io_service_, ip.c_str(), port);
-      if (remote_ep != decltype(remote_ep){}) {  // Address resolved?
-        if (connect(socket_, remote_ep)) {
-          open_socket.release();  // Pass responsibility to user/destructor
-          return true;
-        }
+      remote_ep_ = resolve(io_service_, ip.c_str(), port);
+      if (remote_ep_ != decltype(remote_ep_){}) {  // Address resolved?
+        std::cout << "Sending to " << remote_ep_.address().to_string()
+                  << ":" << remote_ep_.port() << std::endl;
+        open_socket.release();  // Pass responsibility to user/destructor
+        return true;
       }
     }
   }
@@ -42,5 +42,5 @@ bool udp::Transmitter::open(const std::string& ip, uint16_t port)
 
 void udp::Transmitter::send(gsl::span<uint8_t> data)
 {
-  // TODO: Implemente transmit
+  socket_.send_to(asio::buffer(data.data(), data.size()), remote_ep_);
 }

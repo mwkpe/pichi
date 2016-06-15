@@ -28,18 +28,18 @@ udp::OpenSocket::~OpenSocket()
 auto udp::resolve(asio::io_service& ios, const std::string& ip, uint16_t port)
   -> asio::ip::udp::endpoint
 {
-  using asio::ip::udp;
-  udp::endpoint ep;
+  asio::ip::udp::endpoint ep;
 
   try {
-    udp::resolver resolver{ios};
-    udp::resolver::query query{udp::v4(), ip.c_str(), std::to_string(port).c_str()};
+    asio::ip::udp::resolver resolver{ios};
+    asio::ip::udp::resolver::query query{asio::ip::udp::v4(),
+                                         ip.c_str(), std::to_string(port).c_str()};
     ep = *resolver.resolve(query);
     return ep;
   }
   catch (asio::system_error& e) {
     std::cerr << "Could not resolve UDP endpoint:\n" << e.what() << std::endl;
-    return udp::endpoint{};
+    return asio::ip::udp::endpoint{};
   }
 
   return ep;
