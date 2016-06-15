@@ -30,9 +30,9 @@ public:
   const Configuration& config() const { return conf_; }
   bool set_config(const Configuration& conf);
 
-  void start_gnss_transmitter();
+  void start_location_transmitter();
   void start_gnss_receiver();
-  void start_gnss_logger();
+  void start_debugger();
 
   void stop();
 
@@ -42,9 +42,11 @@ public:
 private:
   void reset();
 
-  void transmit_gnss_data();
-  void log_gnss_data();
-  void log_nmea_data();
+  void transmit_location();
+  bool parse_location(gnss::LocationPacket* location, const nmea::ReadData& nmea_read);
+
+  void log_gnss_packets();
+  void show_nmea_sentences();
 
   // Member
   Configuration conf_;
@@ -55,13 +57,13 @@ private:
   // GNSS receiver
   std::condition_variable nmea_data_ready_;
   std::mutex nmea_data_mutex_;
-  std::deque<nmea::NmeaData> nmea_data_;
+  std::deque<nmea::ReadData> nmea_data_;
   nmea::Reader nmea_reader_;
 
   // UDP receiver
   std::condition_variable gnss_data_ready_;
   std::mutex gnss_data_mutex_;
-  std::deque<gnss::GnssData> gnss_data_;
+  std::deque<gnss::ReceiveData> gnss_data_;
   gnss::Receiver gnss_receiver_;
 };
 
