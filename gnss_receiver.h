@@ -23,14 +23,15 @@
 namespace gnss {
 
 
-struct GnssData
+struct ReceiveData
 {
-  GnssData(uint64_t t, uint64_t st, PacketType type, std::vector<uint8_t>&& d)
-  : receive_time(t), receive_systime(st), packet_type(type), data(std::move(d)) {}
+  ReceiveData() = default;
+  ReceiveData(uint64_t t, uint64_t st, PacketHeader h, std::vector<uint8_t>&& d)
+  : time(t), systime(st), header(h), data(std::move(d)) {}
 
-  uint64_t receive_time;
-  uint64_t receive_systime;
-  PacketType packet_type;
+  uint64_t time;
+  uint64_t systime;
+  PacketHeader header;
   std::vector<uint8_t> data;
 };
 
@@ -42,7 +43,7 @@ public:
                     const Timer& timer,
                     std::condition_variable& data_ready,
                     std::mutex& data_mutex,
-                    std::deque<GnssData>& data);
+                    std::deque<ReceiveData>& data);
   ~Receiver();
   Receiver(const Receiver&) = delete;
   Receiver& operator=(const Receiver&) = delete;
@@ -59,7 +60,7 @@ private:
   const Timer& timer_;
   std::condition_variable& gnss_data_ready_;
   std::mutex& gnss_data_mutex_;
-  std::deque<GnssData>& gnss_data_;
+  std::deque<ReceiveData>& gnss_data_;
 
   // A counter for received packets
   std::atomic<uint64_t> activity_counter_{0};

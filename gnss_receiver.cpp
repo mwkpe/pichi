@@ -8,7 +8,7 @@ gnss::Receiver::Receiver(const Configuration& conf,
                          const Timer& timer,
                          std::condition_variable& data_ready,
                          std::mutex& data_mutex,
-                         std::deque<GnssData>& data)
+                         std::deque<ReceiveData>& data)
   : conf_{conf},
     timer_{timer},
     gnss_data_ready_{data_ready},
@@ -37,20 +37,21 @@ void gnss::Receiver::reset()
 
 void gnss::Receiver::handle_receive(gsl::span<uint8_t> buffer)
 {
-  uint64_t systime = timer_.current_systime();
-  uint64_t time = timer_.current_time();
-  std::vector<uint8_t> data{std::begin(buffer), std::end(buffer)};
-  if (data.size() >= packet_header_size) {
-    const auto* header = reinterpret_cast<const PacketHeader*>(data.data());
-    if (header->data_length <= data.size() - packet_header_size) {
-      gnss_data_.emplace_back(time, systime, static_cast<PacketType>(header->packet_type), std::move(data));
-      activity_counter_.fetch_add(1);
+  ReceiveData received;
+  received.systime = timer_.current_systime();
+  received.time = timer_.current_time();
 
-      // Prevent overflow due to no one consuming the data
-      while (gnss_data_.size() > 30)
-        gnss_data_.pop_front();
+  if (buffer.size() > packet_header_size) {
+    std::memcpy(&received.header, buffer.data(), packet_header_size);
+    auto ss = buffer.subspan(packet_header_size);
+    std::copy(std::begin(ss), std::end(ss), std::back_inserter(received.data));
+    gnss_data_.push_back(std::move(received));
+    activity_counter_.fetch_add(1);
 
-      gnss_data_ready_.notify_one();
-    }
+    // Prevent overflow due to no one consuming the data
+    while (gnss_data_.size() > 30)
+      gnss_data_.pop_front();
+
+    gnss_data_ready_.notify_one();
   }
 }
