@@ -57,8 +57,7 @@ bool nmea::parse(const std::string& sentence,
 
   // Custom parser
   auto uint8_2d = uint_parser<uint8_t, 10, 2, 2>{};
-  auto int16_2d = int_parser<int16_t, 10, 2, 2>{};
-  auto int16_3d = int_parser<int16_t, 10, 3, 3>{};
+  auto uint16_3d = uint_parser<uint16_t, 10, 3, 3>{};
 
   // Temporary variables
   boost::optional<char> mode_indicator;
@@ -86,9 +85,9 @@ bool nmea::parse(const std::string& sentence,
   &&
 
   phrase_parse(it, std::end(sentence),
-    int16_2d >> float_ >>            // Latitude (llll.l-l)
+    uint8_2d >> float_ >>            // Latitude (llll.l-l)
     ',' >> char_("NS") >> ',' >>     // Direction (a)
-    int16_3d >> float_ >>            // Longitude (yyyyy.y-y)
+    uint16_3d >> float_ >>           // Longitude (yyyyy.y-y)
     ',' >> char_("EW") >> ',' >>     // Direction (a)
     (float_ | attr(0.0f)) >> ',' >>  // Speed over ground (x.x)
     (float_ | attr(0.0f)) >> ',',    // Course over ground (x.x)
@@ -155,8 +154,7 @@ bool nmea::parse(const std::string& sentence,
   // Custom parser
   auto uchar_ = uint_parser<uint8_t>{};
   auto uint8_2d = uint_parser<uint8_t, 10, 2, 2>{};
-  auto int16_2d = int_parser<int16_t, 10, 2, 2>{};
-  auto int16_3d = int_parser<int16_t, 10, 3, 3>{};
+  auto uint16_3d = uint_parser<uint16_t, 10, 3, 3>{};
 
   // $aaGGA,hhmmss.s-s,llll.l-l,a,yyyyy.y-y,a,x,xx,x.x,x.x,M,x.x,M,x.x,xxxx*hh
   // $GNGGA,150947.00,5554.0083,N,03732.502,E,1,15,00.6,190.6,M,14.5,M,,*78
@@ -179,12 +177,12 @@ bool nmea::parse(const std::string& sentence,
   &&
 
   phrase_parse(it, std::end(sentence),
-    int16_2d >> float_ >> ',' >>  // Latitude (llll.l-l)
-    char_("NS") >> ',' >>         // Direction (a)
-    int16_3d >> float_ >> ',' >>  // Longitude (yyyyy.y-y)
-    char_("EW") >> ',' >>         // Direction (a)
-    uchar_ >> ',' >>              // Position fix flag (x)
-    uchar_ >> ',',                // Number of satellites used in calculation (xx)
+    uint8_2d >> float_ >> ',' >>   // Latitude (llll.l-l)
+    char_("NS") >> ',' >>          // Direction (a)
+    uint16_3d >> float_ >> ',' >>  // Longitude (yyyyy.y-y)
+    char_("EW") >> ',' >>          // Direction (a)
+    uchar_ >> ',' >>               // Position fix flag (x)
+    uchar_ >> ',',                 // Number of satellites used in calculation (xx)
     space,
     data->degrees_lat,
     data->minutes_lat,

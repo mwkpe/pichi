@@ -9,7 +9,7 @@ nmea::Reader::Reader(const Configuration& conf,
                      const Timer& timer,
                      std::condition_variable& data_ready,
                      std::mutex& data_mutex,
-                     std::deque<NmeaData>& data)
+                     std::deque<ReadData>& data)
   : conf_{conf},
     timer_{timer},
     nmea_data_ready_{data_ready},

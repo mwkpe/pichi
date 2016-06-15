@@ -37,10 +37,10 @@ struct RmcData
   uint8_t utc_time_minute;
   float utc_time_second;
   char status;
-  int16_t degrees_lat;
+  uint8_t degrees_lat;
   float minutes_lat;
   char direction_lat;
-  int16_t degrees_long;
+  uint16_t degrees_long;
   float minutes_long;
   char direction_long;
   float speed_over_ground;
@@ -65,10 +65,10 @@ struct GgaData
   uint8_t utc_time_hour;
   uint8_t utc_time_minute;
   float utc_time_second;
-  int16_t degrees_lat;
+  uint8_t degrees_lat;
   float minutes_lat;
   char direction_lat;
-  int16_t degrees_long;
+  uint16_t degrees_long;
   float minutes_long;
   char direction_long;
   uint8_t fix_flag;
@@ -113,6 +113,14 @@ bool parse(const std::string& sentence,
 
 
 // Additional functions
+uint8_t calc_checksum(const std::string& s, bool* ok = nullptr);
+
+inline bool comp_checksum(const std::string& s, uint8_t checksum)
+{
+  bool ok;
+  return calc_checksum(s, &ok) == checksum && ok;
+}
+
 template<typename T> std::tuple<bool, T, uint8_t> parse(const std::string& sentence)
 {
   T data;
@@ -121,12 +129,13 @@ template<typename T> std::tuple<bool, T, uint8_t> parse(const std::string& sente
   return std::make_tuple(success, data, checksum);
 }
 
-uint8_t calc_checksum(const std::string& s, bool* ok = nullptr);
-
-inline bool comp_checksum(const std::string& s, uint8_t checksum)
+template<typename T> std::tuple<bool, T> parse_valid(const std::string& sentence)
 {
-  bool ok;
-  return calc_checksum(s, &ok) == checksum && ok;
+  T data;
+  uint8_t checksum;
+  bool success = parse(sentence, &data, &checksum) &&
+                 comp_checksum(sentence, checksum);
+  return std::make_tuple(success, data);
 }
 
 
