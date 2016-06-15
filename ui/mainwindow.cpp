@@ -14,6 +14,7 @@ Fl_Menu_Item MainWindow::menu_choice_mode[] = {
  {"Transmit", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Receive", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Log", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Debug", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0}
 };
 
@@ -58,6 +59,7 @@ MainWindow::MainWindow(Pichi* p) {
     } // Fl_Group* o
     { Fl_Tabs* o = new Fl_Tabs(6, 38, 488, 224);
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Device");
+        o->hide();
         { text_device_id = new Fl_Input(12, 66, 160, 24, "Device ID");
           text_device_id->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_device_id
@@ -74,7 +76,6 @@ MainWindow::MainWindow(Pichi* p) {
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "GNSS");
-        o->hide();
         { text_gnss_port = new Fl_Input(12, 66, 160, 24, "Port (Device sending NMEA sentences)");
           text_gnss_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port

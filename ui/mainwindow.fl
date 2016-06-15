@@ -2,7 +2,7 @@
 version 1.0302 
 header_name {.h} 
 code_name {.cpp}
-decl {\#include "../pichi.h"} {selected private global
+decl {\#include "../pichi.h"} {private global
 } 
 
 decl {class Pichi;} {public global
@@ -10,14 +10,15 @@ decl {class Pichi;} {public global
 
 class MainWindow {open
 } {
-  Function {MainWindow(Pichi* p)} {} {
+  Function {MainWindow(Pichi* p)} {open
+  } {
     code {pichi_ = p;} {}
     code {last_count_ = 0;} {}
     Fl_Window main_window {
-      label Pichi
+      label Pichi open
       private xywh {65 514 500 300} type Double visible
     } {
-      Fl_Group {} {
+      Fl_Group {} {open
         xywh {0 0 500 38}
       } {
         Fl_Light_Button button_start {
@@ -25,7 +26,7 @@ class MainWindow {open
           callback {button_start_clicked()}
           private xywh {122 6 60 26} selection_color 62
         }
-        Fl_Choice choice_mode {
+        Fl_Choice choice_mode {open
           private xywh {6 6 110 26} down_box BORDER_BOX labeltype NO_LABEL
         } {
           MenuItem {} {
@@ -38,6 +39,10 @@ class MainWindow {open
           }
           MenuItem {} {
             label Log
+            xywh {0 0 34 20}
+          }
+          MenuItem {} {
+            label Debug selected
             xywh {0 0 34 20}
           }
         }
@@ -55,7 +60,7 @@ class MainWindow {open
       } {
         Fl_Group {} {
           label Device
-          xywh {6 60 488 202}
+          xywh {6 60 488 202} hide
         } {
           Fl_Input text_device_id {
             label {Device ID}
@@ -78,7 +83,7 @@ class MainWindow {open
         }
         Fl_Group {} {
           label GNSS
-          xywh {6 60 488 202} hide
+          xywh {6 60 488 202}
         } {
           Fl_Input text_gnss_port {
             label {Port (Device sending NMEA sentences)}

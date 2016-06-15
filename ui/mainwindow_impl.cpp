@@ -65,15 +65,11 @@ void MainWindow::button_start_clicked()
       button_start->value(1);
     }
     else {
-      std::string filename;
-      if (choice_mode->value() > 0) {
-        auto t = std::chrono::high_resolution_clock::now().time_since_epoch();
-        filename = std::string("logs/log_") + std::to_string(t.count()) + ".csv";
-      }
       switch (choice_mode->value()) {
-        case 0: pichi_->start_gnss_transmitter(); break;
+        case 0: pichi_->start_location_transmitter(); break;
         case 1: pichi_->start_gnss_receiver(); break;
-        case 2: pichi_->start_gnss_logger(); break;
+        case 2: break;
+        case 3: pichi_->start_debugger(); break;
       }
       button_start->label("Stop");
       last_count_ = 0;
