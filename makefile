@@ -15,13 +15,13 @@ test: nmea_parser.o nmea_parser_test.cpp
 
 
 pichi: \
-  main.o pichi.o mainwindow.o mainwindow_impl.o \
-  gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
+  main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o \
+  gnss_util.o gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
   nmea_reader.o serial_async_reader.o serial_base.o nmea_parser.o \
   timer.o configuration.o
 	$(CXX) $(CXXFLAGS) $(CXXFLAGSFLTK) \
-      main.o pichi.o mainwindow.o mainwindow_impl.o \
-      gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
+      main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o \
+      gnss_util.o gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
       nmea_reader.o serial_async_reader.o serial_base.o nmea_parser.o \
       timer.o configuration.o \
       -o pichi $(LINKFLTK)
@@ -37,8 +37,18 @@ mainwindow.o: ui/mainwindow.cpp
 mainwindow_impl.o: ui/mainwindow_impl.cpp gnss_receiver.h configuration.h
 	$(CXX) -c $(CXXFLAGS) $(CXXFLAGSFLTK) ui/mainwindow_impl.cpp
 
-pichi.o: pichi.cpp configuration.h
+pichi.o: \
+  pichi.cpp \
+  timer.h \
+  configuration.h \
+  nmea_reader.h \
+  nmea_parser.h \
+  gnss_receiver.h \
+  gnss_util.h
 	$(CXX) -c $(CXXFLAGS) pichi.cpp
+
+logfile.o: logfile.cpp logfile.h
+	$(CXX) -c $(CXXFLAGS) logfile.cpp
 
 gnss_receiver.o: \
   gnss_receiver.cpp \
@@ -47,6 +57,9 @@ gnss_receiver.o: \
   timer.h \
   configuration.h
 	$(CXX) -c $(CXXFLAGS) gnss_receiver.cpp
+
+gnss_util.o: gnss_util.cpp gnss_util.h
+	$(CXX) -c $(CXXFLAGS) gnss_util.cpp
 
 nmea_reader.o: \
   nmea_reader.cpp \
