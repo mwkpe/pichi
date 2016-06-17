@@ -1,5 +1,5 @@
-#ifndef GNSS_UTIL_H
-#define GNSS_UTIL_H
+#ifndef GNSS_UTIL_H_
+#define GNSS_UTIL_H_
 
 
 #include <cstdint>
@@ -9,13 +9,17 @@ namespace gnss {
 namespace util {
 
 
-double dm_to_decimal(uint8_t degrees, float minutes, char direction);
-double dms_to_decimal(uint8_t degrees, uint8_t minutes,
-                      float seconds, char direction);
+double dm_to_decimal(int degrees, float minutes, char direction);
+double dms_to_decimal(int degrees, int minutes, float seconds, char direction);
+
+uint64_t as_utc_unix(int year, int month, int day,
+                     int hour, int minute, int second);
+double as_utc_unix(int year, int month, int day,
+                   int hour, int minute, float second);
 
 
 }  // namespace util
 }  // namespace gnss
 
 
-#endif  // GNSS_RECEIVER_H
+#endif  // GNSS_UTIL_H_
