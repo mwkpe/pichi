@@ -14,6 +14,7 @@ Fl_Menu_Item MainWindow::menu_choice_mode[] = {
  {"Transmit", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Receive", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Log", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
+ {"Display", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {"Debug", 0,  0, 0, 0, FL_NORMAL_LABEL, 0, 14, 0},
  {0,0,0,0,0,0,0,0,0}
 };
@@ -23,6 +24,20 @@ void MainWindow::cb_button_sync_time_i(Fl_Button*, void*) {
 }
 void MainWindow::cb_button_sync_time(Fl_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_button_sync_time_i(o,v);
+}
+
+void MainWindow::cb_radio_log_all_i(Fl_Round_Button*, void*) {
+  radio_log_clicked();
+}
+void MainWindow::cb_radio_log_all(Fl_Round_Button* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_all_i(o,v);
+}
+
+void MainWindow::cb_radio_log_short_i(Fl_Round_Button*, void*) {
+  radio_log_clicked();
+}
+void MainWindow::cb_radio_log_short(Fl_Round_Button* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_short_i(o,v);
 }
 
 void MainWindow::cb_button_apply_i(Fl_Button*, void*) {
@@ -79,21 +94,24 @@ MainWindow::MainWindow(Pichi* p) {
         { text_gnss_port = new Fl_Input(12, 66, 160, 24, "Port (Device sending NMEA sentences)");
           text_gnss_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port
-        { Fl_Box* o = new Fl_Box(12, 112, 474, 98, "NMEA sentence filter");
+        { text_gnss_port_rate = new Fl_Input(12, 96, 160, 24, "Baud Rate");
+          text_gnss_port_rate->align(Fl_Align(FL_ALIGN_RIGHT));
+        } // Fl_Input* text_gnss_port_rate
+        { Fl_Box* o = new Fl_Box(12, 142, 474, 98, "NMEA sentence filter");
           o->box(FL_DOWN_BOX);
           o->align(Fl_Align(FL_ALIGN_TOP_LEFT));
         } // Fl_Box* o
-        { check_rmc = new Fl_Check_Button(18, 120, 460, 16, "RMC (Recommended minimum data)");
+        { check_rmc = new Fl_Check_Button(18, 150, 460, 16, "RMC (Recommended minimum data)");
           check_rmc->down_box(FL_DOWN_BOX);
           check_rmc->value(1);
         } // Fl_Check_Button* check_rmc
-        { check_gga = new Fl_Check_Button(18, 142, 460, 16, "GGA (Global positioning system fix data)");
+        { check_gga = new Fl_Check_Button(18, 172, 460, 16, "GGA (Global positioning system fix data)");
           check_gga->down_box(FL_DOWN_BOX);
         } // Fl_Check_Button* check_gga
-        { check_gsv = new Fl_Check_Button(18, 164, 460, 16, "GSV (Satellites in view)");
+        { check_gsv = new Fl_Check_Button(18, 194, 460, 16, "GSV (Satellites in view)");
           check_gsv->down_box(FL_DOWN_BOX);
         } // Fl_Check_Button* check_gsv
-        { check_other = new Fl_Check_Button(18, 186, 460, 16, "Other (When logging sentences)");
+        { check_other = new Fl_Check_Button(18, 216, 460, 16, "Other (When logging sentences)");
           check_other->down_box(FL_DOWN_BOX);
         } // Fl_Check_Button* check_other
         o->end();
@@ -120,6 +138,31 @@ MainWindow::MainWindow(Pichi* p) {
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Log");
         o->hide();
+        { radio_log_all = new Fl_Round_Button(12, 66, 474, 16, "All (Header, timings and data)");
+          radio_log_all->down_box(FL_ROUND_DOWN_BOX);
+          radio_log_all->callback((Fl_Callback*)cb_radio_log_all);
+        } // Fl_Round_Button* radio_log_all
+        { radio_log_short = new Fl_Round_Button(12, 85, 474, 16, "Short (Device ID and data)");
+          radio_log_short->down_box(FL_ROUND_DOWN_BOX);
+          radio_log_short->value(1);
+          radio_log_short->callback((Fl_Callback*)cb_radio_log_short);
+        } // Fl_Round_Button* radio_log_short
+        o->end();
+      } // Fl_Group* o
+      { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Display");
+        o->hide();
+        { text_display_utc = new Fl_Output(12, 66, 200, 24, "UTC Timestamp");
+          text_display_utc->box(FL_FLAT_BOX);
+          text_display_utc->align(Fl_Align(FL_ALIGN_RIGHT));
+        } // Fl_Output* text_display_utc
+        { text_display_lat = new Fl_Output(12, 96, 200, 24, "Latitude");
+          text_display_lat->box(FL_FLAT_BOX);
+          text_display_lat->align(Fl_Align(FL_ALIGN_RIGHT));
+        } // Fl_Output* text_display_lat
+        { text_display_long = new Fl_Output(12, 126, 200, 24, "Longitude");
+          text_display_long->box(FL_FLAT_BOX);
+          text_display_long->align(Fl_Align(FL_ALIGN_RIGHT));
+        } // Fl_Output* text_display_long
         o->end();
       } // Fl_Group* o
       o->end();

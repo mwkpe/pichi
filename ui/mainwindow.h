@@ -14,6 +14,7 @@ class Pichi;
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Round_Button.H>
 
 class MainWindow {
 public:
@@ -34,6 +35,7 @@ private:
   inline void cb_button_sync_time_i(Fl_Button*, void*);
   static void cb_button_sync_time(Fl_Button*, void*);
   Fl_Input *text_gnss_port;
+  Fl_Input *text_gnss_port_rate;
 public:
   Fl_Check_Button *check_rmc;
   Fl_Check_Button *check_gga;
@@ -44,7 +46,16 @@ private:
   Fl_Input *text_trans_port;
   Fl_Input *text_recv_ip;
   Fl_Input *text_recv_port;
+  Fl_Round_Button *radio_log_all;
+  inline void cb_radio_log_all_i(Fl_Round_Button*, void*);
+  static void cb_radio_log_all(Fl_Round_Button*, void*);
+  Fl_Round_Button *radio_log_short;
+  inline void cb_radio_log_short_i(Fl_Round_Button*, void*);
+  static void cb_radio_log_short(Fl_Round_Button*, void*);
 public:
+  Fl_Output *text_display_utc;
+  Fl_Output *text_display_lat;
+  Fl_Output *text_display_long;
   Fl_Button *button_apply;
 private:
   inline void cb_button_apply_i(Fl_Button*, void*);
@@ -52,13 +63,16 @@ private:
 public:
   void show(int argc, char** argv);
   static void update_status_callback(void* p);
+  static void update_display_callback(void* p);
   void update_status();
+  void update_display();
 private:
   void apply_settings();
   void load_settings();
   void button_start_clicked();
   void button_apply_clicked();
   void button_sync_time_clicked();
+  void radio_log_clicked();
   Pichi* pichi_; 
   unsigned long long last_count_; 
 };

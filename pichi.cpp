@@ -4,6 +4,7 @@
 #include <iostream>
 #include <thread>
 #include <utility>
+#include <mutex>
 
 #include "logfile.h"
 #include "gnss_util.h"
@@ -109,6 +110,23 @@ void Pichi::start_gnss_receiver()
 }
 
 
+void Pichi::start_location_display()
+{
+  if (!is_active()) {
+    reset();
+    active_.store(true);
+
+    std::thread consumer{&Pichi::update_gnss_location, this};
+    consumer.detach();
+
+    std::thread provider{&nmea::Reader::start, &nmea_reader_};
+    provider.detach();
+  }
+  else
+    std::cerr << "Already running!" << std::endl;
+}
+
+
 void Pichi::start_debugger()
 {
   if (!is_active()) {
@@ -123,6 +141,13 @@ void Pichi::start_debugger()
   }
   else
     std::cerr << "Already running!" << std::endl;
+}
+
+
+gnss::LocationPacket Pichi::current_gnss_location()
+{
+  std::lock_guard<std::mutex> lock{gnss_location_mutex_};
+  return gnss_location_;
 }
 
 
@@ -167,6 +192,82 @@ void Pichi::transmit_location()
 }
 
 
+void Pichi::log_gnss_packets()
+{
+  logging::Logfile file(std::string("logs/log_") + std::to_string(timer_.current_time()) + ".csv");
+  if (file.is_open()) {
+    while (is_active()) {
+      std::unique_lock<std::mutex> lk{gnss_data_mutex_};
+      gnss_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+          [this] { return !gnss_data_.empty() || !active_.load(); });
+      if (!gnss_data_.empty()) {
+        decltype(gnss_data_) gnss_recvs;
+        std::swap(gnss_data_, gnss_recvs);
+        lk.unlock();
+
+        for (const auto& recv : gnss_recvs) {
+          switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
+            case gnss::PacketType::Location: {
+              if (recv.header.data_size == gnss::location_data_size &&
+                  recv.header.data_size >= recv.data.size()) {
+                auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
+                file.write(&recv.header, location, recv.time);
+              }
+            }
+            break;
+          }
+        }
+
+        activity_counter_.fetch_add(gnss_recvs.size());
+      }
+    }
+  }
+}
+
+
+void Pichi::update_gnss_location()
+{
+  gnss::LocationPacket location;
+
+  while (is_active()) {
+    std::unique_lock<std::mutex> lk{nmea_data_mutex_};
+    nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+        [this] { return !nmea_data_.empty() || !active_.load(); });
+    if (!nmea_data_.empty()) {
+      decltype(nmea_data_) nmea_reads;
+      std::swap(nmea_data_, nmea_reads);
+      lk.unlock();
+
+      for (const auto& read : nmea_reads) {
+        if (parse_location(&location, read)) {
+          activity_counter_.fetch_add(1);
+          std::lock_guard<std::mutex> lock{gnss_location_mutex_};
+          gnss_location_ = location;
+        }
+      }
+    }
+  }
+}
+
+
+void Pichi::show_nmea_sentences()
+{
+  while (is_active()) {
+    std::unique_lock<std::mutex> lk{nmea_data_mutex_};
+    nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+        [this] { return !nmea_data_.empty() || !active_.load(); });
+    if (!nmea_data_.empty()) {
+      decltype(nmea_data_) nmea_read;
+      std::swap(nmea_data_, nmea_read);
+      lk.unlock();
+      for (const auto& read : nmea_read)
+        std::cout << read.sentence << std::endl;
+      activity_counter_.fetch_add(nmea_read.size());
+    }
+  }
+}
+
+
 bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData& nmea_read)
 {
   bool success = false;
@@ -202,55 +303,4 @@ bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData&
   }
 
   return success;
-}
-
-
-void Pichi::log_gnss_packets()
-{
-  logging::Logfile file(std::string("logs/log_") + std::to_string(timer_.current_time()) + ".csv");
-  if (file.is_open()) {
-    while (is_active()) {
-      std::unique_lock<std::mutex> lk{gnss_data_mutex_};
-      gnss_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
-          [this] { return !gnss_data_.empty() || !active_.load(); });
-      if (!gnss_data_.empty()) {
-        decltype(gnss_data_) gnss_recvs;
-        std::swap(gnss_data_, gnss_recvs);
-        lk.unlock();
-
-        for (const auto& recv : gnss_recvs) {
-          switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
-            case gnss::PacketType::Location: {
-              if (recv.header.data_size == gnss::location_data_size &&
-                  recv.header.data_size >= recv.data.size()) {
-                auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
-                file.write(&recv.header, location, recv.time);
-              }
-            }
-            break;
-          }
-        }
-
-        activity_counter_.fetch_add(gnss_recvs.size());
-      }
-    }
-  }
-}
-
-
-void Pichi::show_nmea_sentences()
-{
-  while (is_active()) {
-    std::unique_lock<std::mutex> lk{nmea_data_mutex_};
-    nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
-        [this] { return !nmea_data_.empty() || !active_.load(); });
-    if (!nmea_data_.empty()) {
-      decltype(nmea_data_) nmea_read;
-      std::swap(nmea_data_, nmea_read);
-      lk.unlock();
-      for (const auto& read : nmea_read)
-        std::cout << read.sentence << std::endl;
-      activity_counter_.fetch_add(nmea_read.size());
-    }
-  }
 }

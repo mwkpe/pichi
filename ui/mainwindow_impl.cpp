@@ -10,6 +10,7 @@
 #include <chrono>
 
 #include "../configuration.h"
+#include "../gnss_packet.h"
 #include "../pichi.h"
 
 
@@ -19,6 +20,7 @@ void MainWindow::apply_settings()
   try {
     conf.device_id = std::stoul(text_device_id->value());
     conf.gnss_port = text_gnss_port->value();
+    conf.gnss_port_rate = std::stoul(text_gnss_port_rate->value());
     conf.use_msg_rmc = check_rmc->value();
     conf.use_msg_gga = check_gga->value();
     conf.use_msg_gsv = check_gsv->value();
@@ -45,6 +47,7 @@ void MainWindow::load_settings()
   auto& conf = pichi_->config();
   text_device_id->value(std::to_string(conf.device_id).c_str());
   text_gnss_port->value(conf.gnss_port.c_str());
+  text_gnss_port_rate->value(std::to_string(conf.gnss_port_rate).c_str());
   check_rmc->value(conf.use_msg_rmc);
   check_gga->value(conf.use_msg_gga);
   check_gsv->value(conf.use_msg_gsv);
@@ -69,17 +72,23 @@ void MainWindow::button_start_clicked()
         case 0: pichi_->start_location_transmitter(); break;
         case 1: pichi_->start_gnss_receiver(); break;
         case 2: break;
-        case 3: pichi_->start_debugger(); break;
+        case 3: pichi_->start_location_display(); break;
+        case 4: pichi_->start_debugger(); break;
       }
       button_start->label("Stop");
       last_count_ = 0;
       Fl::add_timeout(1.0, &MainWindow::update_status_callback, this);
+
+      if (choice_mode->value() == 3) {
+        Fl::add_timeout(0.2, &MainWindow::update_display_callback, this);
+      }
     }
   }
   else {
     pichi_->stop();
     button_start->label("Start");
     Fl::remove_timeout(&MainWindow::update_status_callback, this);
+    Fl::remove_timeout(&MainWindow::update_display_callback, this);
   }
 }
 
@@ -104,6 +113,12 @@ void MainWindow::button_sync_time_clicked()
 }
 
 
+void MainWindow::radio_log_clicked()
+{
+  // TODO: Implement short logging
+}
+
+
 void MainWindow::update_status_callback(void* p)
 {
   auto* w = reinterpret_cast<MainWindow*>(p);
@@ -121,4 +136,22 @@ void MainWindow::update_status()
 
   text_rate->value(std::to_string(rate).c_str());
   text_total->value(std::to_string(count).c_str());
+}
+
+
+void MainWindow::update_display_callback(void* p)
+{
+  auto* w = reinterpret_cast<MainWindow*>(p);
+  w->update_display();
+  Fl::repeat_timeout(0.2, &MainWindow::update_display_callback, w);
+}
+
+
+void MainWindow::update_display()
+{
+  auto location = pichi_->current_gnss_location();
+
+  text_display_utc->value(std::to_string(location.utc_timestamp).c_str());
+  text_display_lat->value(std::to_string(location.latitude).c_str());
+  text_display_long->value(std::to_string(location.longitude).c_str());
 }

@@ -16,6 +16,7 @@
 #include "timer.h"
 #include "nmea_parser.h"
 #include "nmea_reader.h"
+#include "gnss_packet.h"
 #include "gnss_receiver.h"
 
 
@@ -32,6 +33,7 @@ public:
 
   void start_location_transmitter();
   void start_gnss_receiver();
+  void start_location_display();
   void start_debugger();
 
   void stop();
@@ -39,14 +41,17 @@ public:
   bool is_active() const { return active_.load(); }
   uint64_t activity_count() const { return activity_counter_.load(); }
 
+  gnss::LocationPacket current_gnss_location();
+
 private:
   void reset();
 
   void transmit_location();
-  bool parse_location(gnss::LocationPacket* location, const nmea::ReadData& nmea_read);
-
   void log_gnss_packets();
+  void update_gnss_location();
   void show_nmea_sentences();
+
+  bool parse_location(gnss::LocationPacket* location, const nmea::ReadData& nmea_read);
 
   // Member
   Configuration conf_;
@@ -65,6 +70,9 @@ private:
   std::mutex gnss_data_mutex_;
   std::deque<gnss::ReceiveData> gnss_data_;
   gnss::Receiver gnss_receiver_;
+
+  std::mutex gnss_location_mutex_;
+  gnss::LocationPacket gnss_location_;
 };
 
 

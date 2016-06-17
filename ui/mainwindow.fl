@@ -16,7 +16,7 @@ class MainWindow {open
     code {last_count_ = 0;} {}
     Fl_Window main_window {
       label Pichi open
-      private xywh {65 514 500 300} type Double visible
+      private xywh {59 530 500 300} type Double visible
     } {
       Fl_Group {} {open
         xywh {0 0 500 38}
@@ -42,7 +42,11 @@ class MainWindow {open
             xywh {0 0 34 20}
           }
           MenuItem {} {
-            label Debug selected
+            label Display
+            xywh {0 0 34 20}
+          }
+          MenuItem {} {
+            label Debug
             xywh {0 0 34 20}
           }
         }
@@ -89,25 +93,29 @@ class MainWindow {open
             label {Port (Device sending NMEA sentences)}
             private xywh {12 66 160 24} align 8
           }
+          Fl_Input text_gnss_port_rate {
+            label {Baud Rate}
+            private xywh {12 96 160 24} align 8
+          }
           Fl_Box {} {
             label {NMEA sentence filter}
-            xywh {12 112 474 98} box DOWN_BOX align 5
+            xywh {12 142 474 98} box DOWN_BOX align 5
           }
           Fl_Check_Button check_rmc {
             label {RMC (Recommended minimum data)}
-            xywh {18 120 460 16} down_box DOWN_BOX value 1
+            xywh {18 150 460 16} down_box DOWN_BOX value 1
           }
           Fl_Check_Button check_gga {
             label {GGA (Global positioning system fix data)}
-            xywh {18 142 460 16} down_box DOWN_BOX
+            xywh {18 172 460 16} down_box DOWN_BOX
           }
           Fl_Check_Button check_gsv {
             label {GSV (Satellites in view)}
-            xywh {18 164 460 16} down_box DOWN_BOX
+            xywh {18 194 460 16} down_box DOWN_BOX
           }
           Fl_Check_Button check_other {
             label {Other (When logging sentences)}
-            xywh {18 186 460 16} down_box DOWN_BOX
+            xywh {18 216 460 16} down_box DOWN_BOX
           }
         }
         Fl_Group {} {
@@ -139,9 +147,37 @@ class MainWindow {open
         Fl_Group {} {
           label Log
           xywh {6 60 488 202} hide
-        } {}
+        } {
+          Fl_Round_Button radio_log_all {
+            label {All (Header, timings and data)}
+            callback {radio_log_clicked()}
+            private xywh {12 66 474 16} down_box ROUND_DOWN_BOX
+          }
+          Fl_Round_Button radio_log_short {
+            label {Short (Device ID and data)}
+            callback {radio_log_clicked()}
+            private xywh {12 85 474 16} down_box ROUND_DOWN_BOX value 1
+          }
+        }
+        Fl_Group {} {
+          label Display open
+          xywh {6 60 488 202} hide
+        } {
+          Fl_Output text_display_utc {
+            label {UTC Timestamp}
+            xywh {12 66 200 24} box FLAT_BOX align 8
+          }
+          Fl_Output text_display_lat {
+            label Latitude
+            xywh {12 96 200 24} box FLAT_BOX align 8
+          }
+          Fl_Output text_display_long {
+            label Longitude
+            xywh {12 126 200 24} box FLAT_BOX align 8
+          }
+        }
       }
-      Fl_Group {} {open
+      Fl_Group {} {open selected
         xywh {6 262 488 38}
       } {
         Fl_Button button_apply {
@@ -153,13 +189,17 @@ class MainWindow {open
     }
     code {load_settings();} {}
   }
-  Function {show(int argc, char** argv)} {return_type void
+  Function {show(int argc, char** argv)} {open return_type void
   } {
     code {main_window->show(argc, argv);} {}
   }
   Function {update_status_callback(void* p)} {open return_type {static void}
   } {}
+  Function {update_display_callback(void* p)} {open return_type {static void}
+  } {}
   Function {update_status()} {open return_type void
+  } {}
+  Function {update_display()} {open return_type void
   } {}
   Function {apply_settings()} {private return_type void
   } {}
@@ -170,6 +210,8 @@ class MainWindow {open
   Function {button_apply_clicked()} {private return_type void
   } {}
   Function {button_sync_time_clicked()} {open private return_type void
+  } {}
+  Function {radio_log_clicked()} {open private return_type void
   } {}
   decl {Pichi* pichi_;} {private local
   }
