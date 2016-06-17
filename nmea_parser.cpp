@@ -68,55 +68,55 @@ bool nmea::parse(const std::string& sentence,
 
   auto it = std::begin(sentence);
   bool success = phrase_parse(it, std::end(sentence),
-    lit("$") >>               // Start character ($)
-    'G' >> char_("PNLAB") >>  // Talker ID (aa)
-    "RMC," >>                 // Message id (RMC)
-    uint8_2d >>               // Time of position fix (hh)
-    uint8_2d >>               // Time of position fix (mm)
-    float_ >> ',' >>          // Time of position fix (ss.s-s)
-    char_("AV") >> ',',       // Status (A)
-    space,
-    data->talker_id,
-    data->utc_time_hour,
-    data->utc_time_minute,
-    data->utc_time_second,
-    data->status)
+      lit("$") >>               // Start character ($)
+      'G' >> char_("PNLAB") >>  // Talker ID (aa)
+      "RMC," >>                 // Message id (RMC)
+      uint8_2d >>               // Time of position fix (hh)
+      uint8_2d >>               // Time of position fix (mm)
+      float_ >> ',' >>          // Time of position fix (ss.s-s)
+      char_("AV") >> ',',       // Status (A)
+      space,
+      data->talker_id,
+      data->utc_time_hour,
+      data->utc_time_minute,
+      data->utc_time_second,
+      data->status)
 
   &&
 
   phrase_parse(it, std::end(sentence),
-    uint8_2d >> float_ >>            // Latitude (llll.l-l)
-    ',' >> char_("NS") >> ',' >>     // Direction (a)
-    uint16_3d >> float_ >>           // Longitude (yyyyy.y-y)
-    ',' >> char_("EW") >> ',' >>     // Direction (a)
-    (float_ | attr(0.0f)) >> ',' >>  // Speed over ground (x.x)
-    (float_ | attr(0.0f)) >> ',',    // Course over ground (x.x)
-    space,
-    data->degrees_lat,
-    data->minutes_lat,
-    data->direction_lat,
-    data->degrees_long,
-    data->minutes_long,
-    data->direction_long,
-    data->speed_over_ground,
-    data->track_angle)
+      uint8_2d >> float_ >>            // Latitude (llll.l-l)
+      ',' >> char_("NS") >> ',' >>     // Direction (a)
+      uint16_3d >> float_ >>           // Longitude (yyyyy.y-y)
+      ',' >> char_("EW") >> ',' >>     // Direction (a)
+      (float_ | attr(0.0f)) >> ',' >>  // Speed over ground (x.x)
+      (float_ | attr(0.0f)) >> ',',    // Course over ground (x.x)
+      space,
+      data->degrees_lat,
+      data->minutes_lat,
+      data->direction_lat,
+      data->degrees_long,
+      data->minutes_long,
+      data->direction_long,
+      data->speed_over_ground,
+      data->track_angle)
 
   &&
 
   phrase_parse(it, std::end(sentence),
-    uint8_2d >> uint8_2d >> uint8_2d >> ',' >>  // Date (ddmmyy)
-    (float_ | attr(0.0f)) >> ',' >>             // Magnetic variation (x.x)
-    (char_("EW") | attr('0')) >>                // Direction (a)
-    -(',' >> char_("ADENSFR")) >>               // Mode indicator (a)
-    '*' >> hex,                                 // Checksum indicator and checksum
-    space,
-    data->date_day,
-    data->date_month,
-    data->date_year,
-    data->magnetic_variation,
-    data->direction_mv,
-    mode_indicator,
-    *checksum);
+      uint8_2d >> uint8_2d >> uint8_2d >> ',' >>  // Date (ddmmyy)
+      (float_ | attr(0.0f)) >> ',' >>             // Magnetic variation (x.x)
+      (char_("EW") | attr('0')) >>                // Direction (a)
+      -(',' >> char_("ADENSFR")) >>               // Mode indicator (a)
+      '*' >> hex,                                 // Checksum indicator and checksum
+      space,
+      data->date_day,
+      data->date_month,
+      data->date_year,
+      data->magnetic_variation,
+      data->direction_mv,
+      mode_indicator,
+      *checksum);
 
   if (success) {
     if (mode_indicator)
@@ -159,54 +159,53 @@ bool nmea::parse(const std::string& sentence,
 
   auto it = std::begin(sentence);
   bool success = phrase_parse(it, std::end(sentence),
-    lit("$") >>               // Start character ($)
-    'G' >> char_("PNLAB") >>  // Talker ID (aa)
-    "GGA," >>                 // Message id (GGA)
-    uint8_2d >>               // Time of position fix (hh)
-    uint8_2d >>               // Time of position fix (mm)
-    float_ >> ',',            // Time of position fix (ss.s-s)
-    space,
-    data->talker_id,
-    data->utc_time_hour,
-    data->utc_time_minute,
-    data->utc_time_second)
+      lit("$") >>               // Start character ($)
+      'G' >> char_("PNLAB") >>  // Talker ID (aa)
+      "GGA," >>                 // Message id (GGA)
+      uint8_2d >>               // Time of position fix (hh)
+      uint8_2d >>               // Time of position fix (mm)
+      float_ >> ',',            // Time of position fix (ss.s-s)
+      space,
+      data->talker_id,
+      data->utc_time_hour,
+      data->utc_time_minute,
+      data->utc_time_second)
 
   &&
 
   phrase_parse(it, std::end(sentence),
-    uint8_2d >> float_ >> ',' >>   // Latitude (llll.l-l)
-    char_("NS") >> ',' >>          // Direction (a)
-    uint16_3d >> float_ >> ',' >>  // Longitude (yyyyy.y-y)
-    char_("EW") >> ',' >>          // Direction (a)
-    uchar_ >> ',' >>               // Position fix flag (x)
-    uchar_ >> ',',                 // Number of satellites used in calculation (xx)
-    space,
-    data->degrees_lat,
-    data->minutes_lat,
-    data->direction_lat,
-    data->degrees_long,
-    data->minutes_long,
-    data->direction_long,
-    data->fix_flag,
-    data->satellites_used)
+      uint8_2d >> float_ >> ',' >>   // Latitude (llll.l-l)
+      char_("NS") >> ',' >>          // Direction (a)
+      uint16_3d >> float_ >> ',' >>  // Longitude (yyyyy.y-y)
+      char_("EW") >> ',' >>          // Direction (a)
+      uchar_ >> ',' >>               // Position fix flag (x)
+      uchar_ >> ',',                 // Number of satellites used in calculation (xx)
+      space,
+      data->degrees_lat,
+      data->minutes_lat,
+      data->direction_lat,
+      data->degrees_long,
+      data->minutes_long,
+      data->direction_long,
+      data->fix_flag,
+      data->satellites_used)
 
   &&
 
   phrase_parse(it, std::end(sentence),
-    float_ >> ',' >>                 // Horizontal dilution of precision (x.x)
-    float_ >> ',' >> 'M' >> ',' >>   // Altitude (x.x,M)
-    float_ >> ',' >> 'M' >> ',' >>   // Geoidal separation (x.x,M)
-    (float_ | attr(0.0f)) >> ',' >>  // Age of differential GNSS data
-    (ushort_ | attr(0)) >>           // Differential reference station ID
-    '*' >> hex,                      // Checksum indicator and checksum
-    space,
-    data->hor_dilution_of_precision,
-    data->altitude,
-    data->geoidal_separation,
-    data->age_of_dgps_data,
-    data->reference_station_id,
-    *checksum
-  );
+      float_ >> ',' >>                 // Horizontal dilution of precision (x.x)
+      float_ >> ',' >> 'M' >> ',' >>   // Altitude (x.x,M)
+      float_ >> ',' >> 'M' >> ',' >>   // Geoidal separation (x.x,M)
+      (float_ | attr(0.0f)) >> ',' >>  // Age of differential GNSS data
+      (ushort_ | attr(0)) >>           // Differential reference station ID
+      '*' >> hex,                      // Checksum indicator and checksum
+      space,
+      data->hor_dilution_of_precision,
+      data->altitude,
+      data->geoidal_separation,
+      data->age_of_dgps_data,
+      data->reference_station_id,
+      *checksum);
 
   return success;
 }
@@ -239,22 +238,21 @@ bool nmea::parse(const std::string& sentence,
 
   auto it = std::begin(sentence);
   bool success = phrase_parse(it, std::end(sentence),
-    lit("$") >>               // Start character ($)
-    'G' >> char_("PNLAB") >>  // Talker ID (aa)
-    "GSV," >>                 // Message id (GSV)
-    uchar_ >> ',' >>          // Total number of messages
-    uchar_ >> ',' >>          // Message number
-    uchar_ >> ',' >>          // Total number of satellites in view
-    -ushort_ % ',' >>         // PRN, elevation, azimuth and SNR for up to 4 satellites
-    '*' >> hex,               // Checksum indicator and checksum
-    space,
-    data->talker_id,
-    data->total_messages,
-    data->message_number,
-    data->satellites_in_view,
-    sat_data,
-    *checksum
-  );
+      lit("$") >>               // Start character ($)
+      'G' >> char_("PNLAB") >>  // Talker ID (aa)
+      "GSV," >>                 // Message id (GSV)
+      uchar_ >> ',' >>          // Total number of messages
+      uchar_ >> ',' >>          // Message number
+      uchar_ >> ',' >>          // Total number of satellites in view
+      -ushort_ % ',' >>         // PRN, elevation, azimuth and SNR for up to 4 satellites
+      '*' >> hex,               // Checksum indicator and checksum
+      space,
+      data->talker_id,
+      data->total_messages,
+      data->message_number,
+      data->satellites_in_view,
+      sat_data,
+      *checksum);
 
   if (success && !sat_data.empty()) {
     data->first.has_data = false;
