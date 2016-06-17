@@ -9,17 +9,19 @@
 
 A GNSS location transceiver/logger for the Raspberry Pi
 
-Pichi is a small program for reading NMEA sentences from a GNSS receiver and transmitting the positonal data, practically turning a Raspberry Pi into a GPS tag.
+Description
+---
+Pichi is a small program for reading NMEA sentences from a GNSS receiver and logging or transmitting the positonal data, practically turning a Raspberry Pi into a GPS tag.
 
 Requirements
 ---
-A Raspberry Pi or similar device – except for the [system timer](/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
+A Raspberry Pi or similar device – except for the (optional and easily adaptable/removeable) [system timer](/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
 
-Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences.
+Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences in the desired frequency.
 
 Development setup
 ---
-Compilation requires GCC 4.9 (or later with updating the makefile), boost, FLTK 1.3 and the non-boost version of Asio. The first two should be part of any recent Raspian.
+Compilation requires GCC 4.9 (or later with updating the makefile), boost (Spirit), FLTK 1.3 and the non-boost version of Asio. The first two should be part of any recent Raspian.
 
 Install Asio: `sudo apt-get install libasio-dev`<br>
 Install FLTK: `sudo apt-get install libfltk1.3-dev`<br>
@@ -46,4 +48,4 @@ Using sudo is necessary for accessing to the memory location of the the Raspberr
 
 Acknowledgements
 ---
-Pichi is using [FLTK](http://www.fltk.org) for the GUI, [Asio](http://think-async.com/) for network and serial I/O, [doctest](https://github.com/onqtam/doctest) for testing, and [GSL Lite](https://github.com/martinmoene/gsl-lite).
+Pichi is using [FLTK](http://www.fltk.org) for the GUI, [Asio](http://think-async.com/) for network and serial I/O, [doctest](https://github.com/onqtam/doctest) and (some) [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, and [GSL Lite](https://github.com/martinmoene/gsl-lite).
