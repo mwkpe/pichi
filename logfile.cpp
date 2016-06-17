@@ -26,11 +26,8 @@ void logging::Logfile::write(gsl::not_null<const gnss::LocationPacket*> data)
 void logging::Logfile::write_(gsl::not_null<const gnss::LocationPacket*> data)
 {
   fs_ << std::fixed
-      << std::setprecision(3)
-      << data->utc_timestamp
-      << std::setprecision(6)
-      << ','
+      << data->utc_timestamp << ','
       << data->latitude << ','
       << data->longitude
-      << std::scientific;
+      << std::scientific;  // GCC 4.9 not implemented std::defaultfloat
 }
