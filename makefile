@@ -10,8 +10,8 @@ LINKFLTK = -lpthread `fltk-config --ldstaticflags`
 
 all: pichi
 
-test: nmea_parser.o nmea_parser_test.cpp
-	$(CXX) $(CXXFLAGS) nmea_parser.o nmea_parser_test.cpp -o nmea_parser_test
+test: nmea_parser.o test/doctest/nmea_parser_test.cpp
+	$(CXX) $(CXXFLAGS) nmea_parser.o test/doctest/nmea_parser_test.cpp -o nmea_parser_test
 
 
 pichi: \
