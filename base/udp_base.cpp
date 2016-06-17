@@ -62,23 +62,6 @@ bool udp::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& e
 }
 
 
-bool udp::connect(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& ep)
-{
-  try {
-    s.connect(ep);
-    std::cout << "Connected to " << ep.address().to_string()
-              << ":" << ep.port() << std::endl;
-    return true;
-  }
-  catch (asio::system_error& e) {
-    std::cerr << "Error while connecting socket to endpoint:\n"
-              << e.what() << std::endl;
-  }
-
-  return false;
-}
-
-
 void udp::close_socket(asio::ip::udp::socket& socket)
 {
   try {

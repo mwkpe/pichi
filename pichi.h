@@ -1,5 +1,5 @@
-#ifndef PICHI_H
-#define PICHI_H
+#ifndef PICHI_H_
+#define PICHI_H_
 
 
 #include <cstdint>
@@ -68,4 +68,4 @@ private:
 };
 
 
-#endif  // PICHI_H
+#endif  // PICHI_H_

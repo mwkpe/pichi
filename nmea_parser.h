@@ -1,5 +1,5 @@
-#ifndef NMEA_PARSER_H
-#define NMEA_PARSER_H
+#ifndef NMEA_PARSER_H_
+#define NMEA_PARSER_H_
 
 
 /* A simple parser for NMEA sentences (RMC, GGA, GSV)
@@ -139,7 +139,7 @@ template<typename T> std::tuple<bool, T> parse_valid(const std::string& sentence
 }
 
 
-}  // nmea
+}  // namespace nmea
 
 
-#endif  // NMEA_PARSER_H
+#endif  // NMEA_PARSER_H_

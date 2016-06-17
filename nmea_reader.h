@@ -1,9 +1,10 @@
-#ifndef NMEA_READER_H
-#define NMEA_READER_H
+#ifndef NMEA_READER_H_
+#define NMEA_READER_H_
 
 
 #include <cstdint>
 #include <atomic>
+#include <vector>
 #include <tuple>
 #include <string>
 #include <deque>
@@ -79,4 +80,4 @@ void replace_nonascii(gsl::span<char> s, char c);
 }  // namespace nmea
 
 
-#endif  // NMEA_READER_H
+#endif  // NMEA_READER_H_

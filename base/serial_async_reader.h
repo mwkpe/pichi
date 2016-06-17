@@ -1,13 +1,14 @@
-#ifndef SERIAL_ASYNC_READER_H
-#define SERIAL_ASYNC_READER_H
+#ifndef SERIAL_ASYNC_READER_H_
+#define SERIAL_ASYNC_READER_H_
 
+
+#include <asio.hpp>
 
 #include <cstdint>
 #include <array>
 #include <string>
 
 #include "../ext/gsl-lite.h"
-#include <asio.hpp>
 
 
 namespace serial {
@@ -38,4 +39,4 @@ protected:
 }  // namespace serial
 
 
-#endif  // SERIAL_ASYNC_READER_H
+#endif  // SERIAL_ASYNC_READER_H_

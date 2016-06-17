@@ -1,5 +1,5 @@
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef TIMER_H_
+#define TIMER_H_
 
 
 #include <cstdint>
@@ -29,4 +29,4 @@ private:
 };
 
 
-#endif  // TIMER_H
+#endif  // TIMER_H_

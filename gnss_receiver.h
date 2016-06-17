@@ -1,8 +1,9 @@
-#ifndef GNSS_RECEIVER_H
-#define GNSS_RECEIVER_H
+#ifndef GNSS_RECEIVER_H_
+#define GNSS_RECEIVER_H_
 
 
 #include <cstdint>
+#include <vector>
 #include <tuple>
 #include <string>
 #include <deque>
@@ -70,4 +71,4 @@ private:
 }  // namespace gnss
 
 
-#endif  // GNSS_RECEIVER_H
+#endif  // GNSS_RECEIVER_H_

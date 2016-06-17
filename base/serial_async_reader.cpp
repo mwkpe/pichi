@@ -33,7 +33,8 @@ void serial::AsyncReader::start_(const std::string& port, uint32_t rate)
       io_service_.run();  // Blocks until all work is done
     }
   }
-  else std::cerr << "Serial port AsyncReader is already running!" << std::endl;
+  else
+    std::cerr << "Serial port AsyncReader is already running!" << std::endl;
 }
 
 

@@ -1,11 +1,11 @@
 #include "timer.h"
 
 
-#include <iostream>
-#include <chrono>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <iostream>
+#include <chrono>
 
 
 bool Timer::systime_init()

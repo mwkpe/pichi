@@ -2,12 +2,12 @@
 #include "mainwindow.h"
 
 
+#include <FL/Fl.H>
+
 #include <iostream>
 #include <fstream>
 #include <thread>
 #include <chrono>
-
-#include <FL/Fl.H>
 
 #include "../configuration.h"
 #include "../pichi.h"
@@ -99,7 +99,8 @@ void MainWindow::button_sync_time_clicked()
     std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
     t.detach();
   }
-  else std::cerr << "Can't sync time while running!" << std::endl;
+  else
+    std::cerr << "Can't sync time while running!" << std::endl;
 }
 
 

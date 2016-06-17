@@ -1,13 +1,14 @@
-#ifndef SERIAL_BASE_H
-#define SERIAL_BASE_H
+#ifndef SERIAL_BASE_H_
+#define SERIAL_BASE_H_
 
+
+#include <asio.hpp>
 
 #include <cstdint>
 #include <array>
 #include <string>
 
 #include "../ext/gsl-lite.h"
-#include <asio.hpp>
 
 
 namespace serial {
@@ -36,4 +37,4 @@ void close_port(asio::serial_port& serial_port);
 }  // namespace serial
 
 
-#endif  // SERIAL_BASE_H
+#endif  // SERIAL_BASE_H_

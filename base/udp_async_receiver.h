@@ -1,13 +1,14 @@
-#ifndef UDP_ASYNC_RECEIVER_H
-#define UDP_ASYNC_RECEIVER_H
+#ifndef UDP_ASYNC_RECEIVER_H_
+#define UDP_ASYNC_RECEIVER_H_
 
+
+#include <asio.hpp>
 
 #include <cstdint>
 #include <array>
 #include <string>
 
 #include "../ext/gsl-lite.h"
-#include <asio.hpp>
 
 
 namespace udp {
@@ -40,4 +41,4 @@ private:
 }  // namespace udp
 
 
-#endif  // UDP_ASYNC_RECEIVER_H
+#endif  // UDP_ASYNC_RECEIVER_H_

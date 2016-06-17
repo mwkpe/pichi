@@ -1,13 +1,14 @@
-#ifndef UDP_TRANSMITTER_H
-#define UDP_TRANSMITTER_H
+#ifndef UDP_TRANSMITTER_H_
+#define UDP_TRANSMITTER_H_
 
+
+#include <asio.hpp>
 
 #include <cstdint>
 #include <array>
 #include <string>
 
 #include "../ext/gsl-lite.h"
-#include <asio.hpp>
 
 
 namespace udp {
@@ -36,4 +37,4 @@ private:
 }  // namespace udp
 
 
-#endif  // UDP_TRANSMITTER_H
+#endif  // UDP_TRANSMITTER_H_

@@ -2,6 +2,7 @@
 
 
 #include <vector>
+#include <algorithm>
 
 
 gnss::Receiver::Receiver(const Configuration& conf,

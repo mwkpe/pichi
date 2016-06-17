@@ -1,10 +1,11 @@
 #include "nmea_parser.h"
 
 
+#include <boost/spirit/include/qi.hpp>
+#include <vector>
 #include <iterator>
 #include <numeric>
 #include <algorithm>
-#include <boost/spirit/include/qi.hpp>
 
 
 // Sentence type deduction
@@ -79,8 +80,7 @@ bool nmea::parse(const std::string& sentence,
     data->utc_time_hour,
     data->utc_time_minute,
     data->utc_time_second,
-    data->status
-  )
+    data->status)
 
   &&
 
@@ -99,8 +99,7 @@ bool nmea::parse(const std::string& sentence,
     data->minutes_long,
     data->direction_long,
     data->speed_over_ground,
-    data->track_angle
-  )
+    data->track_angle)
 
   &&
 
@@ -117,8 +116,7 @@ bool nmea::parse(const std::string& sentence,
     data->magnetic_variation,
     data->direction_mv,
     mode_indicator,
-    *checksum
-  );
+    *checksum);
 
   if (success) {
     if (mode_indicator)
@@ -171,8 +169,7 @@ bool nmea::parse(const std::string& sentence,
     data->talker_id,
     data->utc_time_hour,
     data->utc_time_minute,
-    data->utc_time_second
-  )
+    data->utc_time_second)
 
   &&
 
@@ -191,8 +188,7 @@ bool nmea::parse(const std::string& sentence,
     data->minutes_long,
     data->direction_long,
     data->fix_flag,
-    data->satellites_used
-  )
+    data->satellites_used)
 
   &&
 

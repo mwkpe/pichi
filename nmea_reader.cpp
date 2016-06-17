@@ -2,6 +2,7 @@
 
 
 #include <algorithm>
+#include <functional>
 #include "nmea_parser.h"
 
 
@@ -41,7 +42,7 @@ void nmea::Reader::handle_read(gsl::span<char> buffer)
 {
   uint64_t systime = timer_.current_systime();
   uint64_t time = timer_.current_time();
-  
+
   // Prevent crash due to spirit parser's isascii assert when garbage was read
   replace_nonascii(buffer, '0');
 
@@ -104,7 +105,7 @@ auto nmea::to_typed_sentences(std::vector<std::string>&& sentences)
 void nmea::filter(std::vector<std::tuple<nmea::SentenceType, std::string>>& sentences,
                   const Configuration& conf)
 // Removes sentences from vector that are not enabled in conf
-{                
+{
   auto new_end = std::remove_if(std::begin(sentences), std::end(sentences),
     [&conf](const std::tuple<nmea::SentenceType, std::string>& t) {
       auto type = std::get<0>(t);

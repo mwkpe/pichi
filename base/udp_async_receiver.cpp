@@ -31,11 +31,12 @@ void udp::AsyncReceiver::start_(const std::string& ip, uint16_t port)
           io_service_.reset();
         }
         start_async_receive();  // The io_service needs work queued
-        io_service_.run(); // Blocks until all work is done
+        io_service_.run();  // Blocks until all work is done
       }
     }
   }
-  else std::cerr << "UDP AsyncReceiver is already running!" << std::endl;
+  else
+    std::cerr << "UDP AsyncReceiver is already running!" << std::endl;
 }
 
 

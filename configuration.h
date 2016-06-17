@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef CONFIGURATION_H_
+#define CONFIGURATION_H_
 
 
 #include <cstdint>
@@ -35,4 +35,4 @@ private:
 };
 
 
-#endif  // CONFIGURATION_H
+#endif  // CONFIGURATION_H_

@@ -1,16 +1,20 @@
-#ifndef LOGFILE_H
-#define LOGFILE_H
+#ifndef LOGFILE_H_
+#define LOGFILE_H_
 
 
+#include <string>
 #include <fstream>
 #include "ext/gsl-lite.h"
 #include "gnss_packet.h"
 
 
+namespace logging {
+
+
 class Logfile
 {
 public:
-  Logfile(const std::string& filename);
+  explicit Logfile(const std::string& filename);
   Logfile(const Logfile&) = delete;
   Logfile& operator=(const Logfile&) = delete;
 
@@ -19,9 +23,10 @@ public:
   template<typename T> void write(gsl::not_null<const gnss::PacketHeader*> header,
                                   const T* data,
                                   uint64_t receive_time);
+  void write(gsl::not_null<const gnss::LocationPacket*> data);
 
 private:
-  void write(gsl::not_null<const gnss::LocationPacket*> data);
+  void write_(gsl::not_null<const gnss::LocationPacket*> data);
 
   std::ofstream fs_;
 };
@@ -34,7 +39,7 @@ template<typename T> void Logfile::write(
 {
   // Negative delay instead of an overflow when receive < transmit
   int64_t transmit_delay = receive_time - header->transmit_time;
-  
+
   fs_ << header->packet_type << ','
       << receive_time << ','
       << header->transmit_time << ','
@@ -43,10 +48,13 @@ template<typename T> void Logfile::write(
       << header->transmit_counter << ','
       << header->device_id << ',';
 
-  write(data);
+  write_(data);
 
   fs_ << '\n';
 }
 
 
-#endif  // LOGFILE_H
+}  // namespace logging
+
+
+#endif  // LOGFILE_H_
