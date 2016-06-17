@@ -1,17 +1,36 @@
 #include "logfile.h"
 
 
-Logfile::Logfile(const std::string& filename)
+#include <string>
+#include <regex>
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <iomanip>
+#include <ios>
+
+
+logging::Logfile::Logfile(const std::string& filename)
 {
   fs_.open(filename);
 }
 
 
-void Logfile::write(gsl::not_null<const gnss::LocationPacket*> data)
+void logging::Logfile::write(gsl::not_null<const gnss::LocationPacket*> data)
 {
-  fs_ << static_cast<int>(data->utc_time_hour) << ','
-      << static_cast<int>(data->utc_time_minute) << ','
-      << data->utc_time_second << ','
+  write_(data);
+  fs_ << '\n';
+}
+
+
+void logging::Logfile::write_(gsl::not_null<const gnss::LocationPacket*> data)
+{
+  fs_ << std::fixed
+      << std::setprecision(3)
+      << data->utc_timestamp
+      << std::setprecision(6)
+      << ','
       << data->latitude << ','
-      << data->longitude;
+      << data->longitude
+      << std::scientific;
 }

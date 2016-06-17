@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <thread>
+#include <utility>
 
 #include "logfile.h"
 #include "gnss_util.h"
@@ -70,7 +71,7 @@ void Pichi::stop()
 
   // Wake up threads to let them to finish
   nmea_data_ready_.notify_all();
-  gnss_data_ready_.notify_all(); 
+  gnss_data_ready_.notify_all();
 }
 
 
@@ -86,7 +87,8 @@ void Pichi::start_location_transmitter()
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
     provider.detach();
   }
-  else std::cerr << "Already running!" << std::endl;
+  else
+    std::cerr << "Already running!" << std::endl;
 }
 
 
@@ -102,7 +104,8 @@ void Pichi::start_gnss_receiver()
     std::thread provider{&gnss::Receiver::start, &gnss_receiver_};
     provider.detach();
   }
-  else std::cerr << "Already running!" << std::endl;
+  else
+    std::cerr << "Already running!" << std::endl;
 }
 
 
@@ -118,7 +121,8 @@ void Pichi::start_debugger()
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
     provider.detach();
   }
-  else std::cerr << "Already running!" << std::endl;
+  else
+    std::cerr << "Already running!" << std::endl;
 }
 
 
@@ -172,9 +176,9 @@ bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData&
       nmea::RmcData rmc_data;
       std::tie(success, rmc_data) = nmea::parse_valid<nmea::RmcData>(nmea_read.sentence);
       if (success) {
-        location->utc_time_hour = rmc_data.utc_time_hour;
-        location->utc_time_minute = rmc_data.utc_time_minute;
-        location->utc_time_second = rmc_data.utc_time_second;
+        location->utc_timestamp = gnss::util::as_utc_unix(
+            rmc_data.date_year + 2000, rmc_data.date_month, rmc_data.date_day,
+            rmc_data.utc_time_hour, rmc_data.utc_time_minute, rmc_data.utc_time_second);
         location->latitude = gnss::util::dm_to_decimal(
             rmc_data.degrees_lat, rmc_data.minutes_lat, rmc_data.direction_lat);
         location->longitude = gnss::util::dm_to_decimal(
@@ -186,9 +190,7 @@ bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData&
       nmea::GgaData gga_data;
       std::tie(success, gga_data) = nmea::parse_valid<nmea::GgaData>(nmea_read.sentence);
       if (success) {
-        location->utc_time_hour = gga_data.utc_time_hour;
-        location->utc_time_minute = gga_data.utc_time_minute;
-        location->utc_time_second = gga_data.utc_time_second;
+        location->utc_timestamp = 0;  // TODO: GGA has no date, buffer date from RMC?
         location->latitude = gnss::util::dm_to_decimal(
             gga_data.degrees_lat, gga_data.minutes_lat, gga_data.direction_lat);
         location->longitude = gnss::util::dm_to_decimal(
@@ -205,7 +207,7 @@ bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData&
 
 void Pichi::log_gnss_packets()
 {
-  Logfile file(std::string("logs/log_") + std::to_string(timer_.current_time()) + ".csv");
+  logging::Logfile file(std::string("logs/log_") + std::to_string(timer_.current_time()) + ".csv");
   if (file.is_open()) {
     while (is_active()) {
       std::unique_lock<std::mutex> lk{gnss_data_mutex_};

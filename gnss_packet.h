@@ -1,9 +1,8 @@
-#ifndef GNSS_PACKET_H
-#define GNSS_PACKET_H
+#ifndef GNSS_PACKET_H_
+#define GNSS_PACKET_H_
 
 
 #include <cstdint>
-#include "nmea_parser.h"
 
 
 namespace gnss {
@@ -27,9 +26,7 @@ struct PacketHeader
 
 struct LocationPacket
 {
-  uint8_t utc_time_hour;
-  uint8_t utc_time_minute;
-  float utc_time_second;
+  double utc_timestamp;
   double latitude;
   double longitude;
 };
@@ -42,4 +39,4 @@ constexpr uint16_t location_data_size = sizeof(LocationPacket);
 }  // namespace gnss
 
 
-#endif  // GNSS_PACKET_H
+#endif  // GNSS_PACKET_H_
