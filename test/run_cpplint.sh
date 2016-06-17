@@ -1,4 +1,5 @@
 #!/bin/sh
+cd ../ext/cpplint
 ./cpplint.py \
 --linelength=100 \
 --filter=\
@@ -13,4 +14,4 @@
 -readability/braces,\
 -legal/copyright \
 $(find ../.. -name \*.h -or -name \*.cpp | \
-grep -vE "doctest|gsl-lite|mainwindow\.|\/test")
+grep -vE "doctest|gsl|mainwindow\.|\/test")
