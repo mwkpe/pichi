@@ -26,7 +26,7 @@ Compilation requires GCC 4.9 (or later with updating the makefile), boost (Spiri
 Install Asio: `sudo apt-get install libasio-dev`<br>
 Install FLTK: `sudo apt-get install libfltk1.3-dev`<br>
 
-The Raspberry Pi 2 and 3 should work out of the box. When using a Raspberry Pi 1 a function argument in the [timer.cpp](/timer.cpp#L19) must be changed from `ST_BASE_RPI_2_AND_3` to `ST_BASE_RPI_1` or the system timer will read at the wrong address.
+The Raspberry Pi 2 and 3 should work out of the box. When using a Raspberry Pi 1 a function argument in the [timer.cpp](/timer.cpp#L20) must be changed from `ST_BASE_RPI_2_AND_3` to `ST_BASE_RPI_1` or the system timer will read at the wrong address.
 
 Build the program with `make` (or `make -j6` to save time) and build the nmea parser test with `make test`.
 
