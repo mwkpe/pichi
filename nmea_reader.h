@@ -11,7 +11,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "ext/gsl-lite.h"
+#include "ext/gsl.h"
 
 #include "base/serial_async_reader.h"
 #include "configuration.h"

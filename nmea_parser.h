@@ -18,7 +18,7 @@
 #include <string>
 #include <tuple>
 
-#include "ext/gsl-lite.h"
+#include "ext/gsl.h"
 
 
 namespace nmea {

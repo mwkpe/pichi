@@ -10,7 +10,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "ext/gsl-lite.h"
+#include "ext/gsl.h"
 
 #include "configuration.h"
 #include "timer.h"

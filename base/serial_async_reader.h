@@ -8,7 +8,7 @@
 #include <array>
 #include <string>
 
-#include "../ext/gsl-lite.h"
+#include "../ext/gsl.h"
 
 
 namespace serial {
