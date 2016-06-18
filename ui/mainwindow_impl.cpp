@@ -1,4 +1,4 @@
-// Implementation of functions declared in FLMainWindowD designer
+// Implementation of functions declared in FLUID designer
 #include "mainwindow.h"
 
 
@@ -69,18 +69,18 @@ void MainWindow::button_start_clicked()
     }
     else {
       switch (choice_mode->value()) {
-        case 0: pichi_->start_location_transmitter(); break;
+        case 0: pichi_->start_gnss_transmitter(); break;
         case 1: pichi_->start_gnss_receiver(); break;
-        case 2: break;
-        case 3: pichi_->start_location_display(); break;
+        case 2: pichi_->start_gnss_logger(); break;
+        case 3: pichi_->start_gnss_display(); break;
         case 4: pichi_->start_debugger(); break;
       }
       button_start->label("Stop");
       last_count_ = 0;
       Fl::add_timeout(1.0, &MainWindow::update_status_callback, this);
 
-      if (choice_mode->value() == 3) {
-        Fl::add_timeout(0.2, &MainWindow::update_display_callback, this);
+      if (choice_mode->value() < 4) {
+        Fl::add_timeout(0.25, &MainWindow::update_display_callback, this);
       }
     }
   }
@@ -143,7 +143,7 @@ void MainWindow::update_display_callback(void* p)
 {
   auto* w = reinterpret_cast<MainWindow*>(p);
   w->update_display();
-  Fl::repeat_timeout(0.2, &MainWindow::update_display_callback, w);
+  Fl::repeat_timeout(0.25, &MainWindow::update_display_callback, w);
 }
 
 

@@ -76,13 +76,13 @@ void Pichi::stop()
 }
 
 
-void Pichi::start_location_transmitter()
+void Pichi::start_gnss_transmitter()
 {
   if (!is_active()) {
     reset();
     active_.store(true);
 
-    std::thread consumer{&Pichi::transmit_location, this};
+    std::thread consumer{&Pichi::transmit_gnss_packets, this};
     consumer.detach();
 
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
@@ -110,13 +110,30 @@ void Pichi::start_gnss_receiver()
 }
 
 
-void Pichi::start_location_display()
+void Pichi::start_gnss_logger()
 {
   if (!is_active()) {
     reset();
     active_.store(true);
 
-    std::thread consumer{&Pichi::update_gnss_location, this};
+    std::thread consumer{&Pichi::log_gnss_data, this};
+    consumer.detach();
+
+    std::thread provider{&nmea::Reader::start, &nmea_reader_};
+    provider.detach();
+  }
+  else
+    std::cerr << "Already running!" << std::endl;
+}
+
+
+void Pichi::start_gnss_display()
+{
+  if (!is_active()) {
+    reset();
+    active_.store(true);
+
+    std::thread consumer{&Pichi::update_gnss_data, this};
     consumer.detach();
 
     std::thread provider{&nmea::Reader::start, &nmea_reader_};
@@ -151,7 +168,7 @@ gnss::LocationPacket Pichi::current_gnss_location()
 }
 
 
-void Pichi::transmit_location()
+void Pichi::transmit_gnss_packets()
 {
   udp::Transmitter transmitter{};
 
@@ -184,6 +201,7 @@ void Pichi::transmit_location()
             header->transmit_system_delay = timer_.current_systime() - read.systime;
             transmitter.send(gsl::as_span(buffer).first(packet_size));
             activity_counter_.fetch_add(1);
+            set_gnss_location(location);
           }
         }
       }
@@ -194,7 +212,8 @@ void Pichi::transmit_location()
 
 void Pichi::log_gnss_packets()
 {
-  logging::Logfile file(std::string("logs/log_") + std::to_string(timer_.current_time()) + ".csv");
+  logging::Logfile file(std::to_string(timer_.current_time()) + ".csv");
+  
   if (file.is_open()) {
     while (is_active()) {
       std::unique_lock<std::mutex> lk{gnss_data_mutex_};
@@ -212,6 +231,7 @@ void Pichi::log_gnss_packets()
                   recv.header.data_size >= recv.data.size()) {
                 auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
                 file.write(&recv.header, location, recv.time);
+                set_gnss_location(location);
               }
             }
             break;
@@ -225,7 +245,35 @@ void Pichi::log_gnss_packets()
 }
 
 
-void Pichi::update_gnss_location()
+void Pichi::log_gnss_data()
+{
+  gnss::LocationPacket location;
+  logging::Logfile file(std::to_string(timer_.current_time()) + ".csv");
+
+  if (file.is_open()) {
+    while (is_active()) {
+      std::unique_lock<std::mutex> lk{nmea_data_mutex_};
+      nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+          [this] { return !nmea_data_.empty() || !active_.load(); });
+      if (!nmea_data_.empty()) {
+        decltype(nmea_data_) nmea_reads;
+        std::swap(nmea_data_, nmea_reads);
+        lk.unlock();
+
+        for (const auto& read : nmea_reads) {
+          if (parse_location(&location, read)) {
+            file.write(&location, read.time);
+            set_gnss_location(&location);
+            activity_counter_.fetch_add(1);
+          }
+        }
+      }
+    }
+  }
+}
+
+
+void Pichi::update_gnss_data()
 {
   gnss::LocationPacket location;
 
@@ -240,9 +288,8 @@ void Pichi::update_gnss_location()
 
       for (const auto& read : nmea_reads) {
         if (parse_location(&location, read)) {
+          set_gnss_location(&location);
           activity_counter_.fetch_add(1);
-          std::lock_guard<std::mutex> lock{gnss_location_mutex_};
-          gnss_location_ = location;
         }
       }
     }
@@ -268,7 +315,8 @@ void Pichi::show_nmea_sentences()
 }
 
 
-bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData& nmea_read)
+bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
+                           const nmea::ReadData& nmea_read)
 {
   bool success = false;
 
@@ -303,4 +351,11 @@ bool Pichi::parse_location(gnss::LocationPacket* location, const nmea::ReadData&
   }
 
   return success;
+}
+
+
+void Pichi::set_gnss_location(gsl::not_null<const gnss::LocationPacket*> location)
+{
+  std::lock_guard<std::mutex> lock{gnss_location_mutex_};
+  gnss_location_ = *location;
 }

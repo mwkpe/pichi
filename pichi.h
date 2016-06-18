@@ -31,9 +31,10 @@ public:
   const Configuration& config() const { return conf_; }
   bool set_config(const Configuration& conf);
 
-  void start_location_transmitter();
+  void start_gnss_transmitter();
   void start_gnss_receiver();
-  void start_location_display();
+  void start_gnss_logger();
+  void start_gnss_display();
   void start_debugger();
 
   void stop();
@@ -46,12 +47,15 @@ public:
 private:
   void reset();
 
-  void transmit_location();
+  void transmit_gnss_packets();
   void log_gnss_packets();
-  void update_gnss_location();
+  void log_gnss_data();
+  void update_gnss_data();
   void show_nmea_sentences();
 
-  bool parse_location(gnss::LocationPacket* location, const nmea::ReadData& nmea_read);
+  bool parse_location(gsl::not_null<gnss::LocationPacket*> location,
+                      const nmea::ReadData& nmea_read);
+  void set_gnss_location(gsl::not_null<const gnss::LocationPacket*> location);
 
   // Member
   Configuration conf_;
