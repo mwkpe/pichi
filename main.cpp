@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 {
   Pichi pichi{Configuration("config.txt")};
 
-  MainWindow window(&pichi);
+  MainWindow window{&pichi};
   window.show(argc, argv);
 
   return Fl::run();
