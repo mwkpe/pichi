@@ -2,9 +2,6 @@
 
 
 #include <string>
-#include <regex>
-#include <algorithm>
-#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <ios>
@@ -12,12 +9,17 @@
 
 logging::Logfile::Logfile(const std::string& filename)
 {
-  fs_.open(filename);
+  // TODO: Proper file system handling
+  fs_.open(std::string("logs/log_") + filename);
+  if (!fs_.is_open())
+    std::cerr << "Could not open log file, logs directory missing?" << std::endl;
 }
 
 
-void logging::Logfile::write(gsl::not_null<const gnss::LocationPacket*> data)
+void logging::Logfile::write(gsl::not_null<const gnss::LocationPacket*> data,
+                             uint64_t receive_time)
 {
+  fs_ << receive_time << ',';
   write_(data);
   fs_ << '\n';
 }

@@ -23,7 +23,7 @@ public:
   template<typename T> void write(gsl::not_null<const gnss::PacketHeader*> header,
                                   const T* data,
                                   uint64_t receive_time);
-  void write(gsl::not_null<const gnss::LocationPacket*> data);
+  void write(gsl::not_null<const gnss::LocationPacket*> data, uint64_t receive_time);
 
 private:
   void write_(gsl::not_null<const gnss::LocationPacket*> data);
