@@ -386,6 +386,6 @@ std::vector<uint16_t> Pichi::new_device_ids()
 {
   std::lock_guard<std::mutex> lock{devices_mutex_};
   std::vector<uint16_t> v;
-  std::swap(new_devices_ids_, v);
+  std::swap(new_device_ids_, v);
   return v;
 }

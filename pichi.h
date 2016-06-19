@@ -83,7 +83,7 @@ private:
   // The local and remote devices
   std::mutex devices_mutex_;
   std::vector<pichi::Device> devices_;
-  std::vector<uint16_t> new_devices_ids_;  // Informs UI when to update the choice button
+  std::vector<uint16_t> new_device_ids_;
 };
 
 
