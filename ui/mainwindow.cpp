@@ -40,6 +40,13 @@ void MainWindow::cb_radio_log_short(Fl_Round_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_short_i(o,v);
 }
 
+void MainWindow::cb_choice_display_device_i(Fl_Choice* o, void* v) {
+  display_device_changed_callback(o, v);
+}
+void MainWindow::cb_choice_display_device(Fl_Choice* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_choice_display_device_i(o,v);
+}
+
 void MainWindow::cb_button_apply_i(Fl_Button*, void*) {
   button_apply_clicked();
 }
@@ -50,6 +57,7 @@ void MainWindow::cb_button_apply(Fl_Button* o, void* v) {
 MainWindow::MainWindow(Pichi* p) {
   pichi_ = p;
   last_count_ = 0;
+  display_device_id_ = 0;
   { main_window = new Fl_Double_Window(500, 300, "Pichi");
     main_window->user_data((void*)(this));
     { Fl_Group* o = new Fl_Group(0, 0, 500, 38);
@@ -75,7 +83,7 @@ MainWindow::MainWindow(Pichi* p) {
     { Fl_Tabs* o = new Fl_Tabs(6, 38, 488, 224);
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Device");
         o->hide();
-        { text_device_id = new Fl_Input(12, 66, 160, 24, "Device ID");
+        { text_device_id = new Fl_Input(12, 66, 160, 24, "Device ID (1 - 65535)");
           text_device_id->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_device_id
         o->end();
@@ -91,6 +99,7 @@ MainWindow::MainWindow(Pichi* p) {
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "GNSS");
+        o->hide();
         { text_gnss_port = new Fl_Input(12, 66, 160, 24, "Port (Device sending NMEA sentences)");
           text_gnss_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port
@@ -150,16 +159,21 @@ MainWindow::MainWindow(Pichi* p) {
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Display");
-        o->hide();
-        { text_display_utc = new Fl_Output(12, 66, 200, 24, "UTC Timestamp");
+        { choice_display_device = new Fl_Choice(12, 66, 120, 26, "Device ID (0 = Local device)");
+          choice_display_device->down_box(FL_BORDER_BOX);
+          choice_display_device->callback((Fl_Callback*)cb_choice_display_device);
+          choice_display_device->align(Fl_Align(FL_ALIGN_RIGHT));
+          choice_display_device->when(FL_WHEN_CHANGED);
+        } // Fl_Choice* choice_display_device
+        { text_display_utc = new Fl_Output(12, 98, 200, 24, "UTC Timestamp");
           text_display_utc->box(FL_FLAT_BOX);
           text_display_utc->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Output* text_display_utc
-        { text_display_lat = new Fl_Output(12, 96, 200, 24, "Latitude");
+        { text_display_lat = new Fl_Output(12, 128, 200, 24, "Latitude");
           text_display_lat->box(FL_FLAT_BOX);
           text_display_lat->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Output* text_display_lat
-        { text_display_long = new Fl_Output(12, 126, 200, 24, "Longitude");
+        { text_display_long = new Fl_Output(12, 158, 200, 24, "Longitude");
           text_display_long->box(FL_FLAT_BOX);
           text_display_long->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Output* text_display_long
@@ -175,6 +189,7 @@ MainWindow::MainWindow(Pichi* p) {
     } // Fl_Group* o
     main_window->end();
   } // Fl_Double_Window* main_window
+  init();
   load_settings();
 }
 

@@ -18,6 +18,7 @@
 #include "nmea_reader.h"
 #include "gnss_packet.h"
 #include "gnss_receiver.h"
+#include "pichi_device.h"
 
 
 class Pichi final
@@ -27,6 +28,8 @@ public:
   ~Pichi();
   Pichi(const Pichi&) = delete;
   Pichi& operator=(const Pichi&) = delete;
+
+  static const uint16_t local_device_id{0};
 
   const Configuration& config() const { return conf_; }
   bool set_config(const Configuration& conf);
@@ -42,7 +45,8 @@ public:
   bool is_active() const { return active_.load(); }
   uint64_t activity_count() const { return activity_counter_.load(); }
 
-  gnss::LocationPacket current_gnss_location();
+  std::tuple<bool, gnss::LocationPacket> gnss_location(uint16_t device_id);
+  std::vector<uint16_t> new_device_ids();
 
 private:
   void reset();
@@ -55,7 +59,8 @@ private:
 
   bool parse_location(gsl::not_null<gnss::LocationPacket*> location,
                       const nmea::ReadData& nmea_read);
-  void set_gnss_location(gsl::not_null<const gnss::LocationPacket*> location);
+  void set_gnss_location(uint16_t device_id,
+                         gsl::not_null<const gnss::LocationPacket*> location);
 
   // Member
   Configuration conf_;
@@ -75,8 +80,10 @@ private:
   std::deque<gnss::ReceiveData> gnss_data_;
   gnss::Receiver gnss_receiver_;
 
-  std::mutex gnss_location_mutex_;
-  gnss::LocationPacket gnss_location_;
+  // The local and remote devices
+  std::mutex devices_mutex_;
+  std::vector<pichi::Device> devices_;
+  std::vector<uint16_t> new_devices_ids_;  // Informs UI when to update the choice button
 };
 
 

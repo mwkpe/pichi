@@ -1,4 +1,5 @@
 // Implementation of functions declared in FLUID designer
+
 #include "mainwindow.h"
 
 
@@ -12,6 +13,16 @@
 #include "../configuration.h"
 #include "../gnss_packet.h"
 #include "../pichi.h"
+
+
+void MainWindow::init()
+{
+  // Must be set or callbacks will be called with nullptr
+  choice_display_device->user_data(this);
+
+  display_add_device(Pichi::local_device_id);
+  choice_display_device->value(0);
+}
 
 
 void MainWindow::apply_settings()
@@ -80,7 +91,7 @@ void MainWindow::button_start_clicked()
       Fl::add_timeout(1.0, &MainWindow::update_status_callback, this);
 
       if (choice_mode->value() < 4) {
-        Fl::add_timeout(0.25, &MainWindow::update_display_callback, this);
+        Fl::add_timeout(0.5, &MainWindow::update_display_callback, this);
       }
     }
   }
@@ -143,15 +154,52 @@ void MainWindow::update_display_callback(void* p)
 {
   auto* w = reinterpret_cast<MainWindow*>(p);
   w->update_display();
-  Fl::repeat_timeout(0.25, &MainWindow::update_display_callback, w);
+  Fl::repeat_timeout(0.5, &MainWindow::update_display_callback, w);
 }
 
 
 void MainWindow::update_display()
 {
-  auto location = pichi_->current_gnss_location();
+  bool success = false;
+  gnss::LocationPacket location;
+  std::tie(success, location) = pichi_->gnss_location(display_device_id_);
 
-  text_display_utc->value(std::to_string(location.utc_timestamp).c_str());
-  text_display_lat->value(std::to_string(location.latitude).c_str());
-  text_display_long->value(std::to_string(location.longitude).c_str());
+  if (success) {
+    text_display_utc->value(std::to_string(location.utc_timestamp).c_str());
+    text_display_lat->value(std::to_string(location.latitude).c_str());
+    text_display_long->value(std::to_string(location.longitude).c_str());
+  }
+
+  auto ids = pichi_->new_device_ids();
+  for (auto i : ids)
+    display_add_device(i);
+}
+
+
+void MainWindow::display_device_changed_callback(Fl_Choice* o, void* p)
+{
+  std::cout << "rofl: " << o << " : " << p << std::endl;
+  auto* w = reinterpret_cast<MainWindow*>(p);
+  w->display_device_changed(w->mapped_device_id(o->value()));
+}
+
+
+void MainWindow::display_device_changed(uint16_t id)
+{
+  display_device_id_ = id;
+}
+
+
+void MainWindow::display_add_device(uint16_t id)
+{
+  std::string name = std::to_string(id);
+  choice_display_device->add(name.c_str(), 0, nullptr);
+  int index = choice_display_device->find_index(name.c_str());
+  mapped_device_ids_[index] = id;
+}
+
+
+uint16_t MainWindow::mapped_device_id(int index)
+{
+  return mapped_device_ids_[index];
 }

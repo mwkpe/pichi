@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <thread>
+#include <algorithm>
 #include <utility>
 #include <mutex>
 
@@ -16,6 +17,9 @@ Pichi::Pichi(Configuration&& conf)
     nmea_reader_{conf_, timer_, nmea_data_ready_, nmea_data_mutex_, nmea_data_},
     gnss_receiver_{conf_, timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
 {
+  devices_.reserve(32);
+  devices_.emplace_back(0);  // 0 should always be the local device
+
   if (!timer_.systime_init())
     std::cerr << "Values relying on the 1MHz system timer will be zero" << std::endl;
 }
@@ -161,13 +165,6 @@ void Pichi::start_debugger()
 }
 
 
-gnss::LocationPacket Pichi::current_gnss_location()
-{
-  std::lock_guard<std::mutex> lock{gnss_location_mutex_};
-  return gnss_location_;
-}
-
-
 void Pichi::transmit_gnss_packets()
 {
   udp::Transmitter transmitter{};
@@ -201,7 +198,7 @@ void Pichi::transmit_gnss_packets()
             header->transmit_system_delay = timer_.current_systime() - read.systime;
             transmitter.send(gsl::as_span(buffer).first(packet_size));
             activity_counter_.fetch_add(1);
-            set_gnss_location(location);
+            set_gnss_location(local_device_id, location);
           }
         }
       }
@@ -231,7 +228,7 @@ void Pichi::log_gnss_packets()
                   recv.header.data_size >= recv.data.size()) {
                 auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
                 file.write(&recv.header, location, recv.time);
-                set_gnss_location(location);
+                set_gnss_location(recv.header.device_id, location);
               }
             }
             break;
@@ -263,7 +260,7 @@ void Pichi::log_gnss_data()
         for (const auto& read : nmea_reads) {
           if (parse_location(&location, read)) {
             file.write(&location, read.time);
-            set_gnss_location(&location);
+            set_gnss_location(local_device_id, &location);
             activity_counter_.fetch_add(1);
           }
         }
@@ -288,7 +285,7 @@ void Pichi::update_gnss_data()
 
       for (const auto& read : nmea_reads) {
         if (parse_location(&location, read)) {
-          set_gnss_location(&location);
+          set_gnss_location(local_device_id, &location);
           activity_counter_.fetch_add(1);
         }
       }
@@ -354,8 +351,41 @@ bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
 }
 
 
-void Pichi::set_gnss_location(gsl::not_null<const gnss::LocationPacket*> location)
+std::tuple<bool, gnss::LocationPacket> Pichi::gnss_location(uint16_t device_id)
 {
-  std::lock_guard<std::mutex> lock{gnss_location_mutex_};
-  gnss_location_ = *location;
+  std::lock_guard<std::mutex> lock{devices_mutex_};
+
+  for (auto& device : devices_) {
+    if (device.id() == device_id)
+      return std::make_tuple(true, device.location());
+  }
+  
+  return std::make_tuple(false, gnss::LocationPacket());
+}
+
+
+void Pichi::set_gnss_location(uint16_t device_id,
+    gsl::not_null<const gnss::LocationPacket*> location)
+{
+  std::lock_guard<std::mutex> lock{devices_mutex_};
+
+  auto it = std::find_if(std::begin(devices_), std::end(devices_),
+      [device_id](const pichi::Device& d) { return d.id() == device_id; });
+  if (it != std::end(devices_)) {
+    it->set_location(*location);
+  }
+  else {
+    new_devices_ids_.push_back(device_id);
+    devices_.emplace_back(device_id);
+    devices_.back().set_location(*location);
+  }
+}
+
+
+std::vector<uint16_t> Pichi::new_device_ids()
+{
+  std::lock_guard<std::mutex> lock{devices_mutex_};
+  std::vector<uint16_t> v;
+  std::swap(new_devices_ids_, v);
+  return v;
 }

@@ -5,6 +5,12 @@ code_name {.cpp}
 decl {\#include "../pichi.h"} {private global
 } 
 
+decl {\#include <cstdint>} {public global
+} 
+
+decl {\#include <unordered_map>} {public global
+} 
+
 decl {class Pichi;} {public global
 } 
 
@@ -12,11 +18,12 @@ class MainWindow {open
 } {
   Function {MainWindow(Pichi* p)} {open
   } {
-    code {pichi_ = p;} {}
-    code {last_count_ = 0;} {}
+    code {pichi_ = p;
+last_count_ = 0;
+display_device_id_ = 0;} {}
     Fl_Window main_window {
       label Pichi open
-      private xywh {59 530 500 300} type Double visible
+      private xywh {750 399 500 300} type Double visible
     } {
       Fl_Group {} {open
         xywh {0 0 500 38}
@@ -26,7 +33,7 @@ class MainWindow {open
           callback {button_start_clicked()}
           private xywh {122 6 60 26} selection_color 62
         }
-        Fl_Choice choice_mode {open
+        Fl_Choice choice_mode {
           private xywh {6 6 110 26} down_box BORDER_BOX labeltype NO_LABEL
         } {
           MenuItem {} {
@@ -63,11 +70,11 @@ class MainWindow {open
         xywh {6 38 488 224}
       } {
         Fl_Group {} {
-          label Device
+          label Device open
           xywh {6 60 488 202} hide
         } {
           Fl_Input text_device_id {
-            label {Device ID}
+            label {Device ID (1 - 65535)}
             private xywh {12 66 160 24} align 8
           }
         }
@@ -87,7 +94,7 @@ class MainWindow {open
         }
         Fl_Group {} {
           label GNSS
-          xywh {6 60 488 202}
+          xywh {6 60 488 202} hide
         } {
           Fl_Input text_gnss_port {
             label {Port (Device sending NMEA sentences)}
@@ -161,23 +168,28 @@ class MainWindow {open
         }
         Fl_Group {} {
           label Display open
-          xywh {6 60 488 202} hide
+          xywh {6 60 488 202}
         } {
+          Fl_Choice choice_display_device {
+            label {Device ID (0 = Local device)} user_data_type {void*}
+            callback {display_device_changed_callback(o, v)} open selected
+            xywh {12 66 120 26} down_box BORDER_BOX align 8 when 1
+          } {}
           Fl_Output text_display_utc {
             label {UTC Timestamp}
-            xywh {12 66 200 24} box FLAT_BOX align 8
+            xywh {12 98 200 24} box FLAT_BOX align 8
           }
           Fl_Output text_display_lat {
             label Latitude
-            xywh {12 96 200 24} box FLAT_BOX align 8
+            xywh {12 128 200 24} box FLAT_BOX align 8
           }
           Fl_Output text_display_long {
             label Longitude
-            xywh {12 126 200 24} box FLAT_BOX align 8
+            xywh {12 158 200 24} box FLAT_BOX align 8
           }
         }
       }
-      Fl_Group {} {open selected
+      Fl_Group {} {open
         xywh {6 262 488 38}
       } {
         Fl_Button button_apply {
@@ -187,9 +199,10 @@ class MainWindow {open
         }
       }
     }
-    code {load_settings();} {}
+    code {init();
+load_settings();} {}
   }
-  Function {show(int argc, char** argv)} {open return_type void
+  Function {show(int argc, char** argv)} {return_type void
   } {
     code {main_window->show(argc, argv);} {}
   }
@@ -197,9 +210,19 @@ class MainWindow {open
   } {}
   Function {update_display_callback(void* p)} {open return_type {static void}
   } {}
+  Function {display_device_changed_callback(Fl_Choice* o, void* p)} {open return_type {static void}
+  } {}
   Function {update_status()} {open return_type void
   } {}
   Function {update_display()} {open return_type void
+  } {}
+  Function {display_device_changed(uint16_t id)} {open return_type void
+  } {}
+  Function {init()} {open private return_type void
+  } {}
+  Function {mapped_device_id(int index)} {open private return_type uint16_t
+  } {}
+  Function {display_add_device(uint16_t id)} {open private return_type void
   } {}
   Function {apply_settings()} {private return_type void
   } {}
@@ -214,6 +237,10 @@ class MainWindow {open
   Function {radio_log_clicked()} {open private return_type void
   } {}
   decl {Pichi* pichi_;} {private local
+  }
+  decl {std::unordered_map<int, uint16_t> mapped_device_ids_;} {private local
+  }
+  decl {uint16_t display_device_id_;} {private local
   }
   decl {unsigned long long last_count_;} {private local
   }

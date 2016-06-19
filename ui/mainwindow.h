@@ -3,6 +3,8 @@
 #ifndef mainwindow_h
 #define mainwindow_h
 #include <FL/Fl.H>
+#include <cstdint>
+#include <unordered_map>
 class Pichi;
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Group.H>
@@ -53,6 +55,11 @@ private:
   inline void cb_radio_log_short_i(Fl_Round_Button*, void*);
   static void cb_radio_log_short(Fl_Round_Button*, void*);
 public:
+  Fl_Choice *choice_display_device;
+private:
+  inline void cb_choice_display_device_i(Fl_Choice*, void*);
+  static void cb_choice_display_device(Fl_Choice*, void*);
+public:
   Fl_Output *text_display_utc;
   Fl_Output *text_display_lat;
   Fl_Output *text_display_long;
@@ -64,9 +71,14 @@ public:
   void show(int argc, char** argv);
   static void update_status_callback(void* p);
   static void update_display_callback(void* p);
+  static void display_device_changed_callback(Fl_Choice* o, void* p);
   void update_status();
   void update_display();
+  void display_device_changed(uint16_t id);
 private:
+  void init();
+  uint16_t mapped_device_id(int index);
+  void display_add_device(uint16_t id);
   void apply_settings();
   void load_settings();
   void button_start_clicked();
@@ -74,6 +86,8 @@ private:
   void button_sync_time_clicked();
   void radio_log_clicked();
   Pichi* pichi_; 
+  std::unordered_map<int, uint16_t> mapped_device_ids_; 
+  uint16_t display_device_id_; 
   unsigned long long last_count_; 
 };
 #endif
