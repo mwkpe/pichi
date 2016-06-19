@@ -15,6 +15,7 @@ class Logfile
 {
 public:
   explicit Logfile(const std::string& filename);
+  ~Logfile();
   Logfile(const Logfile&) = delete;
   Logfile& operator=(const Logfile&) = delete;
 
@@ -23,7 +24,7 @@ public:
   template<typename T> void write(gsl::not_null<const gnss::PacketHeader*> header,
                                   const T* data,
                                   uint64_t receive_time);
-  void write(gsl::not_null<const gnss::LocationPacket*> data, uint64_t receive_time);
+  void write(gsl::not_null<const gnss::LocationPacket*> data, uint64_t time);
 
 private:
   void write_(gsl::not_null<const gnss::LocationPacket*> data);
@@ -40,13 +41,12 @@ template<typename T> void Logfile::write(
   // Negative delay instead of an overflow when receive < transmit
   int64_t transmit_delay = receive_time - header->transmit_time;
 
-  fs_ << header->packet_type << ','
+  fs_ << header->device_id << ','
+      << header->packet_type << ','
       << receive_time << ','
-      << header->transmit_time << ','
       << transmit_delay << ','
       << header->transmit_system_delay << ','
-      << header->transmit_counter << ','
-      << header->device_id << ',';
+      << header->transmit_counter << ',';
 
   write_(data);
 

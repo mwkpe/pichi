@@ -13,13 +13,23 @@ logging::Logfile::Logfile(const std::string& filename)
   fs_.open(std::string("logs/log_") + filename);
   if (!fs_.is_open())
     std::cerr << "Could not open log file, logs directory missing?" << std::endl;
+  else
+    std::cout << "Logfile opened" << std::endl;
+}
+
+
+logging::Logfile::~Logfile()
+{
+  // Stream will close itself
+  if (fs_.is_open())
+    std::cout << "Logfile closed" << std::endl;
 }
 
 
 void logging::Logfile::write(gsl::not_null<const gnss::LocationPacket*> data,
-                             uint64_t receive_time)
+                             uint64_t time)
 {
-  fs_ << receive_time << ',';
+  fs_ << time << ',';
   write_(data);
   fs_ << '\n';
 }
