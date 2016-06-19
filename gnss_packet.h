@@ -13,6 +13,9 @@ enum class PacketType : uint16_t {
 };
 
 
+// Mind the packing, these are used for network transmission,
+// keep everything 32 and 64-bit aligned and pad manually
+
 struct PacketHeader
 {
   uint16_t packet_type;
@@ -21,6 +24,7 @@ struct PacketHeader
   uint64_t transmit_time;
   uint32_t transmit_system_delay;
   uint16_t device_id;
+  uint16_t unused_176;
 };
 
 
