@@ -375,7 +375,7 @@ void Pichi::set_gnss_location(uint16_t device_id,
     it->set_location(*location);
   }
   else {
-    new_devices_ids_.push_back(device_id);
+    new_device_ids_.push_back(device_id);
     devices_.emplace_back(device_id);
     devices_.back().set_location(*location);
   }
