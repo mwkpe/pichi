@@ -232,6 +232,8 @@ void Pichi::log_gnss_packets()
               }
             }
             break;
+            default:
+            break;
           }
         }
 

@@ -16,8 +16,6 @@
 #include "base/udp_async_receiver.h"
 #include "configuration.h"
 #include "timer.h"
-#include "nmea_parser.h"
-#include "nmea_reader.h"
 #include "gnss_packet.h"
 
 
@@ -27,8 +25,10 @@ namespace gnss {
 struct ReceiveData
 {
   ReceiveData() = default;
-  ReceiveData(uint64_t t, uint64_t st, PacketHeader h, std::vector<uint8_t>&& d)
-  : time(t), systime(st), header(h), data(std::move(d)) {}
+  ReceiveData(uint64_t receive_time, uint64_t receive_systime,
+              PacketHeader receive_header, std::vector<uint8_t>&& receive_data)
+  : time{receive_time}, systime{receive_systime},
+    header{receive_header}, data{std::move(receive_data)} {}
 
   uint64_t time;
   uint64_t systime;
