@@ -178,7 +178,6 @@ void MainWindow::update_display()
 
 void MainWindow::display_device_changed_callback(Fl_Choice* o, void* p)
 {
-  std::cout << "rofl: " << o << " : " << p << std::endl;
   auto* w = reinterpret_cast<MainWindow*>(p);
   w->display_device_changed(w->mapped_device_id(o->value()));
 }
