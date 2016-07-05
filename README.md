@@ -22,7 +22,7 @@ Currently the program can only read sentences from the device. The receiver itse
 Running the program
 ---
 Start the program with `sudo ./pichi`.<br>
-The program works without sudo but won't be able to read the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L13).
+The program works without sudo but won't be able to read the Raspberry Pi's 1MHz system timer](src/timer.cpp#L14).
 
 Build
 ---
