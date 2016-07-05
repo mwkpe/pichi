@@ -15,14 +15,14 @@ Pichi is a small program for reading NMEA sentences from a GNSS receiver and log
 
 Requirements
 ---
-A Raspberry Pi or similar device – except for the (optional and easily adaptable/removeable) [system timer](/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
+A Raspberry Pi or similar device – except for the (optional and easily adaptable/removeable) [system timer](src/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
 
 Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences in the desired frequency.
 
 Running the program
 ---
 Start the program with `sudo ./pichi`.<br>
-The program work fine without sudo but won't be able to read the Raspberry Pi's 1MHz [system timer](/timer.cpp#L13). System timings will be 0.
+The program works without sudo but won't be able to read the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L13).
 
 Build
 ---
