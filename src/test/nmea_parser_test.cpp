@@ -2,7 +2,7 @@
 #include "../ext/doctest.h"
 
 
-#include "../nmea_parser.h"
+#include "../nmea/parser.h"
 
 
 using namespace nmea;
@@ -14,18 +14,18 @@ TEST_CASE("GxRMC parser") {
   uint8_t crc;
 
   // From NL-8002U NAVILOCK Multi GNSS Receiver ublox 8
-  CHECK(parse("$GNRMC,031649.50,A,4958.42331,N,00909.23445,E,1.039,,250516,,,A*6F", &data, &crc) == true);
+  CHECK(parse("$GNRMC,031649.50,A,5006.44916,N,00840.78080,E,1.039,,250516,,,A*6F", &data, &crc) == true);
 
   CHECK(data.talker_id == 'N');
   CHECK(data.utc_time_hour == 3);
   CHECK(data.utc_time_minute == 16);
   CHECK(Approx(data.utc_time_second) == 49.5);
   CHECK(data.status == 'A');
-  CHECK(data.degrees_lat == 49);
-  CHECK(Approx(data.minutes_lat) == 58.42331);
+  CHECK(data.degrees_lat == 50);
+  CHECK(Approx(data.minutes_lat) == 6.44916);
   CHECK(data.direction_lat == 'N');
-  CHECK(data.degrees_long == 9);
-  CHECK(Approx(data.minutes_long) == 9.23445);
+  CHECK(data.degrees_long == 8);
+  CHECK(Approx(data.minutes_long) == 40.78080);
   CHECK(data.direction_long == 'E');
   CHECK(Approx(data.speed_over_ground) == 1.039);
   CHECK(Approx(data.track_angle) == 0);
@@ -40,16 +40,16 @@ TEST_CASE("GxRMC parser") {
   // Generic
 
   // NMEA 2.3 (and later) examples
-  CHECK(parse("$GPRMC,052848,A,4958.43074,N,00909.25157,E,0.371,,240516,,,A*5C", &data, &crc) == true);
-  CHECK(parse("$GNRMC,052848.40,A,4958.43074,N,00909.25157,E,0.371,0.451,240516,,,D*43", &data, &crc) == true);
-  CHECK(parse("$GLRMC,052848.40,V,4958.43074,S,00909.25157,W,,,240516,,,E*5D", &data, &crc) == true);
-  CHECK(parse("$GARMC,052848.40,A,4958.43074,N,00909.25157,E,,0.451,240516,0.332,E,N*04", &data, &crc) == true);
-  CHECK(parse("$GBRMC,052848.40,A,4958.43074,N,00909.25157,E,0.371,,240516,,,S*76", &data, &crc) == true);
-  CHECK(parse("$GPRMC,052848,A,4958.43074,N,00909.25157,E,0.371,,240516,,,F*5B", &data, &crc) == true);
-  CHECK(parse("$GPRMC,052848,A,4958.43074,N,00909.25157,E,0.371,,240516,,,R*4F", &data, &crc) == true);
+  CHECK(parse("$GPRMC,052848,A,5006.44916,N,00840.78080,E,0.371,,240516,,,A*5C", &data, &crc) == true);
+  CHECK(parse("$GNRMC,052848.40,A,5006.44916,N,00840.78080,E,0.371,0.451,240516,,,D*43", &data, &crc) == true);
+  CHECK(parse("$GLRMC,052848.40,V,5006.44916,S,00840.78080,W,,,240516,,,E*5B", &data, &crc) == true);
+  CHECK(parse("$GARMC,052848.40,A,5006.44916,N,00840.78080,E,,0.451,240516,0.332,E,N*04", &data, &crc) == true);
+  CHECK(parse("$GBRMC,052848.40,A,5006.44916,N,00840.78080,E,0.371,,240516,,,S*76", &data, &crc) == true);
+  CHECK(parse("$GPRMC,052848,A,5006.44916,N,00840.78080,E,0.371,,240516,,,F*5B", &data, &crc) == true);
+  CHECK(parse("$GPRMC,052848,A,5006.44916,N,00840.78080,E,0.371,,240516,,,R*4F", &data, &crc) == true);
 
   // NMEA pre 2.3 (no mode indicator)
-  CHECK(parse("$GPRMC,220516,A,5133.82,N,00042.24,W,173.8,231.8,130694,004.2,W*70", &data, &crc) == true);
+  CHECK(parse("$GPRMC,220516,A,5006.44916,N,00840.78080,E,173.8,231.8,130694,004.2,W*6A", &data, &crc) == true);
 }
 
 
@@ -58,17 +58,17 @@ TEST_CASE("GxGGA parser") {
   uint8_t crc;
 
   // From NL-8002U NAVILOCK Multi GNSS Receiver ublox 8
-  CHECK(parse("$GNGGA,031649.50,4958.42331,N,00909.23445,E,1,09,1.08,156.1,M,47.7,M,,*4A", &data, &crc) == true);
+  CHECK(parse("$GNGGA,031649.50,5006.44916,N,00840.78080,E,1,09,1.08,156.1,M,47.7,M,,*4A", &data, &crc) == true);
 
   CHECK(data.talker_id == 'N');
   CHECK(data.utc_time_hour == 3);
   CHECK(data.utc_time_minute == 16);
   CHECK(Approx(data.utc_time_second) == 49.5);
-  CHECK(data.degrees_lat == 49);
-  CHECK(Approx(data.minutes_lat) == 58.42331);
+  CHECK(data.degrees_lat == 50);
+  CHECK(Approx(data.minutes_lat) == 6.44916);
   CHECK(data.direction_lat == 'N');
-  CHECK(data.degrees_long == 9);
-  CHECK(Approx(data.minutes_long) == 9.23445);
+  CHECK(data.degrees_long == 8);
+  CHECK(Approx(data.minutes_long) == 40.78080);
   CHECK(data.direction_long == 'E');
   CHECK(data.fix_flag == 1);
   CHECK(data.satellites_used == 9);
@@ -77,13 +77,6 @@ TEST_CASE("GxGGA parser") {
   CHECK(Approx(data.geoidal_separation) == 47.7);
   CHECK(Approx(data.age_of_dgps_data) == 0);
   CHECK(data.reference_station_id == 0);
-
-
-  // Generic
-  CHECK(parse("$GPGGA,152835.00,5554.0114,N,03732.5007,E,1,13,00.8,170.4,M,14.5,M,,*5E", &data, &crc) == true);
-  CHECK(parse("$GNGGA,150947.00,5554.0083,N,03732.502,E,1,15,00.6,190.6,M,14.5,M,,*78", &data, &crc) == true);
-  CHECK(parse("$GPGGA,151114.00,5554.0093,N,03732.5027,E,1,11,00.7,196.4,M,14.5,M,,*5E", &data, &crc) == true);
-  CHECK(parse("$GLGGA,150626.00,5554.0097,N,03732.4979,E,1,06,01.2,192.6,M,14.5,M,,*46", &data, &crc) == true);
 }
 
 
@@ -221,7 +214,7 @@ TEST_CASE("GxGSV parser") {
 
 
 TEST_CASE("Checksum calculation") {
-  CHECK(calc_checksum("$GNRMC,031649.50,A,4958.42331,N,00909.23445,E,1.039,,250516,,,A*6F") == 0x6F);
-  CHECK(calc_checksum("$GNGGA,031649.50,4958.42331,N,00909.23445,E,1,09,1.08,156.1,M,47.7,M,,*4A") == 0x4A);
+  CHECK(calc_checksum("$GNRMC,031649.50,A,5006.44916,N,00840.78080,E,1.039,,250516,,,A*6F") == 0x6A);
+  CHECK(calc_checksum("$GNGGA,031649.50,5006.44916,N,00840.78080,E,1,09,1.08,156.1,M,47.7,M,,*4A") == 0x4F);
   CHECK(calc_checksum("$GPGSV,3,2,12,07,42,173,22,09,81,053,16,16,15,069,,19,00,233,*78") == 0x78);
 }

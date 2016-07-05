@@ -12,13 +12,13 @@
 
 #include "ext/gsl.h"
 
+#include "pichi_device.h"
 #include "configuration.h"
 #include "timer.h"
-#include "nmea_parser.h"
-#include "nmea_reader.h"
-#include "gnss_packet.h"
-#include "gnss_receiver.h"
-#include "pichi_device.h"
+#include "nmea/parser.h"
+#include "nmea/reader.h"
+#include "gnss/packet.h"
+#include "gnss/receiver.h"
 
 
 class Pichi final

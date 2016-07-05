@@ -1,10 +1,10 @@
-#include "nmea_reader.h"
+#include "reader.h"
 
 
 #include <algorithm>
 #include <functional>
 
-#include "nmea_parser.h"
+#include "parser.h"
 
 
 nmea::Reader::Reader(const Configuration& conf,

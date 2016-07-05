@@ -5,7 +5,7 @@
 #include <cstdint>
 
 
-#define ST_BASE_RPI_1 0x20003000
+#define ST_BASE_RPI_1_AND_ZERO 0x20003000
 #define ST_BASE_RPI_2_AND_3 0x3F003000
 #define TIMER_OFFSET 4
 

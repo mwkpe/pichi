@@ -1,17 +1,15 @@
-#include "gnss_receiver.h"
+#include "receiver.h"
 
 
 #include <vector>
 #include <algorithm>
 
 
-gnss::Receiver::Receiver(const Configuration& conf,
-                         const Timer& timer,
+gnss::Receiver::Receiver(const Timer& timer,
                          std::condition_variable& data_ready,
                          std::mutex& data_mutex,
                          std::deque<ReceiveData>& data)
-  : conf_{conf},
-    timer_{timer},
+  : timer_{timer},
     gnss_data_ready_{data_ready},
     gnss_data_mutex_{data_mutex},
     gnss_data_{data}
@@ -24,9 +22,9 @@ gnss::Receiver::~Receiver()
 }
 
 
-void gnss::Receiver::start()
+void gnss::Receiver::start(const std::string& ip, uint16_t port)
 {
-  start_(conf_.recv_ip, conf_.recv_port);
+  start_(ip, port);
 }
 
 

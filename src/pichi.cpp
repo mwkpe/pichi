@@ -8,14 +8,14 @@
 #include <mutex>
 
 #include "logfile.h"
-#include "gnss_util.h"
+#include "util/util.h"
 #include "base/udp_transmitter.h"
 
 
 Pichi::Pichi(Configuration&& conf)
   : conf_{std::move(conf)},
     nmea_reader_{conf_, timer_, nmea_data_ready_, nmea_data_mutex_, nmea_data_},
-    gnss_receiver_{conf_, timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
+    gnss_receiver_{timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
 {
   devices_.reserve(32);
   devices_.emplace_back(0);  // 0 should always be the local device
@@ -106,7 +106,8 @@ void Pichi::start_gnss_receiver()
     std::thread consumer{&Pichi::log_gnss_packets, this};
     consumer.detach();
 
-    std::thread provider{&gnss::Receiver::start, &gnss_receiver_};
+    std::thread provider{&gnss::Receiver::start, &gnss_receiver_,
+                         std::ref(conf_.recv_ip), conf_.recv_port};
     provider.detach();
   }
   else
@@ -210,7 +211,7 @@ void Pichi::transmit_gnss_packets()
 void Pichi::log_gnss_packets()
 {
   logging::Logfile file(std::to_string(timer_.current_time()) + ".csv");
-  
+
   if (file.is_open()) {
     while (is_active()) {
       std::unique_lock<std::mutex> lk{gnss_data_mutex_};
@@ -324,12 +325,12 @@ bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
       nmea::RmcData rmc_data;
       std::tie(success, rmc_data) = nmea::parse_valid<nmea::RmcData>(nmea_read.sentence);
       if (success) {
-        location->utc_timestamp = gnss::util::as_utc_unix(
+        location->utc_timestamp = util::as_utc_unix(
             rmc_data.date_year + 2000, rmc_data.date_month, rmc_data.date_day,
             rmc_data.utc_time_hour, rmc_data.utc_time_minute, rmc_data.utc_time_second);
-        location->latitude = gnss::util::dm_to_decimal(
+        location->latitude = util::dm_to_decimal(
             rmc_data.degrees_lat, rmc_data.minutes_lat, rmc_data.direction_lat);
-        location->longitude = gnss::util::dm_to_decimal(
+        location->longitude = util::dm_to_decimal(
             rmc_data.degrees_long, rmc_data.minutes_long, rmc_data.direction_long);
       }
     }
@@ -339,9 +340,9 @@ bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
       std::tie(success, gga_data) = nmea::parse_valid<nmea::GgaData>(nmea_read.sentence);
       if (success) {
         location->utc_timestamp = 0;  // TODO: GGA has no date, buffer date from RMC?
-        location->latitude = gnss::util::dm_to_decimal(
+        location->latitude = util::dm_to_decimal(
             gga_data.degrees_lat, gga_data.minutes_lat, gga_data.direction_lat);
-        location->longitude = gnss::util::dm_to_decimal(
+        location->longitude = util::dm_to_decimal(
             gga_data.degrees_long, gga_data.minutes_long, gga_data.direction_long);
       }
     }
@@ -361,7 +362,7 @@ std::tuple<bool, gnss::LocationPacket> Pichi::gnss_location(uint16_t device_id)
     if (device.id() == device_id)
       return std::make_tuple(true, device.location());
   }
-  
+
   return std::make_tuple(false, gnss::LocationPacket());
 }
 

@@ -11,12 +11,11 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "ext/gsl.h"
+#include "../ext/gsl.h"
 
-#include "base/udp_async_receiver.h"
-#include "configuration.h"
-#include "timer.h"
-#include "gnss_packet.h"
+#include "packet.h"
+#include "../base/udp_async_receiver.h"
+#include "../timer.h"
 
 
 namespace gnss {
@@ -26,9 +25,9 @@ struct ReceiveData
 {
   ReceiveData() = default;
   ReceiveData(uint64_t receive_time, uint64_t receive_systime,
-              PacketHeader receive_header, std::vector<uint8_t>&& receive_data)
+              gnss::PacketHeader receive_header, std::vector<uint8_t>&& receive_data)
   : time{receive_time}, systime{receive_systime},
-    header{receive_header}, data{std::move(receive_data)} {}
+    header(receive_header), data(std::move(receive_data)) {}
 
   uint64_t time;
   uint64_t systime;
@@ -40,8 +39,7 @@ struct ReceiveData
 class Receiver final : public udp::AsyncReceiver
 {
 public:
-  explicit Receiver(const Configuration& conf,
-                    const Timer& timer,
+  explicit Receiver(const Timer& timer,
                     std::condition_variable& data_ready,
                     std::mutex& data_mutex,
                     std::deque<ReceiveData>& data);
@@ -49,7 +47,7 @@ public:
   Receiver(const Receiver&) = delete;
   Receiver& operator=(const Receiver&) = delete;
 
-  void start();
+  void start(const std::string& ip, uint16_t port);
   uint64_t activity_count() const { return activity_counter_.load(); }
 
 private:
@@ -57,7 +55,6 @@ private:
   void reset();
 
   // Member
-  const Configuration& conf_;
   const Timer& timer_;
   std::condition_variable& gnss_data_ready_;
   std::mutex& gnss_data_mutex_;

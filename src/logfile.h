@@ -4,8 +4,9 @@
 
 #include <string>
 #include <fstream>
+
 #include "ext/gsl.h"
-#include "gnss_packet.h"
+#include "gnss/packet.h"
 
 
 namespace logging {

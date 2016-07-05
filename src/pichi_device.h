@@ -3,7 +3,7 @@
 
 
 #include <cstdint>
-#include "gnss_packet.h"
+#include "gnss/packet.h"
 
 
 namespace pichi {
@@ -12,7 +12,7 @@ namespace pichi {
 class Device
 {
 public:
-  Device(uint16_t id) : id_{id} {}
+  explicit Device(uint16_t id) : id_{id} {}
 
   uint16_t id() const { return id_; }
   gnss::LocationPacket location() const { return location_; }

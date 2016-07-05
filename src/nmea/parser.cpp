@@ -1,4 +1,4 @@
-#include "nmea_parser.h"
+#include "parser.h"
 
 
 #include <boost/spirit/include/qi.hpp>

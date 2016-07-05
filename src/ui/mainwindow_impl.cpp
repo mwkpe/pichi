@@ -11,7 +11,7 @@
 #include <chrono>
 
 #include "../configuration.h"
-#include "../gnss_packet.h"
+#include "../gnss/packet.h"
 #include "../pichi.h"
 
 
@@ -116,7 +116,9 @@ void MainWindow::button_sync_time_clicked()
   if (!pichi_->is_active()) {
     // Rough time sync via NTP
     std::cout << "Syncing time, please wait..." << std::endl;
-    std::thread t{[]{ system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start"); }};
+    std::thread t{[]{
+      system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start");
+    }};
     t.detach();
   }
   else

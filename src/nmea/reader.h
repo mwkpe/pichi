@@ -11,12 +11,12 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "ext/gsl.h"
+#include "../ext/gsl.h"
 
-#include "base/serial_async_reader.h"
-#include "configuration.h"
-#include "timer.h"
-#include "nmea_parser.h"
+#include "parser.h"
+#include "../base/serial_async_reader.h"
+#include "../configuration.h"
+#include "../timer.h"
 
 
 namespace nmea {
@@ -26,13 +26,13 @@ struct ReadData
 {
   ReadData() = default;
   ReadData(uint64_t read_time, uint64_t read_systime,
-           nmea::SentenceType sentence_type, std::string&& read_sentence)
+           SentenceType sentence_type, std::string&& read_sentence)
   : time{read_time}, systime{read_systime},
     sentence_type{sentence_type}, sentence{std::move(read_sentence)} {}
 
   uint64_t time;
   uint64_t systime;
-  nmea::SentenceType sentence_type;
+  SentenceType sentence_type;
   std::string sentence;
 };
 

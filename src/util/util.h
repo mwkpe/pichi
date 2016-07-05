@@ -1,11 +1,10 @@
-#ifndef GNSS_UTIL_H_
-#define GNSS_UTIL_H_
+#ifndef UTIL_H_
+#define UTIL_H_
 
 
 #include <cstdint>
 
 
-namespace gnss {
 namespace util {
 
 
@@ -19,7 +18,6 @@ double as_utc_unix(int year, int month, int day,
 
 
 }  // namespace util
-}  // namespace gnss
 
 
-#endif  // GNSS_UTIL_H_
+#endif  // UTIL_H_

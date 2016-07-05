@@ -1,11 +1,11 @@
-#include "gnss_util.h"
+#include "util.h"
 
 
 #include <ctime>
 #include <cmath>
 
 
-double gnss::util::dm_to_decimal(int degrees, float minutes, char direction)
+double util::dm_to_decimal(int degrees, float minutes, char direction)
 {
   auto decimal = static_cast<double>(degrees) + minutes / 60.0;
   if (direction == 'S' || direction == 'W')
@@ -14,15 +14,15 @@ double gnss::util::dm_to_decimal(int degrees, float minutes, char direction)
 }
 
 
-double gnss::util::dms_to_decimal(int degrees, int minutes,
-                                  float seconds, char direction)
+double util::dms_to_decimal(int degrees, int minutes,
+                            float seconds, char direction)
 {
   return dm_to_decimal(degrees, minutes + seconds / 3600.0, direction);
 }
 
 
-uint64_t gnss::util::as_utc_unix(int year, int month, int day,
-                                 int hour, int minute, int second)
+uint64_t util::as_utc_unix(int year, int month, int day,
+                           int hour, int minute, int second)
 {
   tm time;
   time.tm_year = year - 1900;  // Years since 1900
@@ -36,8 +36,8 @@ uint64_t gnss::util::as_utc_unix(int year, int month, int day,
 }
 
 
-double gnss::util::as_utc_unix(int year, int month, int day,
-                               int hour, int minute, float second)
+double util::as_utc_unix(int year, int month, int day,
+                         int hour, int minute, float second)
 {
   float integral_part;
   float fractional_part = std::modf(second, &integral_part);
