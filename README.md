@@ -30,4 +30,4 @@ Build
 
 Acknowledgements
 ---
-Pichi is using [FLTK](http://www.fltk.org) for the GUI, [Asio](http://think-async.com/) for network and serial I/O, [doctest](https://github.com/onqtam/doctest) and [*some*](http://kthx.de/~xeth/pub/non-const.png) [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
+Pichi is using [FLTK](http://www.fltk.org) for the GUI, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [doctest](https://github.com/onqtam/doctest) and [*some*](http://kthx.de/~xeth/pub/non-const.png) [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
