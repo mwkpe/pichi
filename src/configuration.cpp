@@ -8,76 +8,74 @@
 #include <regex>
 
 
-Configuration::Configuration(const std::string& filename) : filename_(filename)
+#include "ext/json/json.hpp"
+using json = nlohmann::json;
+
+
+Configuration::Configuration()
+  : filename_{"config.json"}
 {
-  std::ifstream fs{filename};
+  std::ifstream fs{filename_};
   std::string cfg;
+  json settings;
 
   if (fs.is_open()) {
     std::stringstream ss;
     ss << fs.rdbuf();
     cfg = ss.str();
     fs.close();
+    settings = json::parse(cfg);
   }
 
-  if (!cfg.empty()) {
-    auto read_cfg = [&cfg](const std::regex& rx) -> std::string {
-      std::smatch match;
-      std::regex_search(cfg, match, rx);
-      if (match.size() == 2)
-        return match[1].str();
-      return std::string();
-    };
+  auto get = [this, &settings](const std::string& key, auto def)
+    -> decltype(def)
+  {
+    if (settings.count(key)) {
+      return settings[key];
+    }
+    return def;
+  };
 
-    try {
-      device_id = std::stoul(read_cfg(std::regex{R"(device_id=([0-9]+))"}));
-      gnss_port = read_cfg(std::regex{R"(gnss_port=([a-zA-Z0-9-_\/]+))"});
-      gnss_port_rate = std::stoul(read_cfg(std::regex{R"(gnss_port_rate=([0-9]+))"}));
-      use_msg_rmc = read_cfg(std::regex{R"(use_msg_rmc=(true|false))"}) == "true";
-      use_msg_gga = read_cfg(std::regex{R"(use_msg_gga=(true|false))"}) == "true";
-      use_msg_gsv = read_cfg(std::regex{R"(use_msg_gsv=(true|false))"}) == "true";
-      use_msg_other = read_cfg(std::regex{R"(use_msg_other=(true|false))"}) == "true";
-      trans_ip = read_cfg(std::regex{R"(trans_ip=([0-9a-fA-F\.\:]+))"});
-      trans_port = std::stoul(read_cfg(std::regex{R"(trans_port=([0-9]+))"}));
-      recv_ip = read_cfg(std::regex{R"(recv_ip=([0-9a-fA-F\.\:]+))"});
-      recv_port = std::stoul(read_cfg(std::regex{R"(recv_port=([0-9]+))"}));
-      log_recv = read_cfg(std::regex{R"(log_recv=(true|false))"}) == "true";
-    }
-    catch (const std::invalid_argument& e) {
-      std::cerr << "Error loading config: " << e.what()
-                << "\nUsing default values." << std::endl;
-      *this = Configuration{};
-    }
-    catch (const std::out_of_range& e) {
-      std::cerr << "Error loading config: " << e.what()
-                << "\nUsing default values." << std::endl;
-      *this = Configuration{};
-    }
-  }
+  gnss_port = get("gnss_port", std::string("/dev/ttyS0"));
+  gnss_port_rate = get("gnss_port_rate", 9600);
+
+  use_msg_rmc = get("use_msg_rmc", true);
+  use_msg_gga = get("use_msg_gga", false);
+  use_msg_gsv = get("use_msg_gsv", false);
+  use_msg_other = get("use_msg_other", false);
+
+  trans_ip = get("trans_ip", std::string("192.168.0.1"));
+  trans_port = get("trans_port", 30001);
+
+  recv_ip = get("recv_ip", std::string("192.168.0.1"));
+  recv_port = get("recv_port", 30001);
+
+  log_recv = get("log_recv", true);
 }
 
 
 void Configuration::save_to_file() const
 {
+  json settings;
+
+  settings["gnss_port"] = gnss_port;
+  settings["gnss_port_rate"] = gnss_port_rate;
+
+  settings["use_msg_rmc"] = use_msg_rmc;
+  settings["use_msg_gga"] = use_msg_gga;
+  settings["use_msg_gsv"] = use_msg_gsv;
+  settings["use_msg_other"] = use_msg_other;
+
+  settings["trans_ip"] = trans_ip;
+  settings["trans_port"] = trans_port;
+
+  settings["recv_ip"] = recv_ip;
+  settings["recv_port"] = recv_port;
+
+  settings["log_recv"] = log_recv;
+
   std::ofstream fs{filename_};
   if (fs.is_open()) {
-    fs << std::boolalpha
-       <<"# Device\n"
-       << "device_id=" << device_id << '\n'
-       << "\n# GNSS\n"
-       << "gnss_port=" << gnss_port << '\n'
-       << "gnss_port_rate=" << gnss_port_rate << '\n'
-       << "use_msg_rmc=" << use_msg_rmc << '\n'
-       << "use_msg_gga=" << use_msg_gga << '\n'
-       << "use_msg_gsv=" << use_msg_gsv << '\n'
-       << "use_msg_other=" << use_msg_other << '\n'
-       << "\n# Transmitter\n"
-       << "trans_ip=" << trans_ip << '\n'
-       << "trans_port=" << trans_port << '\n'
-       << "\n# Receiver\n"
-       << "recv_ip=" << recv_ip << '\n'
-       << "recv_port=" << recv_port << '\n'
-       << "\n# Logging\n"
-       << "log_recv=" << log_recv;
+    fs << settings.dump(2);
   }
 }
