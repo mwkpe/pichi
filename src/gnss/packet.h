@@ -13,8 +13,9 @@ enum class PacketType : uint16_t {
 };
 
 
-// Mind the packing, these are used for network transmission,
-// keep everything 32 and 64-bit aligned and pad manually
+// Mapped onto buffer for network transmission, keep aligned and pad manually
+#pragma pack(4)
+
 
 struct PacketHeader
 {
@@ -34,6 +35,9 @@ struct LocationPacket
   double latitude;
   double longitude;
 };
+
+
+#pragma pack()
 
 
 constexpr uint16_t packet_header_size = sizeof(PacketHeader);
