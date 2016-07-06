@@ -188,15 +188,13 @@ void Pichi::transmit_gnss_packets()
       nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
           [this] { return !nmea_data_.empty() || !active_.load(); });
       if (!nmea_data_.empty()) {
-        decltype(nmea_data_) nmea_reads;
-        std::swap(nmea_data_, nmea_reads);
+        auto data = util::take(nmea_data_);
         lk.unlock();
-
-        for (const auto& read : nmea_reads) {
-          if (parse_location(location, read)) {
+        for (const auto& sentence : data) {
+          if (parse_location(location, sentence)) {
             header->transmit_counter++;
             header->transmit_time = timer_.current_time();
-            header->transmit_system_delay = timer_.current_systime() - read.systime;
+            header->transmit_system_delay = timer_.current_systime() - sentence.systime;
             transmitter.send(gsl::as_span(buffer).first(packet_size));
             activity_counter_.fetch_add(1);
             set_gnss_location(local_device_id, location);
@@ -218,11 +216,9 @@ void Pichi::log_gnss_packets()
       gnss_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
           [this] { return !gnss_data_.empty() || !active_.load(); });
       if (!gnss_data_.empty()) {
-        decltype(gnss_data_) gnss_recvs;
-        std::swap(gnss_data_, gnss_recvs);
+        auto data = util::take(gnss_data_);
         lk.unlock();
-
-        for (const auto& recv : gnss_recvs) {
+        for (const auto& recv : data) {
           switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
             case gnss::PacketType::Location: {
               if (recv.header.data_size == gnss::location_data_size &&
@@ -238,7 +234,7 @@ void Pichi::log_gnss_packets()
           }
         }
 
-        activity_counter_.fetch_add(gnss_recvs.size());
+        activity_counter_.fetch_add(data.size());
       }
     }
   }
@@ -256,11 +252,9 @@ void Pichi::log_gnss_data()
       nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
           [this] { return !nmea_data_.empty() || !active_.load(); });
       if (!nmea_data_.empty()) {
-        decltype(nmea_data_) nmea_reads;
-        std::swap(nmea_data_, nmea_reads);
+        auto data = util::take(nmea_data_);
         lk.unlock();
-
-        for (const auto& read : nmea_reads) {
+        for (const auto& read : data) {
           if (parse_location(&location, read)) {
             file.write(&location, read.time);
             set_gnss_location(local_device_id, &location);
@@ -282,11 +276,9 @@ void Pichi::update_gnss_data()
     nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
         [this] { return !nmea_data_.empty() || !active_.load(); });
     if (!nmea_data_.empty()) {
-      decltype(nmea_data_) nmea_reads;
-      std::swap(nmea_data_, nmea_reads);
+      auto data = util::take(nmea_data_);
       lk.unlock();
-
-      for (const auto& read : nmea_reads) {
+      for (const auto& read : data) {
         if (parse_location(&location, read)) {
           set_gnss_location(local_device_id, &location);
           activity_counter_.fetch_add(1);
@@ -304,12 +296,11 @@ void Pichi::show_nmea_sentences()
     nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
         [this] { return !nmea_data_.empty() || !active_.load(); });
     if (!nmea_data_.empty()) {
-      decltype(nmea_data_) nmea_read;
-      std::swap(nmea_data_, nmea_read);
+      auto data = util::take(nmea_data_);
       lk.unlock();
-      for (const auto& read : nmea_read)
+      for (const auto& read : data)
         std::cout << read.sentence << std::endl;
-      activity_counter_.fetch_add(nmea_read.size());
+      activity_counter_.fetch_add(data.size());
     }
   }
 }
@@ -339,7 +330,7 @@ bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
       nmea::GgaData gga_data;
       std::tie(success, gga_data) = nmea::parse_valid<nmea::GgaData>(nmea_read.sentence);
       if (success) {
-        location->utc_timestamp = 0;  // TODO: GGA has no date, buffer date from RMC?
+        location->utc_timestamp = 0;  // GGA has no date
         location->latitude = util::dm_to_decimal(
             gga_data.degrees_lat, gga_data.minutes_lat, gga_data.direction_lat);
         location->longitude = util::dm_to_decimal(
@@ -363,7 +354,7 @@ std::tuple<bool, gnss::LocationPacket> Pichi::gnss_location(uint16_t device_id)
       return std::make_tuple(true, device.location());
   }
 
-  return std::make_tuple(false, gnss::LocationPacket());
+  return std::make_tuple(false, gnss::LocationPacket{});
 }
 
 
@@ -388,7 +379,5 @@ void Pichi::set_gnss_location(uint16_t device_id,
 std::vector<uint16_t> Pichi::new_device_ids()
 {
   std::lock_guard<std::mutex> lock{devices_mutex_};
-  std::vector<uint16_t> v;
-  std::swap(new_device_ids_, v);
-  return v;
+  return util::take(new_device_ids_);
 }
