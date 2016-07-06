@@ -27,7 +27,7 @@ Configuration::Configuration()
     settings = json::parse(cfg);
   }
 
-  auto get = [this, &settings](const std::string& key, auto def)
+  auto get = [&settings](const std::string& key, auto def)
     -> decltype(def)
   {
     if (settings.count(key)) {
