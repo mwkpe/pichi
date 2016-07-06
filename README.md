@@ -11,7 +11,7 @@ A GNSS location transceiver/logger for the Raspberry Pi
 
 Description
 ---
-Pichi is a small program for reading NMEA sentences from a GNSS receiver and logging or transmitting the positonal data, practically turning a Raspberry Pi into a GPS tag.
+Pichi is a small program for reading and parsing NMEA sentences from a GNSS receiver and logging or transmitting (UDP) the positonal data, turning a Raspberry Pi into a GPS tag.
 
 Requirements
 ---
@@ -22,7 +22,7 @@ Currently the program can only read sentences from the device. The receiver itse
 Running the program
 ---
 Start the program with `sudo ./pichi`.<br>
-The program works without sudo but won't be able to read the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14).
+The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for internal delay measurements and is not required for any other functionality. Values are simply 0 without sudo.
 
 Build
 ---
@@ -30,4 +30,4 @@ Build
 
 Acknowledgements
 ---
-Pichi is using [FLTK](http://www.fltk.org) for the GUI, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [doctest](https://github.com/onqtam/doctest) and [*some*](http://kthx.de/~xeth/pub/non-const.png) [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
+Pichi is using the [FLTK](http://www.fltk.org) GUI toolkit, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [doctest](https://github.com/onqtam/doctest) and [*some*](http://kthx.de/~xeth/pub/non-const.png) [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, and [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
