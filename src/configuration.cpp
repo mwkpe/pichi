@@ -12,8 +12,8 @@
 using json = nlohmann::json;
 
 
-Configuration::Configuration()
-  : filename_{"config.json"}
+Configuration::Configuration(const std::string& filename)
+  : filename_{filename}
 {
   std::ifstream fs{filename_};
   std::string cfg;

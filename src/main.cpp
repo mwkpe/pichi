@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[])
 {
-  Pichi pichi{Configuration{}};
+  Pichi pichi{Configuration{"config.json"}};
 
   MainWindow window{&pichi};
   window.show(argc, argv);
