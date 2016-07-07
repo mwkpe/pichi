@@ -93,8 +93,8 @@ display_device_id_ = 0;} {}
           }
         }
         Fl_Group {} {
-          label GNSS
-          xywh {6 60 488 202} hide
+          label GNSS selected
+          xywh {6 60 488 202}
         } {
           Fl_Input text_gnss_port {
             label {Port (Device sending NMEA sentences)}
@@ -168,11 +168,11 @@ display_device_id_ = 0;} {}
         }
         Fl_Group {} {
           label Display open
-          xywh {6 60 488 202}
+          xywh {6 60 488 202} hide
         } {
           Fl_Choice choice_display_device {
             label {Device ID (0 = Local device)} user_data_type {void*}
-            callback {display_device_changed_callback(o, v)} open selected
+            callback {display_device_changed_callback(o, v)} open
             xywh {12 66 120 26} down_box BORDER_BOX align 8 when 1
           } {}
           Fl_Output text_display_utc {

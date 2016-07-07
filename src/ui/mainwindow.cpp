@@ -99,7 +99,6 @@ MainWindow::MainWindow(Pichi* p) {
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "GNSS");
-        o->hide();
         { text_gnss_port = new Fl_Input(12, 66, 160, 24, "Port (Device sending NMEA sentences)");
           text_gnss_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port
@@ -159,6 +158,7 @@ MainWindow::MainWindow(Pichi* p) {
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Display");
+        o->hide();
         { choice_display_device = new Fl_Choice(12, 66, 120, 26, "Device ID (0 = Local device)");
           choice_display_device->down_box(FL_BORDER_BOX);
           choice_display_device->callback((Fl_Callback*)cb_choice_display_device);
