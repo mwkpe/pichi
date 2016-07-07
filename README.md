@@ -15,7 +15,7 @@ Pichi is a small program for reading and parsing NMEA sentences from a GNSS rece
 
 Status
 ---
-Basically does what it says on the tin ... but it's just a personal RPI project and may or may not work, kill your cat, or rend the fabric of the space time continuum.
+Basically does what it says on the tin ... but it's just a personal RPi project and may or may not work, kill your cat, or rend the fabric of the space time continuum.
 
 Requirements
 ---
