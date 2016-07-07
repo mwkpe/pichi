@@ -13,6 +13,10 @@ Description
 ---
 Pichi is a small program for reading and parsing NMEA sentences from a GNSS receiver and logging or transmitting (UDP) the positonal data, turning a Raspberry Pi into a GPS tag.
 
+Status
+---
+Basically does what it says on the tin ... but it's just a personal RPI project and may or may not work, kill your cat, or rend the fabric of the space time continuum.
+
 Requirements
 ---
 A Raspberry Pi or similar device – except for the (optional and easily adaptable/removeable) [system timer](src/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
@@ -22,7 +26,7 @@ Currently the program can only read sentences from the device. The receiver itse
 Running the program
 ---
 Start the program with `sudo ./pichi`.<br>
-The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for internal delay measurements and is not required for any other functionality. Values are simply 0 without sudo.
+The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for internal delay measurements and is not required for anything. Values are simply 0 without sudo.
 
 Build
 ---
@@ -30,4 +34,4 @@ Build
 
 Acknowledgements
 ---
-Pichi is using the [FLTK](http://www.fltk.org) GUI toolkit, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [doctest](https://github.com/onqtam/doctest) and [*some*](http://kthx.de/~xeth/pub/non-const.png) [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, and [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
+Pichi is using the [FLTK](http://www.fltk.org) GUI toolkit, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [doctest](https://github.com/onqtam/doctest) and [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, and [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
