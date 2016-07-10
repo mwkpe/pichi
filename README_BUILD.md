@@ -39,4 +39,4 @@ Testing
 ---
 Use `./nmea_parser_test` to run the test of the NMEA parser.
 
-Navigate to `/src/test` and use `./run_cpplint.sh` to run cpplint. Remember that both scripts, the run_cpplint shell script and the cpplint python script in `src/ext/cpplint.py` require execute rights.
+Navigate to `/src/test` and use `./run_cpplint.sh` to run cpplint. Remember that both scripts, the run_cpplint shell script and the cpplint python script in `src/ext` require execute rights.
