@@ -23,14 +23,13 @@ A Raspberry Pi or similar device – except for the (optional and easily adaptab
 
 Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences in the desired frequency.
 
-Running the program
----
-Start the program with `sudo ./pichi`.<br>
-The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for internal delay measurements and is not required for anything. Values are simply 0 without sudo.
-
 Build
 ---
-[Build instructions](/README_BUILD.md)
+[Build instructions](/README_USAGE.md)
+
+Usage
+---
+[Usage instructions](/README_BUILD.md)
 
 Acknowledgements
 ---
