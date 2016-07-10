@@ -9,7 +9,7 @@
 class Configuration
 {
 public:
-  Configuration(const std::string& filename);
+  explicit Configuration(const std::string& filename);
   void save_to_file() const;
 
   uint16_t device_id{1};
