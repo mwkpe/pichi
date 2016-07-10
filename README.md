@@ -25,11 +25,11 @@ Currently the program can only read sentences from the device. The receiver itse
 
 Build
 ---
-[Build instructions](/README_USAGE.md)
+[Build instructions](/README_BUILD.md)
 
 Usage
 ---
-[Usage instructions](/README_BUILD.md)
+[Usage instructions](/README_USAGE.md)
 
 Acknowledgements
 ---
