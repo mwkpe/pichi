@@ -18,7 +18,6 @@ The port and IP variables must be set in the `config.json`. If the file doesn't 
 
 Data format
 ---
-
 The data packets are defined in the [packet.h](src/gnss/packet.h) file.
 
 The UDP receive log file has the following columns.
@@ -28,7 +27,7 @@ The UDP receive log file has the following columns.
 | Device ID        | Identifies the sender |  |
 | Packet type      | Defined in [packet.h](src/gnss/packet.h) |   |
 | UDP receive time | Time the packet was received | ns |
-| Transmit delay   | Transmission delay between sender and receiver (devices must be synchronized) | ns |
+| Transmit delay   | Transmission delay between sender and receiver<br>(devices must be synchronized) | ns |
 | Sender System delay | Time the transmitter took to send the packet (since serial read) | µs |
 | Packet counter   | Indicates transmit ordering and missing packets |   |
 | UTC timestamp    | UTC timestamp from NMEA sentence |   |
@@ -41,5 +40,5 @@ The serial read log file has the following columns.
 | ---------------- | ------------- | ---- |
 | Serial read time | Time the NMEA sentence was read | ns |
 | UTC timestamp    | UTC timestamp from NMEA sentence |   |
-| Latitude         | Position fix from NMEA sentence | decimal degrees [±90°] | 
-| Longitude        | Position fix from NMEA sentence | decimal degrees [±180°] |
+| Latitude         | Position from NMEA sentence | decimal degrees [±90°] | 
+| Longitude        | Position from NMEA sentence | decimal degrees [±180°] |
