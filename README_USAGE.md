@@ -5,7 +5,7 @@ The program works without sudo but won't be able to access the Raspberry Pi's 1M
 
 Command line interface
 ---
-It's also possible to start the program without the GUI by passing the `--nogui` option and one additional option specifying the mode you want to run, e.g.: `sudo ./pichi --nogui --transmit``.
+It's also possible to start the program without the GUI by passing the `--nogui` option and one additional option specifying the mode you want to run, e.g.: `sudo ./pichi --nogui --transmit`.
 
 | Mode          | What it does  |
 | ------------- | ------------- |
@@ -28,7 +28,7 @@ The UDP receive log file has the following columns.
 | Device ID        | Identifies the sender |  |
 | Packet type      | Defined in [packet.h](src/gnss/packet.h) |   |
 | UDP receive time | Time the packet was received | ns |
-| Transmit delay   | Transmission delay between sender and receiver | ns |
+| Transmit delay   | Transmission delay between sender and receiver (devices must be synchronized) | ns |
 | Sender System delay | Time the transmitter took to send the packet (since serial read) | µs |
 | Packet counter   | Indicates transmit ordering and missing packets |   |
 | UTC timestamp    | UTC timestamp from NMEA sentence |   |
