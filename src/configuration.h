@@ -28,6 +28,7 @@ public:
   uint16_t recv_port{30001};
 
   bool log_recv{true};
+  std::string log_format{"short"};
 
 private:
   std::string filename_{};

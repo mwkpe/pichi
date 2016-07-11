@@ -19,6 +19,9 @@ void MainWindow::init()
 {
   // Must be set or callbacks will be called with nullptr
   choice_display_device->user_data(this);
+  radio_log_all->user_data(this);
+  radio_log_short->user_data(this);
+  radio_log_mini->user_data(this);
 
   display_add_device(Pichi::local_device_id);
   choice_display_device->value(0);
@@ -40,6 +43,14 @@ void MainWindow::apply_settings()
     conf.trans_port = std::stoul(text_trans_port->value());
     conf.recv_ip = text_recv_ip->value();
     conf.recv_port = std::stoul(text_recv_port->value());
+    conf.log_recv = check_log_receive->value();
+
+    conf.log_format = "short";  // Default
+    if (radio_log_all->value())
+      conf.log_format = "all";
+    else if (radio_log_mini->value())
+      conf.log_format = "mini";
+
     pichi_->set_config(conf);
   }
   catch (const std::invalid_argument& e) {
@@ -67,6 +78,20 @@ void MainWindow::load_settings()
   text_trans_port->value(std::to_string(conf.trans_port).c_str());
   text_recv_ip->value(conf.recv_ip.c_str());
   text_recv_port->value(std::to_string(conf.recv_port).c_str());
+  check_log_receive->value(conf.log_recv);
+
+  radio_log_all->value(0);
+  radio_log_short->value(0);
+  radio_log_mini->value(0);
+
+  if (conf.log_format == "all")
+    radio_log_all->value(1);
+  else if (conf.log_format == "short")
+    radio_log_short->value(1);
+  else if (conf.log_format == "mini")
+    radio_log_all->value(1);
+  else
+    radio_log_short->value(1);  // Default
 }
 
 
@@ -126,9 +151,29 @@ void MainWindow::button_sync_time_clicked()
 }
 
 
-void MainWindow::radio_log_clicked()
+void MainWindow::radio_log_clicked_callback(Fl_Round_Button* o, void* p)
 {
-  // TODO: Implement short logging
+  auto* w = reinterpret_cast<MainWindow*>(p);
+  w->radio_log_clicked(o);
+}
+
+
+void MainWindow::radio_log_clicked(Fl_Round_Button* o)
+{
+  // Disable callbacks
+  radio_log_all->when(0);
+  radio_log_short->when(0);
+  radio_log_mini->when(0);
+
+  radio_log_all->value(0);
+  radio_log_short->value(0);
+  radio_log_mini->value(0);
+
+  o->value(1);
+
+  radio_log_all->when(FL_WHEN_CHANGED);
+  radio_log_short->when(FL_WHEN_CHANGED);
+  radio_log_mini->when(FL_WHEN_CHANGED);
 }
 
 

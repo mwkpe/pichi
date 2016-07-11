@@ -51,6 +51,7 @@ Configuration::Configuration(const std::string& filename)
   recv_port = get("recv_port", 30001);
 
   log_recv = get("log_recv", true);
+  log_format = get("log_format", std::string("short"));
 }
 
 
@@ -73,6 +74,7 @@ void Configuration::save_to_file() const
   settings["recv_port"] = recv_port;
 
   settings["log_recv"] = log_recv;
+  settings["log_format"] = log_format;
 
   std::ofstream fs{filename_};
   if (fs.is_open()) {

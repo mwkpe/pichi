@@ -9,12 +9,7 @@
 
 logging::Logfile::Logfile(const std::string& filename)
 {
-  // TODO: Proper file system handling
-  fs_.open(std::string("logs/log_") + filename);
-  if (!fs_.is_open())
-    std::cerr << "Could not open log file, logs directory missing?" << std::endl;
-  else
-    std::cout << "Logfile opened" << std::endl;
+  open(filename);
 }
 
 
@@ -23,6 +18,19 @@ logging::Logfile::~Logfile()
   // Stream will close itself
   if (fs_.is_open())
     std::cout << "Logfile closed" << std::endl;
+}
+
+
+bool logging::Logfile::open(const std::string& filename)
+{
+  // TODO: Proper file system handling
+  fs_.open(std::string("logs/log_") + filename);
+  if (!is_open())
+    std::cerr << "Could not open log file, logs directory missing?" << std::endl;
+  else
+    std::cout << "Logfile opened" << std::endl;
+
+  return is_open();
 }
 
 

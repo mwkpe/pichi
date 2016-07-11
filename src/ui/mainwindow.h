@@ -48,12 +48,16 @@ private:
   Fl_Input *text_trans_port;
   Fl_Input *text_recv_ip;
   Fl_Input *text_recv_port;
+  Fl_Check_Button *check_log_receive;
   Fl_Round_Button *radio_log_all;
   inline void cb_radio_log_all_i(Fl_Round_Button*, void*);
   static void cb_radio_log_all(Fl_Round_Button*, void*);
   Fl_Round_Button *radio_log_short;
   inline void cb_radio_log_short_i(Fl_Round_Button*, void*);
   static void cb_radio_log_short(Fl_Round_Button*, void*);
+  Fl_Round_Button *radio_log_mini;
+  inline void cb_radio_log_mini_i(Fl_Round_Button*, void*);
+  static void cb_radio_log_mini(Fl_Round_Button*, void*);
 public:
   Fl_Choice *choice_display_device;
 private:
@@ -69,13 +73,14 @@ private:
   static void cb_button_apply(Fl_Button*, void*);
 public:
   void show(int argc, char** argv);
+private:
   static void update_status_callback(void* p);
   static void update_display_callback(void* p);
   static void display_device_changed_callback(Fl_Choice* o, void* p);
+  static void radio_log_clicked_callback(Fl_Round_Button* o, void* p);
   void update_status();
   void update_display();
   void display_device_changed(uint16_t id);
-private:
   void init();
   uint16_t mapped_device_id(int index);
   void display_add_device(uint16_t id);
@@ -84,7 +89,7 @@ private:
   void button_start_clicked();
   void button_apply_clicked();
   void button_sync_time_clicked();
-  void radio_log_clicked();
+  void radio_log_clicked(Fl_Round_Button* o);
   Pichi* pichi_; 
   std::unordered_map<int, uint16_t> mapped_device_ids_; 
   uint16_t display_device_id_; 

@@ -52,7 +52,7 @@ private:
   void reset();
 
   void transmit_gnss_packets();
-  void log_gnss_packets();
+  void receive_gnss_packets();
   void log_gnss_data();
   void update_gnss_data();
   void show_nmea_sentences();

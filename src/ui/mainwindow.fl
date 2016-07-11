@@ -23,7 +23,7 @@ last_count_ = 0;
 display_device_id_ = 0;} {}
     Fl_Window main_window {
       label Pichi open
-      private xywh {750 399 500 300} type Double visible
+      private xywh {810 469 500 300} type Double visible
     } {
       Fl_Group {} {open
         xywh {0 0 500 38}
@@ -93,7 +93,7 @@ display_device_id_ = 0;} {}
           }
         }
         Fl_Group {} {
-          label GNSS selected
+          label GNSS
           xywh {6 60 488 202}
         } {
           Fl_Input text_gnss_port {
@@ -118,7 +118,7 @@ display_device_id_ = 0;} {}
           }
           Fl_Check_Button check_gsv {
             label {GSV (Satellites in view)}
-            xywh {18 194 460 16} down_box DOWN_BOX
+            xywh {18 194 460 16} down_box DOWN_BOX deactivate
           }
           Fl_Check_Button check_other {
             label {Other (When logging sentences)}
@@ -152,18 +152,31 @@ display_device_id_ = 0;} {}
           }
         }
         Fl_Group {} {
-          label Log
+          label Log open
           xywh {6 60 488 202} hide
         } {
+          Fl_Box {} {
+            label {UDP Receive}
+            xywh {12 88 474 74} box DOWN_BOX labeltype NO_LABEL align 5
+          }
+          Fl_Check_Button check_log_receive {
+            label {Log UDP receive}
+            private xywh {12 66 474 16} down_box DOWN_BOX value 1
+          }
           Fl_Round_Button radio_log_all {
-            label {All (Header, timings and data)}
-            callback {radio_log_clicked()}
-            private xywh {12 66 474 16} down_box ROUND_DOWN_BOX
+            label {All (header, data)}
+            callback {radio_log_clicked_callback(o, v)}
+            private xywh {18 94 460 16} down_box ROUND_DOWN_BOX
           }
           Fl_Round_Button radio_log_short {
-            label {Short (Device ID and data)}
-            callback {radio_log_clicked()}
-            private xywh {12 85 474 16} down_box ROUND_DOWN_BOX value 1
+            label {Short (ID, packet type, receive time, data)}
+            callback {radio_log_clicked_callback(o, v)}
+            private xywh {18 116 460 16} down_box ROUND_DOWN_BOX value 1
+          }
+          Fl_Round_Button radio_log_mini {
+            label {Mini (receive time, data)}
+            callback {radio_log_clicked_callback(o, v)}
+            private xywh {18 138 460 16} down_box ROUND_DOWN_BOX
           }
         }
         Fl_Group {} {
@@ -206,17 +219,19 @@ load_settings();} {}
   } {
     code {main_window->show(argc, argv);} {}
   }
-  Function {update_status_callback(void* p)} {open return_type {static void}
+  Function {update_status_callback(void* p)} {open private return_type {static void}
   } {}
-  Function {update_display_callback(void* p)} {open return_type {static void}
+  Function {update_display_callback(void* p)} {open private return_type {static void}
   } {}
-  Function {display_device_changed_callback(Fl_Choice* o, void* p)} {open return_type {static void}
+  Function {display_device_changed_callback(Fl_Choice* o, void* p)} {open private return_type {static void}
   } {}
-  Function {update_status()} {open return_type void
+  Function {radio_log_clicked_callback(Fl_Round_Button* o, void* p)} {open private return_type {static void}
   } {}
-  Function {update_display()} {open return_type void
+  Function {update_status()} {open private return_type void
   } {}
-  Function {display_device_changed(uint16_t id)} {open return_type void
+  Function {update_display()} {open private return_type void
+  } {}
+  Function {display_device_changed(uint16_t id)} {open private return_type void
   } {}
   Function {init()} {open private return_type void
   } {}
@@ -234,7 +249,7 @@ load_settings();} {}
   } {}
   Function {button_sync_time_clicked()} {open private return_type void
   } {}
-  Function {radio_log_clicked()} {open private return_type void
+  Function {radio_log_clicked(Fl_Round_Button* o)} {open selected private return_type void
   } {}
   decl {Pichi* pichi_;} {private local
   }

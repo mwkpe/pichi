@@ -103,7 +103,7 @@ void Pichi::start_gnss_receiver()
     reset();
     active_.store(true);
 
-    std::thread consumer{&Pichi::log_gnss_packets, this};
+    std::thread consumer{&Pichi::receive_gnss_packets, this};
     consumer.detach();
 
     std::thread provider{&gnss::Receiver::start, &gnss_receiver_,
@@ -206,36 +206,52 @@ void Pichi::transmit_gnss_packets()
 }
 
 
-void Pichi::log_gnss_packets()
+void Pichi::receive_gnss_packets()
 {
-  logging::Logfile file(std::to_string(timer_.current_time()) + ".csv");
+  logging::Logfile file;
+  bool logging = conf_.log_recv &&
+                 file.open(std::to_string(timer_.current_time()) + ".csv");
 
-  if (file.is_open()) {
-    while (is_active()) {
-      std::unique_lock<std::mutex> lk{gnss_data_mutex_};
-      gnss_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
-          [this] { return !gnss_data_.empty() || !active_.load(); });
-      if (!gnss_data_.empty()) {
-        auto data = util::take(gnss_data_);
-        lk.unlock();
-        for (const auto& recv : data) {
-          switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
-            case gnss::PacketType::Location: {
-              if (recv.header.data_size == gnss::location_data_size &&
-                  recv.header.data_size >= recv.data.size()) {
-                auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
-                file.write(&recv.header, location, recv.time);
-                set_gnss_location(recv.header.device_id, location);
+  // The lazy design pattern
+  int format = 1;
+  if (conf_.log_format == "all")
+    format = 0;
+  if (conf_.log_format == "short")
+    format = 1;
+  if (conf_.log_format == "mini")
+    format = 2;
+
+  while (is_active()) {
+    std::unique_lock<std::mutex> lk{gnss_data_mutex_};
+    gnss_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+        [this] { return !gnss_data_.empty() || !active_.load(); });
+    if (!gnss_data_.empty()) {
+      auto data = util::take(gnss_data_);
+      lk.unlock();
+      for (const auto& recv : data) {
+        switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
+          case gnss::PacketType::Location: {
+            if (recv.header.data_size == gnss::location_data_size &&
+                recv.header.data_size >= recv.data.size()) {
+              auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
+              set_gnss_location(recv.header.device_id, location);
+              if (logging) {
+                switch (format) {
+                  case 0: file.write(&recv.header, location, recv.time); break;
+                  case 1: file.write(location, recv.header.packet_type,
+                                     recv.header.device_id, recv.time); break;
+                  case 2: file.write(location, recv.time); break;
+                }
               }
             }
-            break;
-            default:
-            break;
           }
+          break;
+          default:
+          break;
         }
-
-        activity_counter_.fetch_add(data.size());
       }
+
+      activity_counter_.fetch_add(data.size());
     }
   }
 }

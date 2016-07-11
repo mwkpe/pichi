@@ -26,18 +26,25 @@ void MainWindow::cb_button_sync_time(Fl_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_button_sync_time_i(o,v);
 }
 
-void MainWindow::cb_radio_log_all_i(Fl_Round_Button*, void*) {
-  radio_log_clicked();
+void MainWindow::cb_radio_log_all_i(Fl_Round_Button* o, void* v) {
+  radio_log_clicked_callback(o, v);
 }
 void MainWindow::cb_radio_log_all(Fl_Round_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_all_i(o,v);
 }
 
-void MainWindow::cb_radio_log_short_i(Fl_Round_Button*, void*) {
-  radio_log_clicked();
+void MainWindow::cb_radio_log_short_i(Fl_Round_Button* o, void* v) {
+  radio_log_clicked_callback(o, v);
 }
 void MainWindow::cb_radio_log_short(Fl_Round_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_short_i(o,v);
+}
+
+void MainWindow::cb_radio_log_mini_i(Fl_Round_Button* o, void* v) {
+  radio_log_clicked_callback(o, v);
+}
+void MainWindow::cb_radio_log_mini(Fl_Round_Button* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_mini_i(o,v);
 }
 
 void MainWindow::cb_choice_display_device_i(Fl_Choice* o, void* v) {
@@ -118,6 +125,7 @@ MainWindow::MainWindow(Pichi* p) {
         } // Fl_Check_Button* check_gga
         { check_gsv = new Fl_Check_Button(18, 194, 460, 16, "GSV (Satellites in view)");
           check_gsv->down_box(FL_DOWN_BOX);
+          check_gsv->deactivate();
         } // Fl_Check_Button* check_gsv
         { check_other = new Fl_Check_Button(18, 216, 460, 16, "Other (When logging sentences)");
           check_other->down_box(FL_DOWN_BOX);
@@ -146,15 +154,28 @@ MainWindow::MainWindow(Pichi* p) {
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Log");
         o->hide();
-        { radio_log_all = new Fl_Round_Button(12, 66, 474, 16, "All (Header, timings and data)");
+        { Fl_Box* o = new Fl_Box(12, 88, 474, 74, "UDP Receive");
+          o->box(FL_DOWN_BOX);
+          o->labeltype(FL_NO_LABEL);
+          o->align(Fl_Align(FL_ALIGN_TOP_LEFT));
+        } // Fl_Box* o
+        { check_log_receive = new Fl_Check_Button(12, 66, 474, 16, "Log UDP receive");
+          check_log_receive->down_box(FL_DOWN_BOX);
+          check_log_receive->value(1);
+        } // Fl_Check_Button* check_log_receive
+        { radio_log_all = new Fl_Round_Button(18, 94, 460, 16, "All (header, data)");
           radio_log_all->down_box(FL_ROUND_DOWN_BOX);
           radio_log_all->callback((Fl_Callback*)cb_radio_log_all);
         } // Fl_Round_Button* radio_log_all
-        { radio_log_short = new Fl_Round_Button(12, 85, 474, 16, "Short (Device ID and data)");
+        { radio_log_short = new Fl_Round_Button(18, 116, 460, 16, "Short (ID, packet type, receive time, data)");
           radio_log_short->down_box(FL_ROUND_DOWN_BOX);
           radio_log_short->value(1);
           radio_log_short->callback((Fl_Callback*)cb_radio_log_short);
         } // Fl_Round_Button* radio_log_short
+        { radio_log_mini = new Fl_Round_Button(18, 138, 460, 16, "Mini (receive time, data)");
+          radio_log_mini->down_box(FL_ROUND_DOWN_BOX);
+          radio_log_mini->callback((Fl_Callback*)cb_radio_log_mini);
+        } // Fl_Round_Button* radio_log_mini
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Display");
