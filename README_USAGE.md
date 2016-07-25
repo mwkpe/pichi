@@ -31,8 +31,8 @@ The UDP receive CSV file has the following columns.
 | Sender System delay | Time the transmitter took to send the packet<br>(since serial read) | µs |
 | Packet counter   | Indicates transmit ordering and missing packets |   |
 | UTC timestamp    | UTC timestamp from NMEA sentence |   | ✓
-| Latitude         | Position fix from NMEA sentence | deg [±90°] | ✓
-| Longitude        | Position fix from NMEA sentence | deg [±180°] | ✓
+| Latitude         | Position from NMEA sentence | deg [±90°] | ✓
+| Longitude        | Position from NMEA sentence | deg [±180°] | ✓
 
 The serial read CSV file has the following columns.
 
