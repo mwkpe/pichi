@@ -7,11 +7,11 @@
 [![GUI](https://img.shields.io/badge/GUI-FLTK-blue.svg)](http://www.fltk.org/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
-A GNSS location transceiver/logger for the Raspberry Pi
+A GNSS location logger/transceiver for the Raspberry Pi
 
 Description
 ---
-Pichi is a small program for reading and parsing NMEA sentences from a GNSS receiver and logging or transmitting (UDP) the positonal data, turning a Raspberry Pi into a GPS tag.
+Pichi is a small program for reading and parsing NMEA sentences from a GNSS receiver and logging (CSV, GPX) or transmitting (UDP) the positonal data, turning a Raspberry Pi into a GPS tag.
 
 Status
 ---
@@ -19,9 +19,9 @@ Basically does what it says on the tin ... but it's just a personal RPi project 
 
 Requirements
 ---
-A Raspberry Pi or similar device – except for the (optional and easily adaptable/removeable) [system timer](src/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC or GGA). Developed and tested with a Raspberry Pi 3 (Model B) and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
+A Raspberry Pi or similar device – except for the optional and easily adaptable/removeable [system timer](src/timer.h) there's no platform-specific code – and a GNSS receiver supporting the NMEA 0183 protocol (RMC sentences). Developed and tested with a Raspberry Pi 3 (Model B) and Zero, and a NAVILOCK NL-8002U USB 2.0 Multi GNSS Receiver (u-blox-8).
 
-Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC or GGA sentences in the desired frequency.
+Currently the program can only read sentences from the device. The receiver itself must be configured with another software (e.g. u-center or similar) to send RMC sentences in the desired frequency. But there's an option to force 1Hz when logging.
 
 Build
 ---
@@ -33,4 +33,4 @@ Usage
 
 Acknowledgements
 ---
-Pichi is using the [FLTK](http://www.fltk.org) GUI toolkit, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [cxxopts](https://github.com/jarro2783/cxxopts) for parsing command line options, [doctest](https://github.com/onqtam/doctest) and [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, and [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
+Pichi is using the [FLTK](http://www.fltk.org) GUI toolkit, [Asio](http://think-async.com/) for network and serial I/O, [Spirit](http://boost-spirit.com) for text parsing, [cxxopts](https://github.com/jarro2783/cxxopts) for parsing command line options, [doctest](https://github.com/onqtam/doctest) and [cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint) for testing, and [fmt](https://github.com/fmtlib/fmt), [JSON](https://github.com/nlohmann/json) and [GSL Lite](https://github.com/martinmoene/gsl-lite).
