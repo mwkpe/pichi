@@ -1,11 +1,10 @@
 # Pichi
-[![Status](https://img.shields.io/badge/Status-WIP-yellow.svg)](http://www.merriam-webster.com/dictionary/work%20in%20progress)
-[![System](https://img.shields.io/badge/System-Raspberry%20Pi-bc1142.svg)](https://www.raspberrypi.org/)
 [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
 [![Standard](https://img.shields.io/badge/C%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![I/O](https://img.shields.io/badge/I%2FO-Asio-blue.svg)](http://think-async.com/)
 [![GUI](https://img.shields.io/badge/GUI-FLTK-blue.svg)](http://www.fltk.org/)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
+[![System](https://img.shields.io/badge/System-Raspberry%20Pi-bc1142.svg)](https://www.raspberrypi.org/)
 
 A GNSS location logger/transceiver for the Raspberry Pi
 
