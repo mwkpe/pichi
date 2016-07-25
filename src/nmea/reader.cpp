@@ -7,13 +7,11 @@
 #include "parser.h"
 
 
-nmea::Reader::Reader(const Configuration& conf,
-                     const Timer& timer,
+nmea::Reader::Reader(const Timer& timer,
                      std::condition_variable& data_ready,
                      std::mutex& data_mutex,
                      std::deque<ReadData>& data)
-  : conf_{conf},
-    timer_{timer},
+  : timer_{timer},
     nmea_data_ready_{data_ready},
     nmea_data_mutex_{data_mutex},
     nmea_data_{data}
@@ -26,9 +24,9 @@ nmea::Reader::~Reader()
 }
 
 
-void nmea::Reader::start()
+void nmea::Reader::start(const std::string& port, uint32_t rate)
 {
-  start_(conf_.gnss_port, conf_.gnss_port_rate);
+  start_(port, rate);
 }
 
 
@@ -52,7 +50,7 @@ void nmea::Reader::handle_read(gsl::span<char> buffer)
     // What sentences were received?
     auto typed_sentences = to_typed_sentences(std::move(sentences));
     // Remove sentences disabled by the user
-    filter(typed_sentences, conf_);
+    filter(typed_sentences);
     activity_counter_.fetch_add(typed_sentences.size());
 
     // Push data
@@ -103,17 +101,12 @@ auto nmea::to_typed_sentences(std::vector<std::string>&& sentences)
 }
 
 
-void nmea::filter(std::vector<std::tuple<nmea::SentenceType, std::string>>& sentences,
-                  const Configuration& conf)
-// Removes sentences from vector that are not enabled in conf
+void nmea::filter(std::vector<std::tuple<nmea::SentenceType, std::string>>& sentences)
+// Removes non-RMC sentences
 {
   auto new_end = std::remove_if(std::begin(sentences), std::end(sentences),
-    [&conf](const std::tuple<nmea::SentenceType, std::string>& t) {
-      auto type = std::get<0>(t);
-      return (type == nmea::SentenceType::Rmc && !conf.use_msg_rmc) ||
-             (type == nmea::SentenceType::Gga && !conf.use_msg_gga) ||
-             (type == nmea::SentenceType::Gsv && !conf.use_msg_gsv) ||
-             (type == nmea::SentenceType::Unknown && !conf.use_msg_other);
+    [](const std::tuple<nmea::SentenceType, std::string>& t) {
+      return std::get<0>(t) != nmea::SentenceType::Rmc;
   });
   sentences.erase(new_end, std::end(sentences));
 }

@@ -15,12 +15,12 @@ test: nmea_parser.o src/test/nmea_parser_test.cpp
 
 
 pichi: \
-  main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o \
+  format.o main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o csvfile.o gpxfile.o \
   util.o gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
   nmea_reader.o serial_async_reader.o serial_base.o nmea_parser.o \
   timer.o configuration.o
 	$(CXX) $(CXXFLAGS) $(CXXFLAGSFLTK) \
-      main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o \
+      format.o main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o csvfile.o gpxfile.o \
       util.o gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
       nmea_reader.o serial_async_reader.o serial_base.o nmea_parser.o \
       timer.o configuration.o \
@@ -47,8 +47,15 @@ pichi.o: \
   src/util/util.h
 	$(CXX) -c $(CXXFLAGS) src/pichi.cpp
 
-logfile.o: src/logfile.cpp src/logfile.h
-	$(CXX) -c $(CXXFLAGS) src/logfile.cpp
+gpxfile.o: src/logging/gpxfile.cpp src/logging/gpxfile.h \
+  src/logging/logfile.h src/ext/fmt/format.h
+	$(CXX) -c $(CXXFLAGS) src/logging/gpxfile.cpp
+
+csvfile.o: src/logging/csvfile.cpp src/logging/csvfile.h src/logging/logfile.h
+	$(CXX) -c $(CXXFLAGS) src/logging/csvfile.cpp
+
+logfile.o: src/logging/logfile.cpp src/logging/logfile.h
+	$(CXX) -c $(CXXFLAGS) src/logging/logfile.cpp
 
 gnss_receiver.o: \
   src/gnss/receiver.cpp \
@@ -96,6 +103,9 @@ configuration.o: src/configuration.cpp src/configuration.h
 
 util.o: src/util/util.cpp src/util/util.h
 	$(CXX) -c $(CXXFLAGS) src/util/util.cpp
+
+format.o: src/ext/fmt/format.cc src/ext/fmt/format.h
+	$(CXX) -c $(CXXFLAGS) src/ext/fmt/format.cc
 
 
 clean:

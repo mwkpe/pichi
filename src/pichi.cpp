@@ -6,15 +6,17 @@
 #include <algorithm>
 #include <utility>
 #include <mutex>
+#include <chrono>
 
-#include "logfile.h"
 #include "util/util.h"
 #include "base/udp_transmitter.h"
+#include "logging/csvfile.h"
+#include "logging/gpxfile.h"
 
 
 Pichi::Pichi(Configuration&& conf)
   : conf_{std::move(conf)},
-    nmea_reader_{conf_, timer_, nmea_data_ready_, nmea_data_mutex_, nmea_data_},
+    nmea_reader_{timer_, nmea_data_ready_, nmea_data_mutex_, nmea_data_},
     gnss_receiver_{timer_, gnss_data_ready_, gnss_data_mutex_, gnss_data_}
 {
   devices_.reserve(32);
@@ -89,7 +91,8 @@ void Pichi::start_gnss_transmitter()
     std::thread consumer{&Pichi::transmit_gnss_packets, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_};
+    std::thread provider{&nmea::Reader::start, &nmea_reader_,
+                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
     provider.detach();
   }
   else
@@ -115,16 +118,17 @@ void Pichi::start_gnss_receiver()
 }
 
 
-void Pichi::start_gnss_logger()
+void Pichi::start_location_logger()
 {
   if (!is_active()) {
     reset();
     active_.store(true);
 
-    std::thread consumer{&Pichi::log_gnss_data, this};
+    std::thread consumer{&Pichi::log_position, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_};
+    std::thread provider{&nmea::Reader::start, &nmea_reader_,
+                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
     provider.detach();
   }
   else
@@ -132,16 +136,17 @@ void Pichi::start_gnss_logger()
 }
 
 
-void Pichi::start_gnss_display()
+void Pichi::start_location_display()
 {
   if (!is_active()) {
     reset();
     active_.store(true);
 
-    std::thread consumer{&Pichi::update_gnss_data, this};
+    std::thread consumer{&Pichi::update_position, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_};
+    std::thread provider{&nmea::Reader::start, &nmea_reader_,
+                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
     provider.detach();
   }
   else
@@ -158,7 +163,8 @@ void Pichi::start_debugger()
     std::thread consumer{&Pichi::show_nmea_sentences, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_};
+    std::thread provider{&nmea::Reader::start, &nmea_reader_,
+                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
     provider.detach();
   }
   else
@@ -197,7 +203,7 @@ void Pichi::transmit_gnss_packets()
             header->transmit_system_delay = timer_.current_systime() - sentence.systime;
             transmitter.send(gsl::as_span(buffer).first(packet_size));
             activity_counter_.fetch_add(1);
-            set_gnss_location(local_device_id, location);
+            set_device_location(local_device_id, location);
           }
         }
       }
@@ -208,18 +214,16 @@ void Pichi::transmit_gnss_packets()
 
 void Pichi::receive_gnss_packets()
 {
-  logging::Logfile file;
-  bool logging = conf_.log_recv &&
-                 file.open(std::to_string(timer_.current_time()) + ".csv");
+  logging::CsvFile csv;
+  bool logging = conf_.recv_log &&
+                 csv.open(std::to_string(timer_.current_time()) + ".csv");
 
   // The lazy design pattern
   int format = 1;
-  if (conf_.log_format == "all")
+  if (conf_.recv_log_format == "all")
     format = 0;
-  if (conf_.log_format == "short")
+  if (conf_.recv_log_format == "short")
     format = 1;
-  if (conf_.log_format == "mini")
-    format = 2;
 
   while (is_active()) {
     std::unique_lock<std::mutex> lk{gnss_data_mutex_};
@@ -233,14 +237,13 @@ void Pichi::receive_gnss_packets()
           case gnss::PacketType::Location: {
             if (recv.header.data_size == gnss::location_data_size &&
                 recv.header.data_size >= recv.data.size()) {
-              auto* location = reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
-              set_gnss_location(recv.header.device_id, location);
+              auto* location =
+                  reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
+              set_device_location(recv.header.device_id, location);
               if (logging) {
                 switch (format) {
-                  case 0: file.write(&recv.header, location, recv.time); break;
-                  case 1: file.write(location, recv.header.packet_type,
-                                     recv.header.device_id, recv.time); break;
-                  case 2: file.write(location, recv.time); break;
+                  case 0: csv.write(&recv.header, location, recv.time); break;
+                  case 1: csv.write(location, recv.header.device_id, recv.time); break;
                 }
               }
             }
@@ -257,33 +260,66 @@ void Pichi::receive_gnss_packets()
 }
 
 
-void Pichi::log_gnss_data()
+void Pichi::log_position()
 {
   gnss::LocationPacket location;
-  logging::Logfile file(std::to_string(timer_.current_time()) + ".csv");
+  logging::CsvFile csv;
+  logging::GpxFile gpx;
+  auto t = timer_.current_time();
+  std::string basename = std::string("logs/log_" + std::to_string(t));
+  bool logging_csv = conf_.log_csv && csv.open(basename + ".csv");
+  bool logging_gpx = conf_.log_gpx && gpx.open(basename + ".gpx");
+  
+  auto seconds_now = []() -> uint64_t {
+    auto now = std::chrono::system_clock::now().time_since_epoch();
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now).count();
+    return static_cast<uint64_t>(seconds);
+  };
+  auto last_write = seconds_now();
 
-  if (file.is_open()) {
-    while (is_active()) {
-      std::unique_lock<std::mutex> lk{nmea_data_mutex_};
-      nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
-          [this] { return !nmea_data_.empty() || !active_.load(); });
-      if (!nmea_data_.empty()) {
-        auto data = util::take(nmea_data_);
-        lk.unlock();
-        for (const auto& read : data) {
-          if (parse_location(&location, read)) {
-            file.write(&location, read.time);
-            set_gnss_location(local_device_id, &location);
-            activity_counter_.fetch_add(1);
-          }
+  while (is_active()) {
+    std::unique_lock<std::mutex> lk{nmea_data_mutex_};
+    nmea_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
+        [this] { return !nmea_data_.empty() || !active_.load(); });
+    if (nmea_data_.empty())
+      continue;
+    auto data = util::take(nmea_data_);
+    lk.unlock();
+    for (const auto& read : data) {
+      nmea::RmcData rmc_data;
+      if (read.sentence_type == nmea::SentenceType::Rmc &&
+          parse_location(&location, read.sentence, rmc_data)) {
+
+        auto cur_time = seconds_now();
+        bool allow_write = cur_time > last_write;
+        if (allow_write)
+          last_write = cur_time;
+
+        if (logging_csv && (!conf_.log_csv_force_1hz || allow_write)) {
+          csv.write(&location, read.time);
         }
+
+        if (logging_gpx && (!conf_.log_gpx_force_1hz || allow_write)) {
+          gpx.write_trackpoint(
+              location.latitude,
+              location.longitude,
+              rmc_data.date_year + 2000,
+              rmc_data.date_month,
+              rmc_data.date_day,
+              rmc_data.utc_time_hour,
+              rmc_data.utc_time_minute,
+              rmc_data.utc_time_second);
+        }
+
+        set_device_location(local_device_id, &location);
+        activity_counter_.fetch_add(1);
       }
     }
   }
 }
 
 
-void Pichi::update_gnss_data()
+void Pichi::update_position()
 {
   gnss::LocationPacket location;
 
@@ -296,7 +332,7 @@ void Pichi::update_gnss_data()
       lk.unlock();
       for (const auto& read : data) {
         if (parse_location(&location, read)) {
-          set_gnss_location(local_device_id, &location);
+          set_device_location(local_device_id, &location);
           activity_counter_.fetch_add(1);
         }
       }
@@ -322,8 +358,9 @@ void Pichi::show_nmea_sentences()
 }
 
 
-bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
-                           const nmea::ReadData& nmea_read)
+bool Pichi::parse_location(
+    gsl::not_null<gnss::LocationPacket*> location,
+    const nmea::ReadData& nmea_read)
 {
   bool success = false;
 
@@ -331,32 +368,27 @@ bool Pichi::parse_location(gsl::not_null<gnss::LocationPacket*> location,
     case nmea::SentenceType::Rmc: {
       nmea::RmcData rmc_data;
       std::tie(success, rmc_data) = nmea::parse_valid<nmea::RmcData>(nmea_read.sentence);
-      if (success) {
-        location->utc_timestamp = util::as_utc_unix(
-            rmc_data.date_year + 2000, rmc_data.date_month, rmc_data.date_day,
-            rmc_data.utc_time_hour, rmc_data.utc_time_minute, rmc_data.utc_time_second);
-        location->latitude = util::dm_to_decimal(
-            rmc_data.degrees_lat, rmc_data.minutes_lat, rmc_data.direction_lat);
-        location->longitude = util::dm_to_decimal(
-            rmc_data.degrees_long, rmc_data.minutes_long, rmc_data.direction_long);
-      }
+      if (success)
+        set_location(location, rmc_data);
     }
     break;
-    case nmea::SentenceType::Gga: {
-      nmea::GgaData gga_data;
-      std::tie(success, gga_data) = nmea::parse_valid<nmea::GgaData>(nmea_read.sentence);
-      if (success) {
-        location->utc_timestamp = 0;  // GGA has no date
-        location->latitude = util::dm_to_decimal(
-            gga_data.degrees_lat, gga_data.minutes_lat, gga_data.direction_lat);
-        location->longitude = util::dm_to_decimal(
-            gga_data.degrees_long, gga_data.minutes_long, gga_data.direction_long);
-      }
-    }
     default:
     break;
   }
 
+  return success;
+}
+
+
+bool Pichi::parse_location(
+    gsl::not_null<gnss::LocationPacket*> location,
+    const std::string& nmea_sentence,
+    nmea::RmcData& rmc_data)
+{
+  bool success = false;
+  std::tie(success, rmc_data) = nmea::parse_valid<nmea::RmcData>(nmea_sentence);
+  if (success)
+    set_location(location, rmc_data);
   return success;
 }
 
@@ -374,7 +406,21 @@ std::tuple<bool, gnss::LocationPacket> Pichi::gnss_location(uint16_t device_id)
 }
 
 
-void Pichi::set_gnss_location(uint16_t device_id,
+void Pichi::set_location(
+    gsl::not_null<gnss::LocationPacket*> location,
+    const nmea::RmcData& rmc_data)
+{
+  location->utc_timestamp = util::as_utc_unix(
+      rmc_data.date_year + 2000, rmc_data.date_month, rmc_data.date_day,
+      rmc_data.utc_time_hour, rmc_data.utc_time_minute, rmc_data.utc_time_second);
+  location->latitude = util::dm_to_decimal(
+      rmc_data.degrees_lat, rmc_data.minutes_lat, rmc_data.direction_lat);
+  location->longitude = util::dm_to_decimal(
+      rmc_data.degrees_long, rmc_data.minutes_long, rmc_data.direction_long);
+}
+
+
+void Pichi::set_device_location(uint16_t device_id,
     gsl::not_null<const gnss::LocationPacket*> location)
 {
   std::lock_guard<std::mutex> lock{devices_mutex_};

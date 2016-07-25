@@ -36,8 +36,8 @@ public:
 
   void start_gnss_transmitter();
   void start_gnss_receiver();
-  void start_gnss_logger();
-  void start_gnss_display();
+  void start_location_logger();
+  void start_location_display();
   void start_debugger();
 
   void stop();
@@ -53,14 +53,19 @@ private:
 
   void transmit_gnss_packets();
   void receive_gnss_packets();
-  void log_gnss_data();
-  void update_gnss_data();
+  void log_position();
+  void update_position();
   void show_nmea_sentences();
 
   bool parse_location(gsl::not_null<gnss::LocationPacket*> location,
                       const nmea::ReadData& nmea_read);
-  void set_gnss_location(uint16_t device_id,
-                         gsl::not_null<const gnss::LocationPacket*> location);
+  bool parse_location(gsl::not_null<gnss::LocationPacket*> location,
+                      const std::string& nmea_sentence,
+                      nmea::RmcData& rmc_data);
+  void set_location(gsl::not_null<gnss::LocationPacket*> location,
+                    const nmea::RmcData& rmc_data);
+  void set_device_location(uint16_t device_id,
+                           gsl::not_null<const gnss::LocationPacket*> location);
 
   // Member
   Configuration conf_;

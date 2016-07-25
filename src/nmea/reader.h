@@ -15,7 +15,6 @@
 
 #include "parser.h"
 #include "../base/serial_async_reader.h"
-#include "../configuration.h"
 #include "../timer.h"
 
 
@@ -40,8 +39,7 @@ struct ReadData
 class Reader final : public serial::AsyncReader
 {
 public:
-  Reader(const Configuration& conf,
-         const Timer& timer,
+  Reader(const Timer& timer,
          std::condition_variable& data_ready,
          std::mutex& data_mutex,
          std::deque<ReadData>& data);
@@ -49,14 +47,13 @@ public:
   Reader(const Reader&) = delete;
   Reader& operator=(const Reader&) = delete;
 
-  void start();
+  void start(const std::string& port, uint32_t rate);
   uint64_t activity_count() const { return activity_counter_.load(); }
 
 private:
   void handle_read(gsl::span<char> buffer) override;
   void reset();
 
-  const Configuration& conf_;
   const Timer& timer_;
   std::condition_variable& nmea_data_ready_;
   std::mutex& nmea_data_mutex_;
@@ -73,8 +70,7 @@ std::vector<std::string> get_sentences(gsl::span<char> buffer);
 auto to_typed_sentences(std::vector<std::string>&& sentences)
   -> std::vector<std::tuple<nmea::SentenceType, std::string>>;
 
-void filter(std::vector<std::tuple<nmea::SentenceType, std::string>>& sentences,
-            const Configuration& conf);
+void filter(std::vector<std::tuple<nmea::SentenceType, std::string>>& sentences);
 
 void replace_nonascii(gsl::span<char> s, char c);
 

@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
       if (total == 1) {
         if (options.count("transmit")) pichi.start_gnss_transmitter();
         if (options.count("receive")) pichi.start_gnss_receiver();
-        if (options.count("log")) pichi.start_gnss_logger();
+        if (options.count("log")) pichi.start_location_logger();
         if (options.count("debug")) pichi.start_debugger();
 
         std::cout << "Running! Enter anything to stop the program!"
