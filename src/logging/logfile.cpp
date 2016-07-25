@@ -25,7 +25,7 @@ bool logging::LogFile::open_(const std::string& filename)
   if (!is_open())
     std::cerr << "Could not open file!" << std::endl;
   else
-    std::cout << "File opened" << std::endl;
+    std::cout << "File opened: " << filename << std::endl;
 
   return is_open();
 }
