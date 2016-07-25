@@ -5,7 +5,7 @@ The program works without sudo but won't be able to access the Raspberry Pi's 1M
 
 Command line interface
 ---
-It's also possible to start the program without the GUI by passing the `--nogui` option and one additional option specifying the mode you want to run, e.g.: `sudo ./pichi --nogui --transmit`.
+It's also possible to start the program without the GUI by passing the `--nogui` option and one additional option specifying the mode you want to run, e.g.: `sudo ./pichi --nogui --transmit`. Any further terminal input will stop the program again.
 
 | Mode          | What it does  |
 | ------------- | ------------- |
@@ -14,31 +14,31 @@ It's also possible to start the program without the GUI by passing the `--nogui`
 | --log         | Read NMEA sentences from gnss_port and log positional data |
 | --debug       | Print NMEA sentences read from gnss_port to terminal |
 
-The port and IP variables must be set in the `config.json`. If the file doesn't exist start the program once.
+The port, IP and other variables must be set in the `config.json`. If the file doesn't exist start the program once.
 
 Data format
 ---
 The data packets are defined in the [packet.h](src/gnss/packet.h) file.
 
-The UDP receive log file has the following columns.
+The UDP receive CSV file has the following columns.
 
-| Mode             | Description   | Unit |
-| ---------------- | ------------- | ---- |
-| Device ID        | Identifies the sender |  |
+| Mode             | Description   | Unit | Short log |
+| ---------------- | ------------- | ---- |:---------:|
+| Device ID        | Identifies the sender |  | ✓
 | Packet type      | Defined in [packet.h](src/gnss/packet.h) |   |
-| UDP receive time | Time the packet was received | ns |
+| UDP receive time | Time the packet was received | ns | ✓
 | Transmit delay   | Transmission delay between sender and receiver<br>(devices must be synchronized) | ns |
-| Sender System delay | Time the transmitter took to send the packet (since serial read) | µs |
+| Sender System delay | Time the transmitter took to send the packet<br>(since serial read) | µs |
 | Packet counter   | Indicates transmit ordering and missing packets |   |
-| UTC timestamp    | UTC timestamp from NMEA sentence |   |
-| Latitude         | Position fix from NMEA sentence | decimal degrees [±90°] | 
-| Longitude        | Position fix from NMEA sentence | decimal degrees [±180°] |
+| UTC timestamp    | UTC timestamp from NMEA sentence |   | ✓
+| Latitude         | Position fix from NMEA sentence | deg [±90°] | ✓
+| Longitude        | Position fix from NMEA sentence | deg [±180°] | ✓
 
-The serial read log file has the following columns.
+The serial read CSV file has the following columns.
 
 | Mode             | Description   | Unit |
 | ---------------- | ------------- | ---- |
 | Serial read time | Time the NMEA sentence was read | ns |
 | UTC timestamp    | UTC timestamp from NMEA sentence |   |
-| Latitude         | Position from NMEA sentence | decimal degrees [±90°] | 
-| Longitude        | Position from NMEA sentence | decimal degrees [±180°] |
+| Latitude         | Position from NMEA sentence | deg [±90°] | 
+| Longitude        | Position from NMEA sentence | deg [±180°] |
