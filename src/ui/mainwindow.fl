@@ -23,7 +23,7 @@ last_count_ = 0;
 display_device_id_ = 0;} {}
     Fl_Window main_window {
       label Pichi open
-      private xywh {810 469 500 300} type Double visible
+      private xywh {805 410 500 300} type Double visible
     } {
       Fl_Group {} {open
         xywh {0 0 500 38}
@@ -93,7 +93,7 @@ display_device_id_ = 0;} {}
           }
         }
         Fl_Group {} {
-          label GNSS
+          label GNSS selected
           xywh {6 60 488 202}
         } {
           Fl_Input text_gnss_port {
@@ -103,26 +103,6 @@ display_device_id_ = 0;} {}
           Fl_Input text_gnss_port_rate {
             label {Baud Rate}
             private xywh {12 96 160 24} align 8
-          }
-          Fl_Box {} {
-            label {NMEA sentence filter}
-            xywh {12 142 474 98} box DOWN_BOX align 5
-          }
-          Fl_Check_Button check_rmc {
-            label {RMC (Recommended minimum data)}
-            xywh {18 150 460 16} down_box DOWN_BOX value 1
-          }
-          Fl_Check_Button check_gga {
-            label {GGA (Global positioning system fix data)}
-            xywh {18 172 460 16} down_box DOWN_BOX
-          }
-          Fl_Check_Button check_gsv {
-            label {GSV (Satellites in view)}
-            xywh {18 194 460 16} down_box DOWN_BOX deactivate
-          }
-          Fl_Check_Button check_other {
-            label {Other (When logging sentences)}
-            xywh {18 216 460 16} down_box DOWN_BOX
           }
         }
         Fl_Group {} {
@@ -139,7 +119,7 @@ display_device_id_ = 0;} {}
           }
         }
         Fl_Group {} {
-          label Receive
+          label Receive open
           xywh {6 60 488 202} hide
         } {
           Fl_Input text_recv_ip {
@@ -150,33 +130,48 @@ display_device_id_ = 0;} {}
             label Port
             private xywh {12 96 160 24} align 8
           }
+          Fl_Box {} {
+            label {UDP Receive}
+            xywh {12 146 230 50} box DOWN_BOX labeltype NO_LABEL align 5
+          }
+          Fl_Check_Button check_recv_log {
+            label {Log receive}
+            private xywh {12 126 474 16} down_box DOWN_BOX value 1
+          }
+          Fl_Round_Button radio_recv_log_all {
+            label {All (header, data)}
+            callback {radio_log_clicked_callback(o, v)}
+            private xywh {18 152 218 16} down_box ROUND_DOWN_BOX
+          }
+          Fl_Round_Button radio_recv_log_short {
+            label {Short (ID, receive time, data)}
+            callback {radio_log_clicked_callback(o, v)}
+            private xywh {18 174 218 16} down_box ROUND_DOWN_BOX value 1
+          }
         }
         Fl_Group {} {
           label Log open
           xywh {6 60 488 202} hide
         } {
           Fl_Box {} {
-            label {UDP Receive}
-            xywh {12 88 474 74} box DOWN_BOX labeltype NO_LABEL align 5
+            label {Log format}
+            xywh {12 82 188 50} box DOWN_BOX align 5
           }
-          Fl_Check_Button check_log_receive {
-            label {Log UDP receive}
-            private xywh {12 66 474 16} down_box DOWN_BOX value 1
+          Fl_Check_Button check_log_csv {
+            label CSV
+            xywh {18 88 88 16} down_box DOWN_BOX value 1
           }
-          Fl_Round_Button radio_log_all {
-            label {All (header, data)}
-            callback {radio_log_clicked_callback(o, v)}
-            private xywh {18 94 460 16} down_box ROUND_DOWN_BOX
+          Fl_Check_Button check_log_gpx {
+            label GPX
+            xywh {18 110 88 16} down_box DOWN_BOX value 1
           }
-          Fl_Round_Button radio_log_short {
-            label {Short (ID, packet type, receive time, data)}
-            callback {radio_log_clicked_callback(o, v)}
-            private xywh {18 116 460 16} down_box ROUND_DOWN_BOX value 1
+          Fl_Check_Button check_log_gpx_force_1hz {
+            label {Force 1Hz}
+            xywh {100 110 94 16} down_box DOWN_BOX value 1
           }
-          Fl_Round_Button radio_log_mini {
-            label {Mini (receive time, data)}
-            callback {radio_log_clicked_callback(o, v)}
-            private xywh {18 138 460 16} down_box ROUND_DOWN_BOX
+          Fl_Check_Button check_log_csv_force_1hz {
+            label {Force 1Hz}
+            xywh {100 88 94 16} down_box DOWN_BOX
           }
         }
         Fl_Group {} {
@@ -249,7 +244,7 @@ load_settings();} {}
   } {}
   Function {button_sync_time_clicked()} {open private return_type void
   } {}
-  Function {radio_log_clicked(Fl_Round_Button* o)} {open selected private return_type void
+  Function {radio_log_clicked(Fl_Round_Button* o)} {open private return_type void
   } {}
   decl {Pichi* pichi_;} {private local
   }

@@ -38,27 +38,22 @@ private:
   static void cb_button_sync_time(Fl_Button*, void*);
   Fl_Input *text_gnss_port;
   Fl_Input *text_gnss_port_rate;
-public:
-  Fl_Check_Button *check_rmc;
-  Fl_Check_Button *check_gga;
-  Fl_Check_Button *check_gsv;
-  Fl_Check_Button *check_other;
-private:
   Fl_Input *text_trans_ip;
   Fl_Input *text_trans_port;
   Fl_Input *text_recv_ip;
   Fl_Input *text_recv_port;
-  Fl_Check_Button *check_log_receive;
-  Fl_Round_Button *radio_log_all;
-  inline void cb_radio_log_all_i(Fl_Round_Button*, void*);
-  static void cb_radio_log_all(Fl_Round_Button*, void*);
-  Fl_Round_Button *radio_log_short;
-  inline void cb_radio_log_short_i(Fl_Round_Button*, void*);
-  static void cb_radio_log_short(Fl_Round_Button*, void*);
-  Fl_Round_Button *radio_log_mini;
-  inline void cb_radio_log_mini_i(Fl_Round_Button*, void*);
-  static void cb_radio_log_mini(Fl_Round_Button*, void*);
+  Fl_Check_Button *check_recv_log;
+  Fl_Round_Button *radio_recv_log_all;
+  inline void cb_radio_recv_log_all_i(Fl_Round_Button*, void*);
+  static void cb_radio_recv_log_all(Fl_Round_Button*, void*);
+  Fl_Round_Button *radio_recv_log_short;
+  inline void cb_radio_recv_log_short_i(Fl_Round_Button*, void*);
+  static void cb_radio_recv_log_short(Fl_Round_Button*, void*);
 public:
+  Fl_Check_Button *check_log_csv;
+  Fl_Check_Button *check_log_gpx;
+  Fl_Check_Button *check_log_gpx_force_1hz;
+  Fl_Check_Button *check_log_csv_force_1hz;
   Fl_Choice *choice_display_device;
 private:
   inline void cb_choice_display_device_i(Fl_Choice*, void*);

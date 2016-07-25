@@ -19,9 +19,8 @@ void MainWindow::init()
 {
   // Must be set or callbacks will be called with nullptr
   choice_display_device->user_data(this);
-  radio_log_all->user_data(this);
-  radio_log_short->user_data(this);
-  radio_log_mini->user_data(this);
+  radio_recv_log_all->user_data(this);
+  radio_recv_log_short->user_data(this);
 
   display_add_device(Pichi::local_device_id);
   choice_display_device->value(0);
@@ -33,23 +32,24 @@ void MainWindow::apply_settings()
   Configuration conf{pichi_->config()};
   try {
     conf.device_id = std::stoul(text_device_id->value());
+
     conf.gnss_port = text_gnss_port->value();
     conf.gnss_port_rate = std::stoul(text_gnss_port_rate->value());
-    conf.use_msg_rmc = check_rmc->value();
-    conf.use_msg_gga = check_gga->value();
-    conf.use_msg_gsv = check_gsv->value();
-    conf.use_msg_other = check_other->value();
+
     conf.trans_ip = text_trans_ip->value();
     conf.trans_port = std::stoul(text_trans_port->value());
+
     conf.recv_ip = text_recv_ip->value();
     conf.recv_port = std::stoul(text_recv_port->value());
-    conf.log_recv = check_log_receive->value();
+    conf.recv_log = check_recv_log->value();
+    conf.recv_log_format = "short";  // Default
+    if (radio_recv_log_all->value())
+      conf.recv_log_format = "all";
 
-    conf.log_format = "short";  // Default
-    if (radio_log_all->value())
-      conf.log_format = "all";
-    else if (radio_log_mini->value())
-      conf.log_format = "mini";
+    conf.log_csv = check_log_csv->value();
+    conf.log_gpx = check_log_gpx->value();
+    conf.log_csv_force_1hz = check_log_csv_force_1hz->value();
+    conf.log_gpx_force_1hz = check_log_gpx_force_1hz->value();
 
     pichi_->set_config(conf);
   }
@@ -67,31 +67,29 @@ void MainWindow::apply_settings()
 void MainWindow::load_settings()
 {
   auto& conf = pichi_->config();
+
   text_device_id->value(std::to_string(conf.device_id).c_str());
+
   text_gnss_port->value(conf.gnss_port.c_str());
   text_gnss_port_rate->value(std::to_string(conf.gnss_port_rate).c_str());
-  check_rmc->value(conf.use_msg_rmc);
-  check_gga->value(conf.use_msg_gga);
-  check_gsv->value(conf.use_msg_gsv);
-  check_other->value(conf.use_msg_other);
+
   text_trans_ip->value(conf.trans_ip.c_str());
   text_trans_port->value(std::to_string(conf.trans_port).c_str());
+
   text_recv_ip->value(conf.recv_ip.c_str());
   text_recv_port->value(std::to_string(conf.recv_port).c_str());
-  check_log_receive->value(conf.log_recv);
-
-  radio_log_all->value(0);
-  radio_log_short->value(0);
-  radio_log_mini->value(0);
-
-  if (conf.log_format == "all")
-    radio_log_all->value(1);
-  else if (conf.log_format == "short")
-    radio_log_short->value(1);
-  else if (conf.log_format == "mini")
-    radio_log_all->value(1);
+  check_recv_log->value(conf.recv_log);
+  radio_recv_log_all->value(0);
+  radio_recv_log_short->value(0);
+  if (conf.recv_log_format == "all")
+    radio_recv_log_all->value(1);
   else
-    radio_log_short->value(1);  // Default
+    radio_recv_log_short->value(1);  // Default
+
+  check_log_csv->value(conf.log_csv);
+  check_log_gpx->value(conf.log_gpx);
+  check_log_csv_force_1hz->value(conf.log_csv_force_1hz);
+  check_log_gpx_force_1hz->value(conf.log_gpx_force_1hz);
 }
 
 
@@ -107,8 +105,8 @@ void MainWindow::button_start_clicked()
       switch (choice_mode->value()) {
         case 0: pichi_->start_gnss_transmitter(); break;
         case 1: pichi_->start_gnss_receiver(); break;
-        case 2: pichi_->start_gnss_logger(); break;
-        case 3: pichi_->start_gnss_display(); break;
+        case 2: pichi_->start_location_logger(); break;
+        case 3: pichi_->start_location_display(); break;
         case 4: pichi_->start_debugger(); break;
       }
       button_start->label("Stop");
@@ -161,19 +159,16 @@ void MainWindow::radio_log_clicked_callback(Fl_Round_Button* o, void* p)
 void MainWindow::radio_log_clicked(Fl_Round_Button* o)
 {
   // Disable callbacks
-  radio_log_all->when(0);
-  radio_log_short->when(0);
-  radio_log_mini->when(0);
+  radio_recv_log_all->when(0);
+  radio_recv_log_short->when(0);
 
-  radio_log_all->value(0);
-  radio_log_short->value(0);
-  radio_log_mini->value(0);
+  radio_recv_log_all->value(0);
+  radio_recv_log_short->value(0);
 
   o->value(1);
 
-  radio_log_all->when(FL_WHEN_CHANGED);
-  radio_log_short->when(FL_WHEN_CHANGED);
-  radio_log_mini->when(FL_WHEN_CHANGED);
+  radio_recv_log_all->when(FL_WHEN_CHANGED);
+  radio_recv_log_short->when(FL_WHEN_CHANGED);
 }
 
 

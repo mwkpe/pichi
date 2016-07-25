@@ -12,23 +12,28 @@ public:
   explicit Configuration(const std::string& filename);
   void save_to_file() const;
 
+  // Device tab
   uint16_t device_id{1};
 
+  // GNSS tab
   std::string gnss_port{"/dev/ttyS0"};
   uint32_t gnss_port_rate{9600};
-  bool use_msg_rmc{true};
-  bool use_msg_gga{false};
-  bool use_msg_gsv{false};
-  bool use_msg_other{false};
 
+  // Transmit tab
   std::string trans_ip{"192.168.0.1"};
   uint16_t trans_port{30001};
 
+  // Receive tab
   std::string recv_ip{"192.168.0.2"};
   uint16_t recv_port{30001};
+  bool recv_log{true};
+  std::string recv_log_format{"short"};
 
-  bool log_recv{true};
-  std::string log_format{"short"};
+  // Log tab
+  bool log_csv{true};
+  bool log_gpx{true};
+  bool log_csv_force_1hz{false};
+  bool log_gpx_force_1hz{true};
 
 private:
   std::string filename_{};

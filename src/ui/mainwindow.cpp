@@ -26,25 +26,18 @@ void MainWindow::cb_button_sync_time(Fl_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_button_sync_time_i(o,v);
 }
 
-void MainWindow::cb_radio_log_all_i(Fl_Round_Button* o, void* v) {
+void MainWindow::cb_radio_recv_log_all_i(Fl_Round_Button* o, void* v) {
   radio_log_clicked_callback(o, v);
 }
-void MainWindow::cb_radio_log_all(Fl_Round_Button* o, void* v) {
-  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_all_i(o,v);
+void MainWindow::cb_radio_recv_log_all(Fl_Round_Button* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_recv_log_all_i(o,v);
 }
 
-void MainWindow::cb_radio_log_short_i(Fl_Round_Button* o, void* v) {
+void MainWindow::cb_radio_recv_log_short_i(Fl_Round_Button* o, void* v) {
   radio_log_clicked_callback(o, v);
 }
-void MainWindow::cb_radio_log_short(Fl_Round_Button* o, void* v) {
-  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_short_i(o,v);
-}
-
-void MainWindow::cb_radio_log_mini_i(Fl_Round_Button* o, void* v) {
-  radio_log_clicked_callback(o, v);
-}
-void MainWindow::cb_radio_log_mini(Fl_Round_Button* o, void* v) {
-  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_log_mini_i(o,v);
+void MainWindow::cb_radio_recv_log_short(Fl_Round_Button* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_recv_log_short_i(o,v);
 }
 
 void MainWindow::cb_choice_display_device_i(Fl_Choice* o, void* v) {
@@ -112,24 +105,6 @@ MainWindow::MainWindow(Pichi* p) {
         { text_gnss_port_rate = new Fl_Input(12, 96, 160, 24, "Baud Rate");
           text_gnss_port_rate->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_gnss_port_rate
-        { Fl_Box* o = new Fl_Box(12, 142, 474, 98, "NMEA sentence filter");
-          o->box(FL_DOWN_BOX);
-          o->align(Fl_Align(FL_ALIGN_TOP_LEFT));
-        } // Fl_Box* o
-        { check_rmc = new Fl_Check_Button(18, 150, 460, 16, "RMC (Recommended minimum data)");
-          check_rmc->down_box(FL_DOWN_BOX);
-          check_rmc->value(1);
-        } // Fl_Check_Button* check_rmc
-        { check_gga = new Fl_Check_Button(18, 172, 460, 16, "GGA (Global positioning system fix data)");
-          check_gga->down_box(FL_DOWN_BOX);
-        } // Fl_Check_Button* check_gga
-        { check_gsv = new Fl_Check_Button(18, 194, 460, 16, "GSV (Satellites in view)");
-          check_gsv->down_box(FL_DOWN_BOX);
-          check_gsv->deactivate();
-        } // Fl_Check_Button* check_gsv
-        { check_other = new Fl_Check_Button(18, 216, 460, 16, "Other (When logging sentences)");
-          check_other->down_box(FL_DOWN_BOX);
-        } // Fl_Check_Button* check_other
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Transmit");
@@ -150,32 +125,47 @@ MainWindow::MainWindow(Pichi* p) {
         { text_recv_port = new Fl_Input(12, 96, 160, 24, "Port");
           text_recv_port->align(Fl_Align(FL_ALIGN_RIGHT));
         } // Fl_Input* text_recv_port
-        o->end();
-      } // Fl_Group* o
-      { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Log");
-        o->hide();
-        { Fl_Box* o = new Fl_Box(12, 88, 474, 74, "UDP Receive");
+        { Fl_Box* o = new Fl_Box(12, 146, 230, 50, "UDP Receive");
           o->box(FL_DOWN_BOX);
           o->labeltype(FL_NO_LABEL);
           o->align(Fl_Align(FL_ALIGN_TOP_LEFT));
         } // Fl_Box* o
-        { check_log_receive = new Fl_Check_Button(12, 66, 474, 16, "Log UDP receive");
-          check_log_receive->down_box(FL_DOWN_BOX);
-          check_log_receive->value(1);
-        } // Fl_Check_Button* check_log_receive
-        { radio_log_all = new Fl_Round_Button(18, 94, 460, 16, "All (header, data)");
-          radio_log_all->down_box(FL_ROUND_DOWN_BOX);
-          radio_log_all->callback((Fl_Callback*)cb_radio_log_all);
-        } // Fl_Round_Button* radio_log_all
-        { radio_log_short = new Fl_Round_Button(18, 116, 460, 16, "Short (ID, packet type, receive time, data)");
-          radio_log_short->down_box(FL_ROUND_DOWN_BOX);
-          radio_log_short->value(1);
-          radio_log_short->callback((Fl_Callback*)cb_radio_log_short);
-        } // Fl_Round_Button* radio_log_short
-        { radio_log_mini = new Fl_Round_Button(18, 138, 460, 16, "Mini (receive time, data)");
-          radio_log_mini->down_box(FL_ROUND_DOWN_BOX);
-          radio_log_mini->callback((Fl_Callback*)cb_radio_log_mini);
-        } // Fl_Round_Button* radio_log_mini
+        { check_recv_log = new Fl_Check_Button(12, 126, 474, 16, "Log receive");
+          check_recv_log->down_box(FL_DOWN_BOX);
+          check_recv_log->value(1);
+        } // Fl_Check_Button* check_recv_log
+        { radio_recv_log_all = new Fl_Round_Button(18, 152, 218, 16, "All (header, data)");
+          radio_recv_log_all->down_box(FL_ROUND_DOWN_BOX);
+          radio_recv_log_all->callback((Fl_Callback*)cb_radio_recv_log_all);
+        } // Fl_Round_Button* radio_recv_log_all
+        { radio_recv_log_short = new Fl_Round_Button(18, 174, 218, 16, "Short (ID, receive time, data)");
+          radio_recv_log_short->down_box(FL_ROUND_DOWN_BOX);
+          radio_recv_log_short->value(1);
+          radio_recv_log_short->callback((Fl_Callback*)cb_radio_recv_log_short);
+        } // Fl_Round_Button* radio_recv_log_short
+        o->end();
+      } // Fl_Group* o
+      { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Log");
+        o->hide();
+        { Fl_Box* o = new Fl_Box(12, 82, 188, 50, "Log format");
+          o->box(FL_DOWN_BOX);
+          o->align(Fl_Align(FL_ALIGN_TOP_LEFT));
+        } // Fl_Box* o
+        { check_log_csv = new Fl_Check_Button(18, 88, 88, 16, "CSV");
+          check_log_csv->down_box(FL_DOWN_BOX);
+          check_log_csv->value(1);
+        } // Fl_Check_Button* check_log_csv
+        { check_log_gpx = new Fl_Check_Button(18, 110, 88, 16, "GPX");
+          check_log_gpx->down_box(FL_DOWN_BOX);
+          check_log_gpx->value(1);
+        } // Fl_Check_Button* check_log_gpx
+        { check_log_gpx_force_1hz = new Fl_Check_Button(100, 110, 94, 16, "Force 1Hz");
+          check_log_gpx_force_1hz->down_box(FL_DOWN_BOX);
+          check_log_gpx_force_1hz->value(1);
+        } // Fl_Check_Button* check_log_gpx_force_1hz
+        { check_log_csv_force_1hz = new Fl_Check_Button(100, 88, 94, 16, "Force 1Hz");
+          check_log_csv_force_1hz->down_box(FL_DOWN_BOX);
+        } // Fl_Check_Button* check_log_csv_force_1hz
         o->end();
       } // Fl_Group* o
       { Fl_Group* o = new Fl_Group(6, 60, 488, 202, "Display");
