@@ -1,7 +1,7 @@
 Running the program
 ---
 Start the program with `sudo ./pichi`.<br>
-The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for internal delay measurements and is not required for anything. Values are simply 0 without sudo.
+The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for some delay measurements (see [sender system delay](README_USAGE.md#data-format)) and is not required for anything. Values are simply 0 without sudo.
 
 Note: Logs will be put into a `logs` directory which must be manually created next to the executable.
 
@@ -30,7 +30,7 @@ The UDP receive CSV file has the following columns.
 | Packet type      | Defined in [packet.h](src/gnss/packet.h) |   |
 | UDP receive time | Time the packet was received | ns | ✓
 | Transmit delay   | Transmission delay between sender and receiver<br>(devices must be synchronized) | ns |
-| Sender System delay | Time the transmitter took to send the packet<br>(since serial read) | µs |
+| Sender system delay | Time the transmitter took to send the packet<br>(since serial read) | µs |
 | Packet counter   | Indicates transmit ordering and missing packets |   |
 | UTC timestamp    | UTC timestamp from NMEA sentence |   | ✓
 | Latitude         | Position from NMEA sentence | deg [±90°] | ✓
