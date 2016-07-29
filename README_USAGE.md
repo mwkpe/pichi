@@ -3,6 +3,8 @@ Running the program
 Start the program with `sudo ./pichi`.<br>
 The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for internal delay measurements and is not required for anything. Values are simply 0 without sudo.
 
+Note: Logs will be put into a `logs` directory which must be manually created next to the executable.
+
 Command line interface
 ---
 It's also possible to start the program without the GUI by passing the `--nogui` option and one additional option specifying the mode you want to run, e.g.: `sudo ./pichi --nogui --transmit`. Any further terminal input will stop the program again.
