@@ -19,7 +19,7 @@ void MainWindow::init()
 {
   // Must be set or callbacks will be called with nullptr
   choice_display_device->user_data(this);
-  radio_recv_log_all->user_data(this);
+  radio_recv_log_full->user_data(this);
   radio_recv_log_short->user_data(this);
 
   display_add_device(Pichi::local_device_id);
@@ -42,9 +42,9 @@ void MainWindow::apply_settings()
     conf.recv_ip = text_recv_ip->value();
     conf.recv_port = std::stoul(text_recv_port->value());
     conf.recv_log = check_recv_log->value();
-    conf.recv_log_format = "short";  // Default
-    if (radio_recv_log_all->value())
-      conf.recv_log_format = "all";
+    conf.recv_log_format = LogFormat::Short;  // Default
+    if (radio_recv_log_full->value())
+      conf.recv_log_format = LogFormat::Full;
 
     conf.log_csv = check_log_csv->value();
     conf.log_gpx = check_log_gpx->value();
@@ -79,12 +79,12 @@ void MainWindow::load_settings()
   text_recv_ip->value(conf.recv_ip.c_str());
   text_recv_port->value(std::to_string(conf.recv_port).c_str());
   check_recv_log->value(conf.recv_log);
-  radio_recv_log_all->value(0);
+  radio_recv_log_full->value(0);
   radio_recv_log_short->value(0);
-  if (conf.recv_log_format == "all")
-    radio_recv_log_all->value(1);
-  else
-    radio_recv_log_short->value(1);  // Default
+  switch (conf.recv_log_format) {
+    case LogFormat::Full: radio_recv_log_full->value(1); break;
+    case LogFormat::Short: radio_recv_log_short->value(1); break;
+  }
 
   check_log_csv->value(conf.log_csv);
   check_log_gpx->value(conf.log_gpx);
@@ -159,15 +159,15 @@ void MainWindow::radio_log_clicked_callback(Fl_Round_Button* o, void* p)
 void MainWindow::radio_log_clicked(Fl_Round_Button* o)
 {
   // Disable callbacks
-  radio_recv_log_all->when(0);
+  radio_recv_log_full->when(0);
   radio_recv_log_short->when(0);
 
-  radio_recv_log_all->value(0);
+  radio_recv_log_full->value(0);
   radio_recv_log_short->value(0);
 
   o->value(1);
 
-  radio_recv_log_all->when(FL_WHEN_CHANGED);
+  radio_recv_log_full->when(FL_WHEN_CHANGED);
   radio_recv_log_short->when(FL_WHEN_CHANGED);
 }
 

@@ -57,15 +57,20 @@ private:
   void update_position();
   void show_nmea_sentences();
 
-  bool parse_location(gsl::not_null<gnss::LocationPacket*> location,
-                      const nmea::ReadData& nmea_read);
-  bool parse_location(gsl::not_null<gnss::LocationPacket*> location,
-                      const std::string& nmea_sentence,
-                      nmea::RmcData& rmc_data);
-  void set_location(gsl::not_null<gnss::LocationPacket*> location,
-                    const nmea::RmcData& rmc_data);
-  void set_device_location(uint16_t device_id,
-                           gsl::not_null<const gnss::LocationPacket*> location);
+  bool parse_location(
+      gsl::not_null<gnss::LocationPacket*> location,
+      const nmea::ReadData& nmea_read);
+  bool parse_location(
+      gsl::not_null<gnss::LocationPacket*> location,
+      const std::string& nmea_sentence,
+      nmea::RmcData& rmc_data);
+  
+  void set_location(
+      gsl::not_null<gnss::LocationPacket*> location,
+      const nmea::RmcData& rmc_data);
+  void set_device_location(
+      uint16_t device_id,
+      gsl::not_null<const gnss::LocationPacket*> location);
 
   // Member
   Configuration conf_;

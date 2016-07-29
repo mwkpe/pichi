@@ -23,7 +23,8 @@ Pichi::Pichi(Configuration&& conf)
   devices_.emplace_back(0);  // 0 should always be the local device
 
   if (!timer_.systime_init())
-    std::cerr << "Values relying on the 1MHz system timer will be zero" << std::endl;
+    std::cerr << "Values relying on the 1MHz system timer will be zero"
+              << std::endl;
 }
 
 
@@ -91,8 +92,10 @@ void Pichi::start_gnss_transmitter()
     std::thread consumer{&Pichi::transmit_gnss_packets, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_,
-                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
+    std::thread provider{
+        &nmea::Reader::start, &nmea_reader_,
+        std::ref(conf_.gnss_port), conf_.gnss_port_rate
+    };
     provider.detach();
   }
   else
@@ -109,8 +112,10 @@ void Pichi::start_gnss_receiver()
     std::thread consumer{&Pichi::receive_gnss_packets, this};
     consumer.detach();
 
-    std::thread provider{&gnss::Receiver::start, &gnss_receiver_,
-                         std::ref(conf_.recv_ip), conf_.recv_port};
+    std::thread provider{
+        &gnss::Receiver::start, &gnss_receiver_,
+        std::ref(conf_.recv_ip), conf_.recv_port
+    };
     provider.detach();
   }
   else
@@ -127,8 +132,10 @@ void Pichi::start_location_logger()
     std::thread consumer{&Pichi::log_position, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_,
-                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
+    std::thread provider{
+        &nmea::Reader::start, &nmea_reader_,
+        std::ref(conf_.gnss_port), conf_.gnss_port_rate
+    };
     provider.detach();
   }
   else
@@ -145,8 +152,10 @@ void Pichi::start_location_display()
     std::thread consumer{&Pichi::update_position, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_,
-                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
+    std::thread provider{
+        &nmea::Reader::start, &nmea_reader_,
+        std::ref(conf_.gnss_port), conf_.gnss_port_rate
+    };
     provider.detach();
   }
   else
@@ -163,8 +172,10 @@ void Pichi::start_debugger()
     std::thread consumer{&Pichi::show_nmea_sentences, this};
     consumer.detach();
 
-    std::thread provider{&nmea::Reader::start, &nmea_reader_,
-                         std::ref(conf_.gnss_port), conf_.gnss_port_rate};
+    std::thread provider{
+      &nmea::Reader::start, &nmea_reader_,
+      std::ref(conf_.gnss_port), conf_.gnss_port_rate
+    };
     provider.detach();
   }
   else
@@ -218,44 +229,42 @@ void Pichi::receive_gnss_packets()
   bool logging = conf_.recv_log &&
                  csv.open(std::to_string(timer_.current_time()) + ".csv");
 
-  // The lazy design pattern
-  int format = 1;
-  if (conf_.recv_log_format == "all")
-    format = 0;
-  if (conf_.recv_log_format == "short")
-    format = 1;
-
   while (is_active()) {
     std::unique_lock<std::mutex> lk{gnss_data_mutex_};
     gnss_data_ready_.wait_for(lk, std::chrono::milliseconds(100),
         [this] { return !gnss_data_.empty() || !active_.load(); });
-    if (!gnss_data_.empty()) {
-      auto data = util::take(gnss_data_);
-      lk.unlock();
-      for (const auto& recv : data) {
-        switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
-          case gnss::PacketType::Location: {
-            if (recv.header.data_size == gnss::location_data_size &&
-                recv.header.data_size >= recv.data.size()) {
-              auto* location =
-                  reinterpret_cast<const gnss::LocationPacket*>(recv.data.data());
-              set_device_location(recv.header.device_id, location);
-              if (logging) {
-                switch (format) {
-                  case 0: csv.write(&recv.header, location, recv.time); break;
-                  case 1: csv.write(location, recv.header.device_id, recv.time); break;
-                }
+    if (gnss_data_.empty()) {
+      continue;
+    }
+    auto data = util::take(gnss_data_);
+    lk.unlock();
+    for (const auto& recv : data) {
+      switch (static_cast<gnss::PacketType>(recv.header.packet_type)) {
+        case gnss::PacketType::Location: {
+          if (recv.header.data_size == gnss::location_data_size &&
+              recv.header.data_size >= recv.data.size()) {
+            using lp = gnss::LocationPacket;
+            auto* location = reinterpret_cast<const lp*>(recv.data.data());
+            set_device_location(recv.header.device_id, location);
+            if (logging) {
+              switch (conf_.recv_log_format) {
+                case LogFormat::Full:
+                  csv.write(&recv.header, location, recv.time);
+                break;
+                case LogFormat::Short:
+                  csv.write(location, recv.header.device_id, recv.time);
+                break;
               }
             }
           }
-          break;
-          default:
-          break;
         }
+        break;
+        default:
+        break;
       }
-
-      activity_counter_.fetch_add(data.size());
     }
+
+    activity_counter_.fetch_add(data.size());
   }
 }
 
@@ -420,13 +429,14 @@ void Pichi::set_location(
 }
 
 
-void Pichi::set_device_location(uint16_t device_id,
+void Pichi::set_device_location(
+    uint16_t device_id,
     gsl::not_null<const gnss::LocationPacket*> location)
 {
   std::lock_guard<std::mutex> lock{devices_mutex_};
 
   auto it = std::find_if(std::begin(devices_), std::end(devices_),
-      [device_id](const pichi::Device& d) { return d.id() == device_id; });
+      [device_id](const auto& device) { return device.id() == device_id; });
   if (it != std::end(devices_)) {
     it->set_location(*location);
   }

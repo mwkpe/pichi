@@ -43,9 +43,9 @@ private:
   Fl_Input *text_recv_ip;
   Fl_Input *text_recv_port;
   Fl_Check_Button *check_recv_log;
-  Fl_Round_Button *radio_recv_log_all;
-  inline void cb_radio_recv_log_all_i(Fl_Round_Button*, void*);
-  static void cb_radio_recv_log_all(Fl_Round_Button*, void*);
+  Fl_Round_Button *radio_recv_log_full;
+  inline void cb_radio_recv_log_full_i(Fl_Round_Button*, void*);
+  static void cb_radio_recv_log_full(Fl_Round_Button*, void*);
   Fl_Round_Button *radio_recv_log_short;
   inline void cb_radio_recv_log_short_i(Fl_Round_Button*, void*);
   static void cb_radio_recv_log_short(Fl_Round_Button*, void*);

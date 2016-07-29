@@ -138,8 +138,8 @@ display_device_id_ = 0;} {}
             label {Log receive}
             private xywh {12 126 474 16} down_box DOWN_BOX value 1
           }
-          Fl_Round_Button radio_recv_log_all {
-            label {All (header, data)}
+          Fl_Round_Button radio_recv_log_full {
+            label {Full (header, data)}
             callback {radio_log_clicked_callback(o, v)}
             private xywh {18 152 218 16} down_box ROUND_DOWN_BOX
           }

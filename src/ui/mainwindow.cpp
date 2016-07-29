@@ -26,11 +26,11 @@ void MainWindow::cb_button_sync_time(Fl_Button* o, void* v) {
   ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_button_sync_time_i(o,v);
 }
 
-void MainWindow::cb_radio_recv_log_all_i(Fl_Round_Button* o, void* v) {
+void MainWindow::cb_radio_recv_log_full_i(Fl_Round_Button* o, void* v) {
   radio_log_clicked_callback(o, v);
 }
-void MainWindow::cb_radio_recv_log_all(Fl_Round_Button* o, void* v) {
-  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_recv_log_all_i(o,v);
+void MainWindow::cb_radio_recv_log_full(Fl_Round_Button* o, void* v) {
+  ((MainWindow*)(o->parent()->parent()->parent()->user_data()))->cb_radio_recv_log_full_i(o,v);
 }
 
 void MainWindow::cb_radio_recv_log_short_i(Fl_Round_Button* o, void* v) {
@@ -134,10 +134,10 @@ MainWindow::MainWindow(Pichi* p) {
           check_recv_log->down_box(FL_DOWN_BOX);
           check_recv_log->value(1);
         } // Fl_Check_Button* check_recv_log
-        { radio_recv_log_all = new Fl_Round_Button(18, 152, 218, 16, "All (header, data)");
-          radio_recv_log_all->down_box(FL_ROUND_DOWN_BOX);
-          radio_recv_log_all->callback((Fl_Callback*)cb_radio_recv_log_all);
-        } // Fl_Round_Button* radio_recv_log_all
+        { radio_recv_log_full = new Fl_Round_Button(18, 152, 218, 16, "Full (header, data)");
+          radio_recv_log_full->down_box(FL_ROUND_DOWN_BOX);
+          radio_recv_log_full->callback((Fl_Callback*)cb_radio_recv_log_full);
+        } // Fl_Round_Button* radio_recv_log_full
         { radio_recv_log_short = new Fl_Round_Button(18, 174, 218, 16, "Short (ID, receive time, data)");
           radio_recv_log_short->down_box(FL_ROUND_DOWN_BOX);
           radio_recv_log_short->value(1);
