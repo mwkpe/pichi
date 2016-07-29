@@ -6,6 +6,9 @@
 #include <string>
 
 
+enum class LogFormat { Full, Short };
+
+
 class Configuration
 {
 public:
@@ -27,7 +30,7 @@ public:
   std::string recv_ip{"192.168.0.2"};
   uint16_t recv_port{30001};
   bool recv_log{true};
-  std::string recv_log_format{"short"};
+  LogFormat recv_log_format{LogFormat::Short};
 
   // Log tab
   bool log_csv{true};

@@ -1,6 +1,7 @@
 #include "configuration.h"
 
 
+#include <string>
 #include <iostream>
 #include <ios>
 #include <sstream>
@@ -10,6 +11,7 @@
 
 #include "ext/json/json.hpp"
 using json = nlohmann::json;
+using namespace std::string_literals;
 
 
 Configuration::Configuration(const std::string& filename)
@@ -36,16 +38,19 @@ Configuration::Configuration(const std::string& filename)
     return def;
   };
 
-  gnss_port = get("gnss_port", std::string("/dev/ttyS0"));
+  gnss_port = get("gnss_port", "/dev/ttyS0"s);
   gnss_port_rate = get("gnss_port_rate", 9600);
 
-  trans_ip = get("trans_ip", std::string("192.168.0.1"));
+  trans_ip = get("trans_ip", "192.168.0.1"s);
   trans_port = get("trans_port", 30001);
 
-  recv_ip = get("recv_ip", std::string("192.168.0.1"));
+  recv_ip = get("recv_ip", "192.168.0.1"s);
   recv_port = get("recv_port", 30001);
   recv_log = get("recv_log", true);
-  recv_log_format = get("recv_log_format", std::string("short"));
+  if (get("recv_log_format", "short"s) == "short")
+    recv_log_format = LogFormat::Short;
+  else
+    recv_log_format = LogFormat::Full;
 
   log_csv = get("log_csv", true);
   log_gpx = get("log_gpx", true);
@@ -67,7 +72,10 @@ void Configuration::save_to_file() const
   settings["recv_ip"] = recv_ip;
   settings["recv_port"] = recv_port;
   settings["recv_log"] = recv_log;
-  settings["recv_log_format"] = recv_log_format;
+  switch (recv_log_format) {
+    case LogFormat::Full: settings["recv_log_format"] = "full"s; break;
+    case LogFormat::Short: settings["recv_log_format"] = "short"s; break;
+  }
 
   settings["log_csv"] = log_csv;
   settings["log_gpx"] = log_gpx;
