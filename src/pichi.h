@@ -29,6 +29,7 @@ public:
   Pichi(const Pichi&) = delete;
   Pichi& operator=(const Pichi&) = delete;
 
+  // The device the software is running on
   static const uint16_t local_device_id{0};
 
   const Configuration& config() const { return conf_; }
@@ -59,7 +60,7 @@ private:
 
   bool parse_location(
       gsl::not_null<gnss::LocationPacket*> location,
-      const nmea::ReadData& nmea_read);
+      const nmea::Sentence& nmea_read);
   bool parse_location(
       gsl::not_null<gnss::LocationPacket*> location,
       const std::string& nmea_sentence,
@@ -81,7 +82,7 @@ private:
   // GNSS receiver
   std::condition_variable nmea_data_ready_;
   std::mutex nmea_data_mutex_;
-  std::deque<nmea::ReadData> nmea_data_;
+  std::deque<nmea::Sentence> nmea_data_;
   nmea::Reader nmea_reader_;
 
   // UDP receiver

@@ -10,11 +10,11 @@
 nmea::Reader::Reader(const Timer& timer,
                      std::condition_variable& data_ready,
                      std::mutex& data_mutex,
-                     std::deque<ReadData>& data)
+                     std::deque<Sentence>& data)
   : timer_{timer},
-    nmea_data_ready_{data_ready},
-    nmea_data_mutex_{data_mutex},
-    nmea_data_{data}
+    data_ready_{data_ready},
+    data_mutex_{data_mutex},
+    data_{data}
 {
 }
 
@@ -54,16 +54,16 @@ void nmea::Reader::handle_read(gsl::span<char> buffer)
     activity_counter_.fetch_add(typed_sentences.size());
 
     // Push data
-    std::lock_guard<std::mutex> lk(nmea_data_mutex_);
+    std::lock_guard<std::mutex> lk(data_mutex_);
     for (auto& t : typed_sentences) {
-      nmea_data_.emplace_back(time, systime, std::get<0>(t), std::move(std::get<1>(t)));
+      data_.emplace_back(time, systime, std::get<0>(t), std::move(std::get<1>(t)));
     }
 
     // Prevent overflow due to no one consuming the sentences
-    while (nmea_data_.size() > 30)
-      nmea_data_.pop_front();
+    while (data_.size() > 30)
+      data_.pop_front();
 
-    nmea_data_ready_.notify_one();
+    data_ready_.notify_one();
   }
 }
 

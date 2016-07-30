@@ -21,18 +21,16 @@
 namespace nmea {
 
 
-struct ReadData
+struct Sentence
 {
-  ReadData() = default;
-  ReadData(uint64_t read_time, uint64_t read_systime,
-           SentenceType sentence_type, std::string&& read_sentence)
-  : time{read_time}, systime{read_systime},
-    sentence_type{sentence_type}, sentence{std::move(read_sentence)} {}
+  Sentence() = default;
+  Sentence(uint64_t time, uint64_t systime, SentenceType type, std::string&& text)
+  : time{time}, systime{systime}, type{type}, text{std::move(text)} {}
 
   uint64_t time;
   uint64_t systime;
-  SentenceType sentence_type;
-  std::string sentence;
+  SentenceType type;
+  std::string text;
 };
 
 
@@ -42,7 +40,7 @@ public:
   Reader(const Timer& timer,
          std::condition_variable& data_ready,
          std::mutex& data_mutex,
-         std::deque<ReadData>& data);
+         std::deque<Sentence>& data);
   ~Reader();
   Reader(const Reader&) = delete;
   Reader& operator=(const Reader&) = delete;
@@ -55,9 +53,9 @@ private:
   void reset();
 
   const Timer& timer_;
-  std::condition_variable& nmea_data_ready_;
-  std::mutex& nmea_data_mutex_;
-  std::deque<ReadData>& nmea_data_;
+  std::condition_variable& data_ready_;
+  std::mutex& data_mutex_;
+  std::deque<Sentence>& data_;
 
   std::atomic<uint64_t> activity_counter_{0};
 };

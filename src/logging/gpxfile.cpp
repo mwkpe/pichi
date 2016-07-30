@@ -38,11 +38,11 @@ void logging::GpxFile::write_trackpoint(
     int hour, int minute, float second)
 {
   fs_ << fmt::format(
-R"(<trkpt lat="{:f}" lon="{:f}">)"
-R"(<ele>{:3.1f}</ele>)"
-R"(<time>{:4}-{:02}-{:02}T{:02}:{:02}:{:2.3f}Z</time>)"
-R"(</trkpt>)" "\n",
-lat, lon, ele, year, month, day, hour, minute, second);
+    R"(<trkpt lat="{:f}" lon="{:f}">)"
+    R"(<ele>{:3.1f}</ele>)"
+    R"(<time>{:4}-{:02}-{:02}T{:02}:{:02}:{:2.3f}Z</time>)"
+    R"(</trkpt>)" "\n",
+    lat, lon, ele, year, month, day, hour, minute, second);
 }
 
 

@@ -294,10 +294,10 @@ void Pichi::log_position()
       continue;
     auto data = util::take(nmea_data_);
     lk.unlock();
-    for (const auto& read : data) {
+    for (const auto& sentence : data) {
       nmea::RmcData rmc_data;
-      if (read.sentence_type == nmea::SentenceType::Rmc &&
-          parse_location(&location, read.sentence, rmc_data)) {
+      if (sentence.type == nmea::SentenceType::Rmc &&
+          parse_location(&location, sentence.text, rmc_data)) {
 
         auto cur_time = seconds_now();
         bool allow_write = cur_time > last_write;
@@ -305,7 +305,7 @@ void Pichi::log_position()
           last_write = cur_time;
 
         if (logging_csv && (!conf_.log_csv_force_1hz || allow_write)) {
-          csv.write(&location, read.time);
+          csv.write(&location, sentence.time);
         }
 
         if (logging_gpx && (!conf_.log_gpx_force_1hz || allow_write)) {
@@ -339,8 +339,8 @@ void Pichi::update_position()
     if (!nmea_data_.empty()) {
       auto data = util::take(nmea_data_);
       lk.unlock();
-      for (const auto& read : data) {
-        if (parse_location(&location, read)) {
+      for (const auto& sentence : data) {
+        if (parse_location(&location, sentence)) {
           set_device_location(local_device_id, &location);
           activity_counter_.fetch_add(1);
         }
@@ -359,8 +359,8 @@ void Pichi::show_nmea_sentences()
     if (!nmea_data_.empty()) {
       auto data = util::take(nmea_data_);
       lk.unlock();
-      for (const auto& read : data)
-        std::cout << read.sentence << std::endl;
+      for (const auto& sentence : data)
+        std::cout << sentence.text << std::endl;
       activity_counter_.fetch_add(data.size());
     }
   }
@@ -369,14 +369,14 @@ void Pichi::show_nmea_sentences()
 
 bool Pichi::parse_location(
     gsl::not_null<gnss::LocationPacket*> location,
-    const nmea::ReadData& nmea_read)
+    const nmea::Sentence& sentence)
 {
   bool success = false;
 
-  switch (nmea_read.sentence_type) {
+  switch (sentence.type) {
     case nmea::SentenceType::Rmc: {
       nmea::RmcData rmc_data;
-      std::tie(success, rmc_data) = nmea::parse_valid<nmea::RmcData>(nmea_read.sentence);
+      std::tie(success, rmc_data) = nmea::parse_valid<nmea::RmcData>(sentence.text);
       if (success)
         set_location(location, rmc_data);
     }

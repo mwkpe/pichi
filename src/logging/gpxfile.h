@@ -22,9 +22,9 @@ public:
 
   bool open(const std::string& filename);
   void write_trackpoint(
-    double lat, double lon,
-    int year, int month, int day,
-    int hour, int minute, float second);
+      double lat, double lon,
+      int year, int month, int day,
+      int hour, int minute, float second);
   void write_trackpoint(
       double lat, double lon, float ele,
       int year, int month, int day,
