@@ -1,7 +1,8 @@
 Running the program
 ---
-Start the program with `sudo ./pichi`.<br>
-The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for some delay measurements (see [sender system delay](README_USAGE.md#data-format)) and is not required for anything. Values are simply 0 without sudo.
+Start the program with `sudo ./pichi`.
+
+The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for some delay measurements (see [sender system delay](README_USAGE.md#data-format)) and is not required. Values are simply 0 without sudo.
 
 Note: Logs will be put into a `logs` directory which must be manually created next to the executable.
 
@@ -24,7 +25,7 @@ The data packets are defined in the [packet.h](src/gnss/packet.h) file.
 
 The UDP receive CSV file has the following columns.
 
-| Col | What             | Description   | Unit | Short |
+| #   | What             | Description   | Unit | Short |
 | ---:| ---------------- | ------------- | ---- |:-----:|
 | 1 | Device ID        | Identifies the sender |  | ✓
 | 2 | Packet type      | Defined in [packet.h](src/gnss/packet.h) |   |
@@ -38,7 +39,7 @@ The UDP receive CSV file has the following columns.
 
 The serial read CSV file has the following columns.
 
-| Col | What             | Description   | Unit |
+| #   | What             | Description   | Unit |
 | ---:| ---------------- | ------------- | ---- |
 | 1 | Serial read time | Time the NMEA sentence was read | ns |
 | 2 | UTC timestamp    | UTC timestamp from NMEA sentence |   |
