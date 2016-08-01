@@ -40,7 +40,7 @@ void logging::GpxFile::write_trackpoint(
   fs_ << fmt::format(
     R"(<trkpt lat="{:f}" lon="{:f}">)"
     R"(<ele>{:3.1f}</ele>)"
-    R"(<time>{:4}-{:02}-{:02}T{:02}:{:02}:{:2.3f}Z</time>)"
+    R"(<time>{:4}-{:02}-{:02}T{:02}:{:02}:{:06.3f}Z</time>)"
     R"(</trkpt>)" "\n",
     lat, lon, ele, year, month, day, hour, minute, second);
 }
@@ -53,7 +53,7 @@ void logging::GpxFile::write_trackpoint(
 {
   fs_ << fmt::format(
     R"(<trkpt lat="{:f}" lon="{:f}">)"
-    R"(<time>{:4}-{:02}-{:02}T{:02}:{:02}:{:2.3f}Z</time>)"
+    R"(<time>{:4}-{:02}-{:02}T{:02}:{:02}:{:06.3f}Z</time>)"
     R"(</trkpt>)" "\n",
     lat, lon, year, month, day, hour, minute, second);
 }
