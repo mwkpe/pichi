@@ -45,6 +45,8 @@ void gnss::Receiver::handle_receive(gsl::span<uint8_t> buffer)
     std::memcpy(&received.header, buffer.data(), packet_header_size);
     auto ss = buffer.subspan(packet_header_size);
     std::copy(std::begin(ss), std::end(ss), std::back_inserter(received.data));
+    
+    std::lock_guard<std::mutex> lk(data_mutex_);
     data_.push_back(std::move(received));
     activity_counter_.fetch_add(1);
 
