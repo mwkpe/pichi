@@ -15,91 +15,94 @@ test: nmea_parser.o src/test/nmea_parser_test.cpp
 
 
 pichi: \
-  format.o main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o csvfile.o gpxfile.o \
-  util.o gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
-  nmea_reader.o serial_async_reader.o serial_base.o nmea_parser.o \
+  format.o main.o pichi.o mainwindow.o mainwindow_impl.o log_file.o csv_file.o gpx_file.o \
+  util.o receiver.o async_udp_receiver.o udp_transmitter.o udp_base.o udp_socket_opener.o \
+  nmea_reader.o async_serial_reader.o serial_port_opener.o nmea_parser.o \
   timer.o configuration.o
 	$(CXX) $(CXXFLAGS) $(CXXFLAGSFLTK) \
-      format.o main.o pichi.o mainwindow.o mainwindow_impl.o logfile.o csvfile.o gpxfile.o \
-      util.o gnss_receiver.o udp_async_receiver.o udp_transmitter.o udp_base.o \
-      nmea_reader.o serial_async_reader.o serial_base.o nmea_parser.o \
+      format.o main.o pichi.o mainwindow.o mainwindow_impl.o log_file.o csv_file.o gpx_file.o \
+      util.o receiver.o async_udp_receiver.o udp_transmitter.o udp_base.o udp_socket_opener.o \
+      nmea_reader.o async_serial_reader.o serial_port_opener.o nmea_parser.o \
       timer.o configuration.o \
       -o pichi $(LINKFLTK)
 	strip pichi
 	@echo "Build finished"
 
-main.o: src/main.cpp src/gnss/receiver.h src/ui/mainwindow.h
+main.o: src/main.cpp src/pichi/receiver.h src/ui/mainwindow.h
 	$(CXX) -c $(CXXFLAGS) src/main.cpp
 
 mainwindow.o: src/ui/mainwindow.cpp
 	$(CXX) -c $(CXXFLAGS) $(CXXFLAGSFLTK) src/ui/mainwindow.cpp
 
-mainwindow_impl.o: src/ui/mainwindow_impl.cpp src/gnss/receiver.h src/configuration.h
+mainwindow_impl.o: src/ui/mainwindow_impl.cpp src/pichi/receiver.h src/pichi/configuration.h
 	$(CXX) -c $(CXXFLAGS) $(CXXFLAGSFLTK) src/ui/mainwindow_impl.cpp
 
 pichi.o: \
-  src/pichi.cpp \
-  src/timer.h \
-  src/configuration.h \
-  src/nmea/reader.h \
-  src/nmea/parser.h \
-  src/gnss/receiver.h \
+  src/pichi/pichi.cpp \
+  src/pichi/pichi.h \
+  src/util/timer.h \
+  src/pichi/configuration.h \
+  src/nmea/nmea_reader.h \
+  src/nmea/nmea_parser.h \
+  src/pichi/receiver.h \
   src/util/util.h
-	$(CXX) -c $(CXXFLAGS) src/pichi.cpp
+	$(CXX) -c $(CXXFLAGS) src/pichi/pichi.cpp
 
-gpxfile.o: src/logging/gpxfile.cpp src/logging/gpxfile.h \
-  src/logging/logfile.h src/ext/fmt/format.h
-	$(CXX) -c $(CXXFLAGS) src/logging/gpxfile.cpp
+gpx_file.o: src/log/gpx_file.cpp src/log/gpx_file.h src/base/log_file.h src/ext/fmt/format.h
+	$(CXX) -c $(CXXFLAGS) src/log/gpx_file.cpp
 
-csvfile.o: src/logging/csvfile.cpp src/logging/csvfile.h src/logging/logfile.h
-	$(CXX) -c $(CXXFLAGS) src/logging/csvfile.cpp
+csv_file.o: src/log/csv_file.cpp src/log/csv_file.h src/base/log_file.h
+	$(CXX) -c $(CXXFLAGS) src/log/csv_file.cpp
 
-logfile.o: src/logging/logfile.cpp src/logging/logfile.h
-	$(CXX) -c $(CXXFLAGS) src/logging/logfile.cpp
+log_file.o: src/base/log_file.cpp src/base/log_file.h
+	$(CXX) -c $(CXXFLAGS) src/base/log_file.cpp
 
-gnss_receiver.o: \
-  src/gnss/receiver.cpp \
-  src/gnss/receiver.h \
-  src/base/udp_async_receiver.h \
-  src/timer.h \
-  src/configuration.h
-	$(CXX) -c $(CXXFLAGS) src/gnss/receiver.cpp -o gnss_receiver.o
+receiver.o: \
+  src/pichi/receiver.cpp \
+  src/pichi/receiver.h \
+  src/base/async_udp_receiver.h \
+  src/util/timer.h \
+  src/pichi/configuration.h
+	$(CXX) -c $(CXXFLAGS) src/pichi/receiver.cpp
 
 nmea_reader.o: \
-  src/nmea/reader.cpp \
-  src/nmea/reader.h \
-  src/nmea/parser.h \
-  src/base/serial_async_reader.h \
-  src/timer.h \
-  src/configuration.h
-	$(CXX) -c $(CXXFLAGS) src/nmea/reader.cpp -o nmea_reader.o
+  src/nmea/nmea_reader.cpp \
+  src/nmea/nmea_reader.h \
+  src/nmea/nmea_parser.h \
+  src/base/async_serial_reader.h \
+  src/util/timer.h \
+  src/pichi/configuration.h
+	$(CXX) -c $(CXXFLAGS) src/nmea/nmea_reader.cpp
 
-nmea_parser.o: src/nmea/parser.cpp src/nmea/parser.h
-	$(CXX) -c $(CXXFLAGS) src/nmea/parser.cpp -o nmea_parser.o
+nmea_parser.o: src/nmea/nmea_parser.cpp src/nmea/nmea_parser.h
+	$(CXX) -c $(CXXFLAGS) src/nmea/nmea_parser.cpp
 
-serial_async_reader.o: \
-  src/base/serial_async_reader.cpp src/base/serial_async_reader.h src/base/serial_base.h
-	$(CXX) -c $(CXXFLAGS) src/base/serial_async_reader.cpp
+async_serial_reader.o: \
+  src/base/async_serial_reader.cpp src/base/async_serial_reader.h src/base/serial_port_opener.h
+	$(CXX) -c $(CXXFLAGS) src/base/async_serial_reader.cpp
 
-serial_base.o: src/base/serial_base.cpp src/base/serial_base.h
-	$(CXX) -c $(CXXFLAGS) src/base/serial_base.cpp
+serial_port_opener.o: src/base/serial_port_opener.cpp src/base/serial_port_opener.h
+	$(CXX) -c $(CXXFLAGS) src/base/serial_port_opener.cpp
 
-udp_async_receiver.o: \
-  src/base/udp_async_receiver.cpp src/base/udp_async_receiver.h src/base/udp_base.h
-	$(CXX) -c $(CXXFLAGS) src/base/udp_async_receiver.cpp
+async_udp_receiver.o: \
+  src/base/async_udp_receiver.cpp src/base/async_udp_receiver.h src/base/udp_base.h src/base/udp_socket_opener.h
+	$(CXX) -c $(CXXFLAGS) src/base/async_udp_receiver.cpp
 
 udp_transmitter.o: \
-  src/base/udp_transmitter.cpp src/base/udp_transmitter.h src/base/udp_base.h
+  src/base/udp_transmitter.cpp src/base/udp_transmitter.h src/base/udp_base.h src/base/udp_socket_opener.h
 	$(CXX) -c $(CXXFLAGS) src/base/udp_transmitter.cpp
+
+udp_socket_opener.o: src/base/udp_socket_opener.cpp src/base/udp_socket_opener.h
+	$(CXX) -c $(CXXFLAGS) src/base/udp_socket_opener.cpp
 
 udp_base.o: src/base/udp_base.cpp src/base/udp_base.h
 	$(CXX) -c $(CXXFLAGS) src/base/udp_base.cpp
 
-timer.o: src/timer.cpp src/timer.h
-	$(CXX) -c $(CXXFLAGS) src/timer.cpp
+timer.o: src/util/timer.cpp src/util/timer.h
+	$(CXX) -c $(CXXFLAGS) src/util/timer.cpp
 
-configuration.o: src/configuration.cpp src/configuration.h
-	$(CXX) -c $(CXXFLAGS) src/configuration.cpp
+configuration.o: src/pichi/configuration.cpp src/pichi/configuration.h
+	$(CXX) -c $(CXXFLAGS) src/pichi/configuration.cpp
 
 util.o: src/util/util.cpp src/util/util.h
 	$(CXX) -c $(CXXFLAGS) src/util/util.cpp

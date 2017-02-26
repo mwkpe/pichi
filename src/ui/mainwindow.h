@@ -5,7 +5,7 @@
 #include <FL/Fl.H>
 #include <cstdint>
 #include <unordered_map>
-class Pichi;
+namespace pichi { class Pichi; }
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Light_Button.H>
@@ -20,7 +20,7 @@ class Pichi;
 
 class MainWindow {
 public:
-  MainWindow(Pichi* p);
+  MainWindow(pichi::Pichi* p);
 private:
   Fl_Double_Window *main_window;
   Fl_Light_Button *button_start;
@@ -85,7 +85,7 @@ private:
   void button_apply_clicked();
   void button_sync_time_clicked();
   void radio_log_clicked(Fl_Round_Button* o);
-  Pichi* pichi_; 
+  pichi::Pichi* pichi_; 
   std::unordered_map<int, uint16_t> mapped_device_ids_; 
   uint16_t display_device_id_; 
   unsigned long long last_count_; 

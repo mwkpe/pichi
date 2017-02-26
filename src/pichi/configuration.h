@@ -1,9 +1,12 @@
-#ifndef CONFIGURATION_H_
-#define CONFIGURATION_H_
+#ifndef PICHI_CONFIGURATION_H_
+#define PICHI_CONFIGURATION_H_
 
 
 #include <cstdint>
 #include <string>
+
+
+namespace pichi {
 
 
 enum class LogFormat { Full, Short };
@@ -43,4 +46,7 @@ private:
 };
 
 
-#endif  // CONFIGURATION_H_
+}  // namespace pichi
+
+
+#endif  // PICHI_CONFIGURATION_H_

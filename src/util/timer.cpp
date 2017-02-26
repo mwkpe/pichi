@@ -9,7 +9,7 @@
 #include <chrono>
 
 
-bool Timer::systime_init()
+bool util::Timer::systime_init()
 {
   auto fd = ::open("/dev/mem", O_RDONLY);
   if (fd == -1) {
@@ -23,20 +23,13 @@ bool Timer::systime_init()
     return false;
   }
 
-  st_time = reinterpret_cast<uint64_t*>(reinterpret_cast<uint8_t*>(m) + TIMER_OFFSET);
+  st_time = reinterpret_cast<std::uint64_t*>(reinterpret_cast<std::uint8_t*>(m) + TIMER_OFFSET);
 
   return true;
 }
 
 
-uint64_t Timer::current_time() const
+std::uint64_t util::Timer::current_time() const
 {
   return std::chrono::high_resolution_clock::now().time_since_epoch().count();
-}
-
-
-uint32_t Timer::current_ticks() const
-{
-  // TODO: Implement access to cpu ticks (LKM?)
-  return 1337;
 }

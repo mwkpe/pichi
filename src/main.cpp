@@ -1,13 +1,14 @@
 #include <FL/Fl.H>
 #include "ext/cxxopts.hpp"
 
-#include "pichi.h"
+#include "pichi/configuration.h"
+#include "pichi/pichi.h"
 #include "ui/mainwindow.h"
 
 
 int main(int argc, char* argv[])
 {
-  Pichi pichi{Configuration{"config.json"}};
+  pichi::Pichi pichi{pichi::Configuration{"config.json"}};
   bool nogui = false;
 
   try {
@@ -24,22 +25,20 @@ int main(int argc, char* argv[])
 
     if (nogui) {
       int total = options.count("transmit") + options.count("receive") +
-                  options.count("log") + options.count("debug");
+        options.count("log") + options.count("debug");
       if (total == 1) {
-        if (options.count("transmit")) pichi.start_gnss_transmitter();
-        if (options.count("receive")) pichi.start_gnss_receiver();
-        if (options.count("log")) pichi.start_location_logger();
-        if (options.count("debug")) pichi.start_debugger();
+        if (options.count("transmit")) pichi.start_transmitter();
+        if (options.count("receive")) pichi.start_receiver();
+        if (options.count("log")) pichi.start_logger();
+        if (options.count("debug")) pichi.start_debug_mode();
 
-        std::cout << "Running! Enter anything to stop the program!"
-                  << std::endl;
+        std::cout << "Running! Enter anything to stop the program!" << std::endl;
         int anything;
         std::cin >> anything;
       }
       else {
         std::cout << "Error parsing command line options:\n"
-                  << "Use --nogui and either --transmit, --receive, --log or --debug"
-                  << std::endl;
+            << "Use --nogui and either --transmit, --receive, --log or --debug" << std::endl;
         return 0;
       }
     }

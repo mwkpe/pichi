@@ -1,13 +1,21 @@
-#include "serial_base.h"
+#include "serial_port_opener.h"
 
 
 #include <iostream>
 #include <exception>
 
 
-serial::OpenPort::OpenPort(asio::serial_port& sp,
-                           const std::string& port, uint32_t rate)
-  : serial_port_(sp)
+void base::close_port(asio::serial_port& serial_port)
+{
+  if (serial_port.is_open()) {
+    serial_port.close();
+    std::cout << "Serial port closed" << std::endl;
+  }
+}
+
+
+base::SerialPortOpener::SerialPortOpener(asio::serial_port& sp, const std::string& port,
+    uint32_t rate) : serial_port_{sp}
 {
   try {
     using base = asio::serial_port_base;
@@ -26,17 +34,8 @@ serial::OpenPort::OpenPort(asio::serial_port& sp,
 }
 
 
-serial::OpenPort::~OpenPort()
+base::SerialPortOpener::~SerialPortOpener()
 {
   if (!is_released_)
     close_port(serial_port_);
-}
-
-
-void serial::close_port(asio::serial_port& serial_port)
-{
-  if (serial_port.is_open()) {
-    serial_port.close();
-    std::cout << "Serial port closed" << std::endl;
-  }
 }

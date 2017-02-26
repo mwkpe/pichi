@@ -1,11 +1,11 @@
-#ifndef GNSS_PACKET_H_
-#define GNSS_PACKET_H_
+#ifndef PICHI_PACKET_H_
+#define PICHI_PACKET_H_
 
 
 #include <cstdint>
 
 
-namespace gnss {
+namespace pichi {
 
 
 enum class PacketType : uint16_t {
@@ -40,11 +40,11 @@ struct LocationPacket
 #pragma pack()
 
 
-constexpr uint16_t packet_header_size = sizeof(PacketHeader);
-constexpr uint16_t location_data_size = sizeof(LocationPacket);
+constexpr uint16_t PACKET_HEADER_SIZE = sizeof(PacketHeader);
+constexpr uint16_t LOCATION_DATA_SIZE = sizeof(LocationPacket);
 
 
-}  // namespace gnss
+}  // namespace pichi
 
 
-#endif  // GNSS_PACKET_H_
+#endif  // PICHI_PACKET_H_

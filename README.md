@@ -10,7 +10,7 @@ A GNSS location logger/transceiver for the Raspberry Pi
 
 Description
 ---
-Pichi is a small program for reading and parsing NMEA sentences from a GNSS receiver and logging (CSV, GPX) or transmitting (UDP) the positonal data, turning a Raspberry Pi into a GPS tag.
+Pichi is a small program for reading and parsing NMEA sentences from a GNSS receiver and logging (CSV, GPX) or transmitting (UDP) the positonal data.
 
 Requirements
 ---

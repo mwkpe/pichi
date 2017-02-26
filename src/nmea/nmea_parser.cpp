@@ -1,16 +1,16 @@
-#include "parser.h"
+#include "nmea_parser.h"
 
-
-#include <boost/spirit/include/qi.hpp>
 
 #include <vector>
 #include <iterator>
 #include <numeric>
 #include <algorithm>
 
+#include <boost/spirit/include/qi.hpp>
+
 
 // Sentence type deduction
-nmea::SentenceType nmea::sentence_type(const std::string& sentence)
+nmea::SentenceType nmea::deduce_sentence_type(const std::string& sentence)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -27,7 +27,7 @@ nmea::SentenceType nmea::sentence_type(const std::string& sentence)
   // $GPRMC,...
 
   phrase_parse(std::begin(sentence), std::end(sentence),
-    lit("$G") >> omit[char_] >> +char_('A', 'Z') >> ',', space, message_id);
+      lit("$G") >> omit[char_] >> +char_('A', 'Z') >> ',', space, message_id);
 
   if (message_id == "RMC") { return SentenceType::Rmc; }
   if (message_id == "GGA") { return SentenceType::Gga; }
@@ -38,9 +38,8 @@ nmea::SentenceType nmea::sentence_type(const std::string& sentence)
 
 
 // Recommended minimum specific GPS/Transit data
-bool nmea::parse(const std::string& sentence,
-                 gsl::not_null<RmcData*> data,
-                 gsl::not_null<uint8_t*> checksum)
+bool nmea::parse(const std::string& sentence, gsl::not_null<RmcData*> data,
+    gsl::not_null<uint8_t*> checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -131,9 +130,8 @@ bool nmea::parse(const std::string& sentence,
 
 
 // Global positioning system fix data
-bool nmea::parse(const std::string& sentence,
-                 gsl::not_null<GgaData*> data,
-                 gsl::not_null<uint8_t*> checksum)
+bool nmea::parse(const std::string& sentence, gsl::not_null<GgaData*> data,
+    gsl::not_null<uint8_t*> checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;
@@ -213,9 +211,8 @@ bool nmea::parse(const std::string& sentence,
 
 
 // GPS Satellites in view
-bool nmea::parse(const std::string& sentence,
-                 gsl::not_null<GsvData*> data,
-                 gsl::not_null<uint8_t*> checksum)
+bool nmea::parse(const std::string& sentence, gsl::not_null<GsvData*> data,
+    gsl::not_null<uint8_t*> checksum)
 {
   namespace qi = boost::spirit::qi;
   namespace ascii = boost::spirit::ascii;

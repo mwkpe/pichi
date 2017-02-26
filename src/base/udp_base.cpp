@@ -5,11 +5,10 @@
 #include <exception>
 
 
-udp::OpenSocket::OpenSocket(asio::ip::udp::socket& s)
-  : socket_(s)
+void base::open_socket(asio::ip::udp::socket& socket)
 {
   try {
-    socket_.open(asio::ip::udp::v4());
+    socket.open(asio::ip::udp::v4());
     std::cout << "UDP socket opened" << std::endl;
   }
   catch (asio::system_error& e) {
@@ -18,22 +17,29 @@ udp::OpenSocket::OpenSocket(asio::ip::udp::socket& s)
 }
 
 
-udp::OpenSocket::~OpenSocket()
+void base::close_socket(asio::ip::udp::socket& socket)
 {
-  if (!is_released_)
-    close_socket(socket_);
+  try {
+    if (socket.is_open()) {
+      socket.close();
+      std::cout << "UDP socket closed" << std::endl;
+    }
+  }
+  catch (asio::system_error& e) {
+    std::cerr << "Error while closing socket:\n" << e.what() << std::endl;
+  }
 }
 
 
-auto udp::resolve(asio::io_service& ios, const std::string& ip, uint16_t port)
-  -> asio::ip::udp::endpoint
+auto base::resolve(asio::io_service& ios, const std::string& ip, std::uint16_t port)
+    -> asio::ip::udp::endpoint
 {
   asio::ip::udp::endpoint ep;
 
   try {
     asio::ip::udp::resolver resolver{ios};
-    asio::ip::udp::resolver::query query{asio::ip::udp::v4(),
-                                         ip.c_str(), std::to_string(port).c_str()};
+    asio::ip::udp::resolver::query query{asio::ip::udp::v4(), ip.c_str(),
+        std::to_string(port).c_str()};
     ep = *resolver.resolve(query);
     return ep;
   }
@@ -46,12 +52,12 @@ auto udp::resolve(asio::io_service& ios, const std::string& ip, uint16_t port)
 }
 
 
-bool udp::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& ep)
+bool base::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& ep)
 {
   try {
     s.bind(ep);
     std::cout << "Listening on " << ep.address().to_string()
-              << ":" << ep.port() << std::endl;
+        << ":" << ep.port() << std::endl;
   }
   catch (asio::system_error& e) {
     std::cerr << "Could not bind UDP socket\n" << e.what() << std::endl;
@@ -59,18 +65,4 @@ bool udp::bind_socket(asio::ip::udp::socket& s, const asio::ip::udp::endpoint& e
   }
 
   return true;
-}
-
-
-void udp::close_socket(asio::ip::udp::socket& socket)
-{
-  try {
-    if (socket.is_open()) {
-      socket.close();
-      std::cout << "UDP socket closed" << std::endl;
-    }
-  }
-  catch (asio::system_error& e) {
-    std::cerr << "Error while closing socket:\n" << e.what() << std::endl;
-  }
 }

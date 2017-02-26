@@ -9,29 +9,25 @@
 #include <regex>
 
 
-#include "ext/json/json.hpp"
+#include "../ext/json/json.hpp"
 using json = nlohmann::json;
 using namespace std::string_literals;
 
 
-Configuration::Configuration(const std::string& filename)
+pichi::Configuration::Configuration(const std::string& filename)
   : filename_{filename}
 {
   std::ifstream fs{filename_};
-  std::string cfg;
   json settings;
 
   if (fs.is_open()) {
     std::stringstream ss;
     ss << fs.rdbuf();
-    cfg = ss.str();
     fs.close();
-    settings = json::parse(cfg);
+    settings = json::parse(ss.str());
   }
 
-  auto get = [&settings](const std::string& key, auto def)
-    -> decltype(def)
-  {
+  auto get = [&settings](const std::string& key, auto def) -> decltype(def) {
     if (settings.count(key)) {
       return settings[key];
     }
@@ -59,7 +55,7 @@ Configuration::Configuration(const std::string& filename)
 }
 
 
-void Configuration::save_to_file() const
+void pichi::Configuration::save_to_file() const
 {
   json settings;
 

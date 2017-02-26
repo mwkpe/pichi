@@ -1,4 +1,4 @@
-#include "csvfile.h"
+#include "csv_file.h"
 
 
 #include <iostream>
@@ -6,8 +6,8 @@
 #include <ios>
 
 
-void logging::CsvFile::write(gsl::not_null<const gnss::LocationPacket*> data,
-                             uint64_t time)
+void pichi::CsvFile::write(gsl::not_null<const LocationPacket*> data,
+    std::uint64_t time)
 {
   fs_ << time << ',';
   write_(data);
@@ -15,7 +15,7 @@ void logging::CsvFile::write(gsl::not_null<const gnss::LocationPacket*> data,
 }
 
 
-void logging::CsvFile::write_(gsl::not_null<const gnss::LocationPacket*> data)
+void pichi::CsvFile::write_(gsl::not_null<const LocationPacket*> data)
 {
   fs_ << std::fixed
       << data->utc_timestamp << ','

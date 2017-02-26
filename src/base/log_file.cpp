@@ -1,17 +1,17 @@
-#include "logfile.h"
+#include "log_file.h"
 
 
 #include <string>
 #include <iostream>
 
 
-logging::LogFile::LogFile(const std::string& filename)
+base::LogFile::LogFile(const std::string& filename)
 {
   open_(filename);
 }
 
 
-logging::LogFile::~LogFile()
+base::LogFile::~LogFile()
 {
   // Stream will close itself
   if (fs_.is_open())
@@ -19,7 +19,7 @@ logging::LogFile::~LogFile()
 }
 
 
-bool logging::LogFile::open_(const std::string& filename)
+bool base::LogFile::open_(const std::string& filename)
 {
   fs_.open(filename);
   if (!is_open())

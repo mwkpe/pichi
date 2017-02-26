@@ -1,12 +1,12 @@
-#ifndef LOGFILE_H_
-#define LOGFILE_H_
+#ifndef LOG_FILE_H_
+#define LOG_FILE_H_
 
 
 #include <string>
 #include <fstream>
 
 
-namespace logging {
+namespace base {
 
 
 class LogFile
@@ -28,7 +28,7 @@ protected:
 };
 
 
-}  // namespace logging
+}  // namespace base
 
 
-#endif  // LOGFILE_H_
+#endif  // LOG_FILE_H_

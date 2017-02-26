@@ -10,9 +10,10 @@
 #include <thread>
 #include <chrono>
 
-#include "../configuration.h"
-#include "../gnss/packet.h"
-#include "../pichi.h"
+#include "../pichi/configuration.h"
+#include "../pichi/packet.h"
+#include "../pichi/device.h"
+#include "../pichi/pichi.h"
 
 
 void MainWindow::init()
@@ -22,14 +23,14 @@ void MainWindow::init()
   radio_recv_log_full->user_data(this);
   radio_recv_log_short->user_data(this);
 
-  display_add_device(Pichi::local_device_id);
+  display_add_device(pichi::Device::LOCAL_DEVICE_ID);
   choice_display_device->value(0);
 }
 
 
 void MainWindow::apply_settings()
 {
-  Configuration conf{pichi_->config()};
+  pichi::Configuration conf{pichi_->config()};
   try {
     conf.device_id = std::stoul(text_device_id->value());
 
@@ -42,9 +43,9 @@ void MainWindow::apply_settings()
     conf.recv_ip = text_recv_ip->value();
     conf.recv_port = std::stoul(text_recv_port->value());
     conf.recv_log = check_recv_log->value();
-    conf.recv_log_format = LogFormat::Short;  // Default
+    conf.recv_log_format = pichi::LogFormat::Short;  // Default
     if (radio_recv_log_full->value())
-      conf.recv_log_format = LogFormat::Full;
+      conf.recv_log_format = pichi::LogFormat::Full;
 
     conf.log_csv = check_log_csv->value();
     conf.log_gpx = check_log_gpx->value();
@@ -82,8 +83,8 @@ void MainWindow::load_settings()
   radio_recv_log_full->value(0);
   radio_recv_log_short->value(0);
   switch (conf.recv_log_format) {
-    case LogFormat::Full: radio_recv_log_full->value(1); break;
-    case LogFormat::Short: radio_recv_log_short->value(1); break;
+    case pichi::LogFormat::Full: radio_recv_log_full->value(1); break;
+    case pichi::LogFormat::Short: radio_recv_log_short->value(1); break;
   }
 
   check_log_csv->value(conf.log_csv);
@@ -103,11 +104,11 @@ void MainWindow::button_start_clicked()
     }
     else {
       switch (choice_mode->value()) {
-        case 0: pichi_->start_gnss_transmitter(); break;
-        case 1: pichi_->start_gnss_receiver(); break;
-        case 2: pichi_->start_location_logger(); break;
-        case 3: pichi_->start_location_display(); break;
-        case 4: pichi_->start_debugger(); break;
+        case 0: pichi_->start_transmitter(); break;
+        case 1: pichi_->start_receiver(); break;
+        case 2: pichi_->start_logger(); break;
+        case 3: pichi_->start_device(); break;
+        case 4: pichi_->start_debug_mode(); break;
       }
       button_start->label("Stop");
       last_count_ = 0;
@@ -139,10 +140,8 @@ void MainWindow::button_sync_time_clicked()
   if (!pichi_->is_active()) {
     // Rough time sync via NTP
     std::cout << "Syncing time, please wait..." << std::endl;
-    std::thread t{[]{
-      system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start");
-    }};
-    t.detach();
+    std::thread{[]{system("sudo service ntp stop && sudo ntpd -gq && sudo service ntp start");}
+    }.detach();
   }
   else
     std::cerr << "Can't sync time while running!" << std::endl;
@@ -196,15 +195,15 @@ void MainWindow::update_display_callback(void* p)
 {
   auto* w = reinterpret_cast<MainWindow*>(p);
   w->update_display();
-  Fl::repeat_timeout(0.5, &MainWindow::update_display_callback, w);
+  Fl::repeat_timeout(1.0, &MainWindow::update_display_callback, w);
 }
 
 
 void MainWindow::update_display()
 {
   bool success = false;
-  gnss::LocationPacket location;
-  std::tie(success, location) = pichi_->gnss_location(display_device_id_);
+  pichi::LocationPacket location;
+  std::tie(success, location) = pichi_->get_location(display_device_id_);
 
   if (success) {
     text_display_utc->value(std::to_string(location.utc_timestamp).c_str());
@@ -212,9 +211,10 @@ void MainWindow::update_display()
     text_display_long->value(std::to_string(location.longitude).c_str());
   }
 
-  auto ids = pichi_->new_device_ids();
-  for (auto i : ids)
-    display_add_device(i);
+  // TODO: Fix
+  //auto ids = pichi_->new_device_ids();
+  //for (auto i : ids)
+  //  display_add_device(i);
 }
 
 
