@@ -29,7 +29,7 @@ The swap file size can be checked with `free -m`. Don't forget to change it back
 
 Set timer address
 ---
-The Raspberry Pi 2 and 3 should work out of the box. When using a Raspberry Pi 1 or Zero a function argument in the [timer.cpp](src/timer.cpp#L20) must be changed from `ST_BASE_RPI_2_AND_3` to `ST_BASE_RPI_1_AND_ZERO` or the system timer will read at the wrong address.
+The program uses the Pi's microsecond timer for some delay timing. The Raspberry Pi 2 and 3 should work out of the box. When using a Raspberry Pi 1 or Zero a function argument in the [timer.cpp](src/util/timer.cpp#L20) must be changed from `ST_BASE_RPI_2_AND_3` to `ST_BASE_RPI_1_AND_ZERO` or the system timer will read at the wrong address. Adept or remove the code when using another platform.
 
 Build program
 ---
