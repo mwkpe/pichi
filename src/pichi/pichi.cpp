@@ -49,7 +49,7 @@ pichi::Pichi::Pichi(Configuration&& conf) : conf_{std::move(conf)},
   devices_.reserve(32);
   devices_.emplace_back(Device::LOCAL_DEVICE_ID);  // This device itself
 
-  if (!timer_.systime_init())
+  if (!timer_.init_sys_time())
     std::cerr << "Values relying on the 1MHz system timer will be zero" << std::endl;
 }
 

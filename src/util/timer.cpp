@@ -9,7 +9,7 @@
 #include <chrono>
 
 
-bool util::Timer::systime_init()
+bool util::Timer::init_sys_time()
 {
   auto fd = ::open("/dev/mem", O_RDONLY);
   if (fd == -1) {

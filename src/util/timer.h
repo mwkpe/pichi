@@ -15,7 +15,7 @@ namespace util {
 
 struct TimePoint
 {
-  // GCC 4.9 doesn't support aggregate initializers >:/
+  // GCC 4.9 doesn't support aggregate initializers
   TimePoint() = default;
   TimePoint(std::uint64_t ut, std::uint64_t st) : unix_time{ut}, sys_time{st} {}
   std::uint64_t unix_time = 0;
@@ -28,8 +28,7 @@ class Timer
 public:
   Timer() : st_time{&st_dummy} {}
 
-  // 64-bit microsecond system timer (requires sudo)
-  bool systime_init();
+  bool init_sys_time(); // 64-bit microsecond system timer (requires sudo)
 
   std::uint64_t current_unix_time() const;
   std::uint64_t current_sys_time() const { return *st_time; }
