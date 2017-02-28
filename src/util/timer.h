@@ -28,7 +28,7 @@ class Timer
 public:
   Timer() : st_time{&st_dummy} {}
 
-  bool init_sys_time(); // 64-bit microsecond system timer (requires sudo)
+  bool init_sys_time();  // 64-bit microsecond system timer (requires sudo)
 
   std::uint64_t current_unix_time() const;
   std::uint64_t current_sys_time() const { return *st_time; }
