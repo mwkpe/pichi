@@ -2,7 +2,7 @@
 #include "../ext/doctest.h"
 
 
-#include "../nmea/parser.h"
+#include "../nmea/nmea_parser.h"
 
 
 using namespace nmea;
