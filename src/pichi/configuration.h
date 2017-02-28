@@ -19,27 +19,27 @@ public:
   void save_to_file() const;
 
   // Device tab
-  uint16_t device_id{1};
+  uint16_t device_id;
 
   // GNSS tab
-  std::string gnss_port{"/dev/ttyS0"};
-  uint32_t gnss_port_rate{9600};
+  std::string gnss_port;
+  uint32_t gnss_port_rate;
 
   // Transmit tab
-  std::string trans_ip{"192.168.0.1"};
-  uint16_t trans_port{30001};
+  std::string trans_ip;
+  uint16_t trans_port;
 
   // Receive tab
-  std::string recv_ip{"192.168.0.2"};
-  uint16_t recv_port{30001};
-  bool recv_log{true};
-  LogFormat recv_log_format{LogFormat::Short};
+  std::string recv_ip;
+  uint16_t recv_port;
+  bool recv_log;
+  LogFormat recv_log_format;
 
   // Log tab
-  bool log_csv{true};
-  bool log_gpx{true};
-  bool log_csv_force_1hz{false};
-  bool log_gpx_force_1hz{true};
+  bool log_csv;
+  bool log_gpx;
+  bool log_csv_force_1hz;
+  bool log_gpx_force_1hz;
 
 private:
   std::string filename_{};
