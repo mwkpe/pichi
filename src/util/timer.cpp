@@ -29,7 +29,7 @@ bool util::Timer::systime_init()
 }
 
 
-std::uint64_t util::Timer::current_time() const
+std::uint64_t util::Timer::current_unix_time() const
 {
   return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }

@@ -23,8 +23,7 @@ namespace pichi {
 
 struct ReceiveData
 {
-  std::uint64_t time;
-  std::uint64_t systime;
+  util::TimePoint receive_time;
   PacketHeader header;
   std::vector<std::uint8_t> data;
 };

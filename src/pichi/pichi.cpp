@@ -228,8 +228,8 @@ void pichi::Pichi::transmit_packets()
     for (const auto& sentence : nmea_sentences) {
       if (parse_sentence(location, rmc_data, sentence)) {
         header->transmit_counter++;
-        header->transmit_time = timer_.current_time();
-        header->transmit_system_delay = timer_.current_systime() - sentence.systime;
+        header->transmit_time = timer_.current_unix_time();
+        header->transmit_system_delay = timer_.current_sys_time() - sentence.read_time.sys_time;
         transmitter.send(gsl::as_span(buffer).first(PACKET_SIZE));
         
         activity_counter_.fetch_add(1);
@@ -245,7 +245,7 @@ void pichi::Pichi::receive_packets()
   std::unique_ptr<CsvFile> csv{nullptr};
   if (conf_.recv_log) {
     //csv = std::make_unique<CsvFile>{};
-    //if (!csv->open(std::to_string(timer_.current_time()) + ".csv"))
+    //if (!csv->open(std::to_string(timer_.current_unix_time()) + ".csv"))
     //  csv = nullptr;
   }
 
@@ -272,7 +272,7 @@ void pichi::Pichi::log_location()
   CsvFile csv;
   GpxFile gpx;
 
-  std::string basename = std::string("logs/log_" + std::to_string(timer_.current_time()));
+  std::string basename = std::string("logs/log_" + std::to_string(timer_.current_unix_time()));
   bool logging_csv = conf_.log_csv && csv.open(basename + ".csv");
   bool logging_gpx = conf_.log_gpx && gpx.open(basename + ".gpx");
   
@@ -297,7 +297,7 @@ void pichi::Pichi::log_location()
       nmea::RmcData rmc_data;
       if (parse_sentence(&location, rmc_data, sentence)) {
         if (logging_csv && (!conf_.log_csv_force_1hz || cur_time != last_write)) {
-          csv.write(&location, sentence.time);
+          csv.write(&location, sentence.read_time.unix_time);
         }
         if (logging_gpx && (!conf_.log_gpx_force_1hz || cur_time != last_write)) {
           gpx.write_trackpoint(location.latitude, location.longitude,
@@ -365,8 +365,12 @@ void pichi::Pichi::handle_receive(const ReceiveData& rx, CsvFile* csv)
 
     if (csv) {
       switch (conf_.recv_log_format) {
-        case LogFormat::Full: csv->write(&rx.header, location, rx.time); break;
-        case LogFormat::Short: csv->write(location, rx.header.device_id, rx.time); break;
+        case LogFormat::Full:
+          csv->write(&rx.header, location, rx.receive_time.unix_time);
+        break;
+        case LogFormat::Short:
+          csv->write(location, rx.header.device_id, rx.receive_time.unix_time);
+        break;
       }
     }
   }

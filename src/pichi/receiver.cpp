@@ -32,8 +32,7 @@ void pichi::Receiver::reset()
 void pichi::Receiver::handle_receive(gsl::span<std::uint8_t> buffer)
 {
   ReceiveData rx_data;
-  rx_data.systime = timer_.current_systime();
-  rx_data.time = timer_.current_time();
+  rx_data.receive_time = timer_.now();
 
   if (buffer.size() > PACKET_HEADER_SIZE) {
     std::memcpy(&rx_data.header, buffer.data(), PACKET_HEADER_SIZE);
