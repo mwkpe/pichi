@@ -31,6 +31,8 @@ pichi::Configuration::Configuration(const std::string& filename)
     return def;
   };
 
+  device_id = get("device_id", 1);
+
   gnss_port = get("gnss_port", "/dev/ttyS0"s);
   gnss_port_rate = get("gnss_port_rate", 9600);
 
@@ -55,6 +57,8 @@ pichi::Configuration::Configuration(const std::string& filename)
 void pichi::Configuration::save_to_file() const
 {
   json settings;
+
+  settings["device_id"] = device_id;
 
   settings["gnss_port"] = gnss_port;
   settings["gnss_port_rate"] = gnss_port_rate;
