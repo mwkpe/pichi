@@ -2,7 +2,7 @@ Running the program
 ---
 Start the program with `sudo ./pichi`.
 
-The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/timer.cpp#L14). This timer is only used for some delay measurements (see [sender system delay](README_USAGE.md#data-format)) and is not required. Values are simply 0 without sudo.
+The program works without sudo but won't be able to access the Raspberry Pi's 1MHz [system timer](src/util/timer.cpp#L14). This timer is only used for some delay measurements (see [sender system delay](README_USAGE.md#data-format)) and is not required. Values are simply 0 without sudo.
 
 Note: Logs will be put into a `logs` directory which must be manually created next to the executable.
 
@@ -21,17 +21,17 @@ The port, IP and other variables must be set in the `config.json`. If the file d
 
 Data format
 ---
-The data packets are defined in the [packet.h](src/gnss/packet.h) file.
+The data packets are defined in the [packet.h](src/pichi/packet.h) file.
 
 The UDP receive CSV file has the following columns.
 
-| #   | What             | Description   | Unit | Short |
-| ---:| ---------------- | ------------- | ---- |:-----:|
+| #   | What             | Description   | Unit | Short log |
+| ---:| ---------------- | ------------- | ---- |:---------:|
 | 1 | Device ID        | Identifies the sender |  | ✓
-| 2 | Packet type      | Defined in [packet.h](src/gnss/packet.h) |   |
-| 3 | UDP receive time | Time the packet was received | ns | ✓
+| 2 | Packet type      | Defined in [packet.h](src/pichi/packet.h) |   |
+| 3 | UDP receive time | Unix time when the packet was received | ns | ✓
 | 4 | Transmit delay   | Transmission delay between sender and receiver<br>(devices must be synchronized) | ns |
-| 5 | Sender system delay | Time the transmitter took to send the packet<br>(since serial read) | µs |
+| 5 | System delay     | Time the transmitter took to send the packet<br>(since serial read) | µs |
 | 6 | Packet counter   | Indicates transmit ordering and missing packets |   |
 | 7 | UTC timestamp    | UTC timestamp from NMEA sentence |   | ✓
 | 8 | Latitude         | Position from NMEA sentence | deg [±90°] | ✓
