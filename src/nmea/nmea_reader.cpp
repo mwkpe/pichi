@@ -34,13 +34,14 @@ void pichi::NmeaReader::reset()
 
 void pichi::NmeaReader::reset_buffer()
 {
-  buffer_ = decltype(buffer_){};
   buffer_end_ = std::begin(buffer_);
 }
 
 
 void pichi::NmeaReader::handle_read(gsl::span<char> received_data)
 {
+  auto read_time = timer_.now();
+
   auto buffer_begin = std::begin(buffer_);
   auto data_size = std::distance(buffer_begin, buffer_end_);
   data_size += received_data.size();
@@ -52,7 +53,7 @@ void pichi::NmeaReader::handle_read(gsl::span<char> received_data)
 
   std::copy(std::begin(received_data), std::end(received_data), buffer_end_);
   std::advance(buffer_end_, received_data.size());
-  auto pos = process_data(gsl::span<char>{buffer_}.first(data_size));
+  auto pos = process_data(gsl::span<char>{buffer_}.first(data_size), read_time);
 
   // Remove processed data from buffer
   if (pos > 0) {
@@ -63,18 +64,16 @@ void pichi::NmeaReader::handle_read(gsl::span<char> received_data)
 }
 
 
-int pichi::NmeaReader::process_data(gsl::span<char> buffer)
+int pichi::NmeaReader::process_data(gsl::span<char> buffer, util::TimePoint read_time)
 {
-  std::uint64_t systime = timer_.current_systime();
-  std::uint64_t time = timer_.current_time();
-  int pos = 0;
+  std::size_t pos = 0;
   std::lock_guard<std::mutex> lock(data_mutex_);
 
   do {
     auto sentence = find_sentence(buffer.subspan(pos, buffer.size() - pos));
     if (!sentence.empty()) {
       std::string s{std::begin(sentence), std::end(sentence)};
-      data_.emplace_back(time, systime, nmea::deduce_sentence_type(s), std::move(s));
+      data_.emplace_back(read_time, nmea::deduce_sentence_type(s), std::move(s));
       pos += sentence.size();
     }
   } while (pos < buffer.size());

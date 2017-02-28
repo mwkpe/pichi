@@ -34,10 +34,9 @@ inline gsl::span<char> find_sentence(gsl::span<char> buffer)
 struct NmeaSentence
 {
   NmeaSentence() = default;
-  NmeaSentence(uint64_t time, uint64_t systime, nmea::SentenceType type, std::string&& text)
-      : time{time}, systime{systime}, type{type}, text{std::move(text)} {}
-  uint64_t time;
-  uint64_t systime;
+  NmeaSentence(util::TimePoint tp, nmea::SentenceType sentence_type, std::string&& sentence_text)
+      : read_time{tp}, type{sentence_type}, text{std::move(sentence_text)} {}
+  util::TimePoint read_time;
   nmea::SentenceType type;
   std::string text;
 };
@@ -61,7 +60,7 @@ private:
   void reset();
   void reset_buffer();
   void handle_read(gsl::span<char> buffer) override;
-  int process_data(gsl::span<char> buffer);
+  int process_data(gsl::span<char> buffer, util::TimePoint read_time);
 
   std::array<char, BUFFER_SIZE> buffer_;
   std::array<char, BUFFER_SIZE>::iterator buffer_end_;
