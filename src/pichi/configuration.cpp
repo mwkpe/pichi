@@ -2,11 +2,8 @@
 
 
 #include <string>
-#include <iostream>
-#include <ios>
 #include <sstream>
 #include <fstream>
-#include <regex>
 
 
 #include "../ext/json/json.hpp"
