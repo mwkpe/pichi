@@ -30,7 +30,4 @@ template<typename T> T take(T& from)
 }  // namespace util
 
 
-
-
-
 #endif  // UTIL_UTIL_H_
