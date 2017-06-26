@@ -25,7 +25,7 @@ struct alignas(8) PacketHeader
 };
 
 
-struct LocationPacket
+struct alignas(8) LocationPacket
 {
   double utc_timestamp;
   double latitude;
