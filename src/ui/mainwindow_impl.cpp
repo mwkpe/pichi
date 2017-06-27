@@ -97,12 +97,7 @@ void MainWindow::load_settings()
 void MainWindow::button_start_clicked()
 {
   if (button_start->value()) {
-    // Make sure transceiver isn't running
-    if (pichi_->is_active()) {
-      std::cerr << "Already running!" << std::endl;
-      button_start->value(1);
-    }
-    else {
+    try {
       switch (choice_mode->value()) {
         case 0: pichi_->start_transmitter(); break;
         case 1: pichi_->start_receiver(); break;
@@ -110,13 +105,17 @@ void MainWindow::button_start_clicked()
         case 3: pichi_->start_device(); break;
         case 4: pichi_->start_debug_mode(); break;
       }
-      button_start->label("Stop");
-      last_count_ = 0;
-      Fl::add_timeout(1.0, &MainWindow::update_status_callback, this);
+    }
+    catch (const pichi::Error& e) {
+      std::cerr << e.what() << std::endl;
+    }
 
-      if (choice_mode->value() < 4) {
-        Fl::add_timeout(0.5, &MainWindow::update_display_callback, this);
-      }
+    button_start->label("Stop");
+    last_count_ = 0;
+    Fl::add_timeout(1.0, &MainWindow::update_status_callback, this);
+
+    if (choice_mode->value() < 4) {
+      Fl::add_timeout(0.5, &MainWindow::update_display_callback, this);
     }
   }
   else {

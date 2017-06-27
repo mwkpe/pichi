@@ -117,90 +117,85 @@ void pichi::Pichi::stop()
 
 void pichi::Pichi::start_transmitter()
 {
-  if (!is_active()) {
-    reset();
-    active_.store(true);
+  if (is_active())
+    throw Error{"Already running!"};
 
-    std::thread consumer{&pichi::Pichi::transmit_packets, this};
-    consumer.detach();
+  reset();
+  active_.store(true);
 
-    std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
-        conf_.gnss_port_rate};
-    provider.detach();
-  }
-  else
-    std::cerr << "Already running!" << std::endl;
+  std::thread consumer{&pichi::Pichi::transmit_packets, this};
+  consumer.detach();
+
+  std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
+      conf_.gnss_port_rate};
+  provider.detach();
 }
 
 
 void pichi::Pichi::start_receiver()
 {
-  if (!is_active()) {
-    reset();
-    active_.store(true);
+  if (is_active())
+    throw Error{"Already running!"};
 
-    std::thread consumer{&Pichi::receive_packets, this};
-    consumer.detach();
+  reset();
+  active_.store(true);
 
-    std::thread provider{&Receiver::start, &receiver_, std::ref(conf_.recv_ip), conf_.recv_port};
-    provider.detach();
-  }
-  else
-    std::cerr << "Already running!" << std::endl;
+  std::thread consumer{&Pichi::receive_packets, this};
+  consumer.detach();
+
+  std::thread provider{&Receiver::start, &receiver_, std::ref(conf_.recv_ip), conf_.recv_port};
+  provider.detach();
 }
 
 
 void pichi::Pichi::start_logger()
 {
-  if (!is_active()) {
-    reset();
-    active_.store(true);
+  if (is_active())
+    throw Error{"Already running!"};
 
-    std::thread consumer{&Pichi::log_location, this};
-    consumer.detach();
+  reset();
+  active_.store(true);
 
-    std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
-        conf_.gnss_port_rate};
-    provider.detach();
-  }
-  else
-    std::cerr << "Already running!" << std::endl;
+  std::thread consumer{&Pichi::log_location, this};
+  consumer.detach();
+
+  std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
+      conf_.gnss_port_rate};
+  provider.detach();
 }
 
 
 void pichi::Pichi::start_device()
 {
-  if (!is_active()) {
-    reset();
-    active_.store(true);
+  if (is_active())
+    throw Error{"Already running!"};
 
-    std::thread consumer{&Pichi::update_location, this};
-    consumer.detach();
+  reset();
+  active_.store(true);
 
-    std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
-        conf_.gnss_port_rate};
-    provider.detach();
-  }
-  else
-    std::cerr << "Already running!" << std::endl;
+  std::thread consumer{&Pichi::update_location, this};
+  consumer.detach();
+
+  std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
+      conf_.gnss_port_rate};
+  provider.detach();
 }
 
 
 void pichi::Pichi::start_debug_mode()
 {
-  if (!is_active()) {
-    reset();
-    active_.store(true);
+  if (is_active())
+    throw Error{"Already running!"};
 
-    std::thread consumer{&Pichi::print_nmea_sentences, this};
-    consumer.detach();
+  reset();
+  active_.store(true);
 
-    std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
-        conf_.gnss_port_rate};
-    provider.detach();
-  }
-  else
-    std::cerr << "Already running!" << std::endl;
+  std::thread consumer{&Pichi::print_nmea_sentences, this};
+  consumer.detach();
+
+  std::thread provider{&NmeaReader::start, &nmea_reader_, std::ref(conf_.gnss_port),
+      conf_.gnss_port_rate};
+  provider.detach();
 }
 
 
@@ -210,14 +205,14 @@ void pichi::Pichi::transmit_packets()
   if (!transmitter.open(conf_.trans_ip, conf_.trans_port))
     return;
 
-  const auto PACKET_SIZE = PACKET_HEADER_SIZE + LOCATION_DATA_SIZE;
+  constexpr auto PACKET_SIZE = PACKET_HEADER_SIZE + LOCATION_PACKET_SIZE;
   std::array<std::uint8_t, PACKET_SIZE> buffer;
 
   auto* header = reinterpret_cast<PacketHeader*>(buffer.data());
   auto* location = reinterpret_cast<LocationPacket*>(buffer.data() + PACKET_HEADER_SIZE);
 
   header->packet_type = static_cast<std::uint16_t>(PacketType::Location);
-  header->data_size = LOCATION_DATA_SIZE;
+  header->data_size = LOCATION_PACKET_SIZE;
   header->device_id = conf_.device_id;
   header->transmit_counter = 0;
 
@@ -363,7 +358,7 @@ void pichi::Pichi::print_nmea_sentences()
 void pichi::Pichi::handle_receive(const ReceiveData& rx, CsvFile* csv)
 {
   bool valid = static_cast<PacketType>(rx.header.packet_type) == PacketType::Location &&
-      rx.header.data_size == LOCATION_DATA_SIZE && rx.header.data_size >= rx.data.size();
+      rx.header.data_size == LOCATION_PACKET_SIZE && rx.header.data_size >= rx.data.size();
 
   if (valid) {
     auto* location = reinterpret_cast<const LocationPacket*>(rx.data.data());

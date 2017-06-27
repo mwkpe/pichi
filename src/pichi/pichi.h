@@ -9,6 +9,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <stdexcept>
 
 #include "../ext/gsl.h"
 
@@ -24,7 +25,14 @@
 namespace pichi {
 
 
+enum class StartMode { Transmit, Receive, Log, Debug };
 class CsvFile;
+class Error final : public std::runtime_error
+{
+public:
+  Error(const std::string& s) : std::runtime_error{s} {}
+  Error(const char* s) : std::runtime_error{s} {}
+};
 
 
 class Pichi final
