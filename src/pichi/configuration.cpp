@@ -24,33 +24,29 @@ pichi::Configuration::Configuration(const std::string& filename)
     settings = json::parse(ss.str());
   }
 
-  auto get = [&settings](const std::string& key, auto def) -> decltype(def) {
-    if (settings.count(key)) {
-      return settings[key];
-    }
-    return def;
-  };
+  if (settings.is_null())
+    settings = json::object();
 
-  device_id = get("device_id", 1);
+  device_id = settings.value("device_id", 1);
 
-  gnss_port = get("gnss_port", "/dev/ttyS0"s);
-  gnss_port_rate = get("gnss_port_rate", 9600);
+  gnss_port = settings.value("gnss_port", "/dev/ttyS0"s);
+  gnss_port_rate = settings.value("gnss_port_rate", 9600);
 
-  trans_ip = get("trans_ip", "192.168.0.1"s);
-  trans_port = get("trans_port", 30001);
+  trans_ip = settings.value("trans_ip", "192.168.0.1"s);
+  trans_port = settings.value("trans_port", 30001);
 
-  recv_ip = get("recv_ip", "192.168.0.1"s);
-  recv_port = get("recv_port", 30001);
-  recv_log = get("recv_log", true);
-  if (get("recv_log_format", "short"s) == "short")
+  recv_ip = settings.value("recv_ip", "192.168.0.1"s);
+  recv_port = settings.value("recv_port", 30001);
+  recv_log = settings.value("recv_log", true);
+  if (settings.value("recv_log_format", "short"s) == "short")
     recv_log_format = LogFormat::Short;
   else
     recv_log_format = LogFormat::Full;
 
-  log_csv = get("log_csv", true);
-  log_gpx = get("log_gpx", true);
-  log_csv_force_1hz = get("log_csv_force_1hz", false);
-  log_gpx_force_1hz = get("log_gpx_force_1hz", true);
+  log_csv = settings.value("log_csv", true);
+  log_gpx = settings.value("log_gpx", true);
+  log_csv_force_1hz = settings.value("log_csv_force_1hz", false);
+  log_gpx_force_1hz = settings.value("log_gpx_force_1hz", true);
 }
 
 
