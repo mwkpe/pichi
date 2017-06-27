@@ -8,6 +8,22 @@
 #include "../util/util.h"
 
 
+namespace
+{
+
+
+inline gsl::span<char> find_sentence(gsl::span<char> buffer)
+{
+  auto it = std::find_if(std::begin(buffer), std::end(buffer), [](char c) { return c == '\n'; });
+  if (it != std::end(buffer))
+    return buffer.first(std::distance(std::begin(buffer), it) + 1);  // + 1 to move past \n
+  return gsl::span<char>{};
+};
+
+
+}  // namespace
+
+
 pichi::NmeaReader::NmeaReader(const util::Timer& timer, std::condition_variable& data_ready,
     std::mutex& data_mutex, std::deque<NmeaSentence>& data)
     : timer_{timer}, data_ready_{data_ready}, data_mutex_{data_mutex}, data_{data}

@@ -15,8 +15,11 @@
 #include "../log/gpx_file.h"
 
 
-void pichi::fill_packet(gsl::not_null<LocationPacket*> location,
-    const nmea::RmcData& rmc_data)
+namespace
+{
+
+
+void fill_packet(gsl::not_null<pichi::LocationPacket*> location, const nmea::RmcData& rmc_data)
 {
   location->utc_timestamp = util::as_utc_unix(rmc_data.date_year + 2000, rmc_data.date_month,
       rmc_data.date_day, rmc_data.utc_time_hour, rmc_data.utc_time_minute,
@@ -28,8 +31,8 @@ void pichi::fill_packet(gsl::not_null<LocationPacket*> location,
 }
 
 
-bool pichi::parse_sentence(gsl::not_null<LocationPacket*> location,
-    nmea::RmcData& rmc_data, const NmeaSentence& nmea_sentence)
+bool parse_sentence(gsl::not_null<pichi::LocationPacket*> location,
+    nmea::RmcData& rmc_data, const pichi::NmeaSentence& nmea_sentence)
 {
   if (nmea_sentence.type != nmea::SentenceType::Rmc)
     return false;
@@ -40,6 +43,9 @@ bool pichi::parse_sentence(gsl::not_null<LocationPacket*> location,
     fill_packet(location, rmc_data);
   return success;
 }
+
+
+}  // namespace
 
 
 pichi::Pichi::Pichi(Configuration&& conf) : conf_{std::move(conf)},

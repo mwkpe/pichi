@@ -27,11 +27,6 @@ namespace pichi {
 class CsvFile;
 
 
-void fill_packet(gsl::not_null<LocationPacket*> location, const nmea::RmcData& rmc_data);
-bool parse_sentence(gsl::not_null<LocationPacket*> location, nmea::RmcData& rmc_data,
-    const NmeaSentence& nmea_sentence);
-
-
 class Pichi final
 {
 public:

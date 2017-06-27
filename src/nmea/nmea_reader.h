@@ -22,15 +22,6 @@
 namespace pichi {
 
 
-inline gsl::span<char> find_sentence(gsl::span<char> buffer)
-{
-  auto it = std::find_if(std::begin(buffer), std::end(buffer), [](char c) { return c == '\n'; });
-  if (it != std::end(buffer))
-    return buffer.first(std::distance(std::begin(buffer), it) + 1);  // + 1 to move past \n
-  return gsl::span<char>{};
-};
-
-
 struct NmeaSentence
 {
   NmeaSentence() = default;
