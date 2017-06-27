@@ -34,7 +34,7 @@ struct alignas(8) LocationPacket
 
 
 constexpr uint16_t PACKET_HEADER_SIZE = sizeof(PacketHeader);
-constexpr uint16_t LOCATION_DATA_SIZE = sizeof(LocationPacket);
+constexpr uint16_t LOCATION_PACKET_SIZE = sizeof(LocationPacket);
 
 
 }  // namespace pichi
